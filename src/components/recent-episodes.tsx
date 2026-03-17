@@ -21,7 +21,7 @@ export function RecentEpisodes({ animeList }: { animeList: AnimeEntry[] }) {
         <Link
           key={`${ep.anime.slug}-${ep.episode}`}
           href={`/anime/${ep.anime.slug}`}
-          className="group relative overflow-hidden rounded bg-bg-card transition-all hover:shadow-lg hover:shadow-accent-glow"
+          className="group relative overflow-hidden rounded bg-bg-card border border-border transition-shadow hover:shadow-md"
         >
           {ep.anime.image ? (
             <img
@@ -30,19 +30,19 @@ export function RecentEpisodes({ animeList }: { animeList: AnimeEntry[] }) {
               className="aspect-[3/4] w-full object-cover"
             />
           ) : (
-            <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-secondary text-xs text-text-muted">
+            <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-primary text-xs text-text-muted">
               画像なし
             </div>
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
 
           {/* Platform - top right */}
           <div className="absolute top-1.5 right-1.5">
             {ep.anime.platforms.slice(0, 1).map((pid) => (
               <span
                 key={pid}
-                className="rounded-sm bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white"
+                className="rounded-sm bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white"
               >
                 {platforms[pid].name}
               </span>
@@ -57,7 +57,7 @@ export function RecentEpisodes({ animeList }: { animeList: AnimeEntry[] }) {
             <h3 className="line-clamp-2 text-xs font-bold leading-tight text-white">
               {ep.anime.title}
             </h3>
-            <p className="mt-0.5 text-[10px] text-text-secondary">
+            <p className="mt-0.5 text-[10px] text-white/70">
               {formatRelativeTime(ep.airedAt)}
             </p>
           </div>

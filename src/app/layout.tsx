@@ -28,12 +28,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary`}
       >
-        <header className="border-b border-border bg-bg-secondary">
+        <header className="bg-bg-secondary border-b border-border">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-            <a href="/" className="text-lg font-bold tracking-tight text-text-primary">
+            <a href="/" className="text-lg font-bold tracking-tight">
               アニメスケジュール<span className="text-accent">.</span>jp
             </a>
-            <span className="rounded bg-bg-card px-2 py-1 text-xs text-text-muted">
+            <span className="rounded bg-bg-primary px-2 py-1 text-xs text-text-muted border border-border">
               2026年冬
             </span>
           </div>
