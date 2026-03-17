@@ -35,7 +35,7 @@ export default async function AnimeDetail({
               className="h-72 w-48 rounded object-cover"
             />
           ) : (
-            <div className="flex h-72 w-48 items-center justify-center rounded bg-bg-primary text-text-muted">
+            <div className="flex h-72 w-48 items-center justify-center rounded bg-bg-card text-text-muted">
               画像なし
             </div>
           )}
@@ -87,7 +87,7 @@ export default async function AnimeDetail({
                 {anime.genres.map((g) => (
                   <span
                     key={g}
-                    className="rounded-sm bg-bg-primary border border-border px-2 py-0.5 text-xs text-text-secondary"
+                    className="rounded-sm bg-bg-card-hover border border-border px-2 py-0.5 text-xs text-text-secondary"
                   >
                     {g}
                   </span>
@@ -106,7 +106,7 @@ export default async function AnimeDetail({
                       href={p.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-primary px-3 py-1.5 text-sm font-bold transition-colors hover:text-accent hover:border-accent"
+                      className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-3 py-1.5 text-sm font-bold transition-colors hover:text-accent hover:border-accent"
                     >
                       <span
                         className="h-2 w-2 rounded-full"

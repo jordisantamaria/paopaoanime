@@ -6,7 +6,7 @@ export function AnimeCard({ anime }: { anime: AnimeEntry }) {
   return (
     <Link
       href={`/anime/${anime.slug}`}
-      className="group flex items-center gap-3 rounded bg-bg-card p-2.5 transition-colors hover:bg-bg-card-hover"
+      className="group flex items-center gap-3 rounded bg-bg-card border border-border p-2.5 transition-colors hover:bg-bg-card-hover hover:border-border-hover"
     >
       {anime.image ? (
         <img
@@ -15,7 +15,7 @@ export function AnimeCard({ anime }: { anime: AnimeEntry }) {
           className="h-14 w-10 rounded-sm object-cover"
         />
       ) : (
-        <div className="flex h-14 w-10 items-center justify-center rounded-sm bg-bg-secondary text-[10px] text-text-muted">
+        <div className="flex h-14 w-10 items-center justify-center rounded-sm bg-bg-card text-[10px] text-text-muted">
           N/A
         </div>
       )}
@@ -25,7 +25,7 @@ export function AnimeCard({ anime }: { anime: AnimeEntry }) {
           {anime.title}
         </h3>
         <div className="mt-1 flex items-center gap-2 text-xs">
-          <span className="font-mono text-accent">
+          <span className="font-mono font-bold text-accent">
             {anime.time ?? "未定"}
           </span>
           {anime.platforms.map((pid) => (
@@ -34,7 +34,7 @@ export function AnimeCard({ anime }: { anime: AnimeEntry }) {
             </span>
           ))}
           {anime.type === "レンタル" && (
-            <span className="text-yellow-500">レンタル</span>
+            <span className="text-orange-500 font-bold">レンタル</span>
           )}
         </div>
       </div>

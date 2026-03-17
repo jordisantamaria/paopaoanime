@@ -21,7 +21,7 @@ export function RecentEpisodes({ animeList }: { animeList: AnimeEntry[] }) {
         <Link
           key={`${ep.anime.slug}-${ep.episode}`}
           href={`/anime/${ep.anime.slug}`}
-          className="group relative overflow-hidden rounded bg-bg-card border border-border transition-shadow hover:shadow-md"
+          className="group relative overflow-hidden rounded border border-border bg-bg-card transition-shadow hover:shadow-md"
         >
           {ep.anime.image ? (
             <img
@@ -30,7 +30,7 @@ export function RecentEpisodes({ animeList }: { animeList: AnimeEntry[] }) {
               className="aspect-[3/4] w-full object-cover"
             />
           ) : (
-            <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-primary text-xs text-text-muted">
+            <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
               画像なし
             </div>
           )}

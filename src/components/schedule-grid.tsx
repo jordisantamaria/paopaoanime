@@ -55,7 +55,7 @@ export function ScheduleGrid({ animeByDay }: Props) {
           placeholder="アニメを検索..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none border border-border focus:border-accent"
+          className="rounded border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none focus:border-accent"
         />
 
         <select
@@ -63,7 +63,7 @@ export function ScheduleGrid({ animeByDay }: Props) {
           onChange={(e) =>
             setSelectedPlatform(e.target.value as PlatformId | "all")
           }
-          className="rounded bg-bg-card px-3 py-2 text-sm text-text-primary outline-none border border-border focus:border-accent"
+          className="rounded border border-border bg-bg-card px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
         >
           <option value="all">全プラットフォーム</option>
           {allPlatformIds.map((pid) => (
@@ -79,7 +79,7 @@ export function ScheduleGrid({ animeByDay }: Props) {
             className={`rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
               selectedDay === "all"
                 ? "bg-accent text-white"
-                : "bg-bg-card text-text-muted hover:text-text-primary"
+                : "bg-bg-card text-text-muted border border-border hover:text-accent"
             }`}
           >
             全部
@@ -91,7 +91,7 @@ export function ScheduleGrid({ animeByDay }: Props) {
               className={`rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
                 selectedDay === day
                   ? "bg-accent text-white"
-                  : "bg-bg-card text-text-muted hover:text-text-primary"
+                  : "bg-bg-card text-text-muted border border-border hover:text-accent"
               }`}
             >
               {day}
