@@ -58,13 +58,11 @@ export function RecentEpisodes({ animeList }: { animeList: AnimeEntry[] }) {
               })}
             </div>
 
-            {/* Episode badge - top left */}
-            <span className="absolute top-2 left-2 rounded-md bg-accent px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">
-              EP {ep.episode}
-            </span>
-
-            {/* Title + time - bottom */}
+            {/* Title + episode + time - bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-3">
+              <span className="mb-1.5 inline-block rounded-md bg-accent px-2 py-0.5 text-xs font-bold text-white">
+                EP {ep.episode}
+              </span>
               <h3 className="line-clamp-2 text-sm font-bold leading-snug text-white drop-shadow-lg">
                 {ep.anime.title}
               </h3>
