@@ -1,14 +1,13 @@
-import { getAnimeByDay, getAnimeData } from "@/lib/data";
-import { HomeView } from "@/components/home-view";
+import { getAnimeData } from "@/lib/data";
+import { RecentEpisodes } from "@/components/recent-episodes";
 
 export default function Home() {
-  const animeByDay = getAnimeByDay();
   const animeList = getAnimeData();
 
   return (
-    <HomeView
-      animeByDay={animeByDay}
-      animeList={animeList}
-    />
+    <div>
+      <h1 className="mb-4 text-xl font-bold">最新エピソード</h1>
+      <RecentEpisodes animeList={animeList} />
+    </div>
   );
 }

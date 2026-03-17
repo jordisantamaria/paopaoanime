@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { NavLinks } from "@/components/nav-links";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,9 +34,12 @@ export default function RootLayout({
             <a href="/" className="text-lg font-bold tracking-tight">
               アニメスケジュール.jp
             </a>
-            <span className="rounded bg-white/20 px-2 py-1 text-xs font-bold">
-              2026年冬
-            </span>
+            <nav className="flex items-center gap-4">
+              <NavLinks />
+              <span className="rounded bg-white/20 px-2 py-1 text-xs font-bold">
+                2026年冬
+              </span>
+            </nav>
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
