@@ -19,8 +19,6 @@ export default async function AnimeDetail({
 
   if (!anime) notFound();
 
-  const bannerSrc = anime.banner || anime.image;
-
   return (
     <div>
       <Link
@@ -31,25 +29,14 @@ export default async function AnimeDetail({
       </Link>
 
       <div className="rounded bg-bg-card border border-border overflow-hidden">
-        {/* Mobile: banner full width */}
-        {bannerSrc && (
-          <div className="sm:hidden">
-            <img
-              src={bannerSrc}
-              alt={anime.title}
-              className={`w-full object-cover ${anime.banner ? "aspect-video" : "aspect-video object-top"}`}
-            />
-          </div>
-        )}
-
         <div className="p-4 sm:p-5">
-          <div className="flex gap-5">
-            {/* Desktop: poster */}
+          <div className="flex gap-4 sm:gap-5">
+            {/* Poster - same image as home, always visible */}
             {anime.image && (
               <img
                 src={anime.image}
                 alt={anime.title}
-                className="hidden sm:block h-72 w-48 rounded object-cover shrink-0"
+                className="h-44 w-28 sm:h-72 sm:w-48 rounded object-cover shrink-0"
               />
             )}
 
