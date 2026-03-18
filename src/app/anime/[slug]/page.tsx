@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getAnimeBySlug, getAnimeData, DAY_LABELS } from "@/lib/data";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
 import { CurrentEpisode } from "@/components/current-episode";
-import { TrailerPlayer } from "@/components/trailer-player";
+import { TrailerLink } from "@/components/trailer-player";
 
 export function generateStaticParams() {
   return getAnimeData().map((anime) => ({ slug: anime.slug }));
@@ -31,33 +31,27 @@ export default async function AnimeDetail({
       </Link>
 
       <div className="rounded bg-bg-card border border-border overflow-hidden">
-        {/* Mobile: trailer or banner full width */}
-        <div className="sm:hidden">
-          {anime.trailer ? (
-            <TrailerPlayer trailerId={anime.trailer} title={anime.title} />
-          ) : bannerSrc ? (
+        {/* Mobile: banner full width */}
+        {bannerSrc && (
+          <div className="sm:hidden">
             <img
               src={bannerSrc}
               alt={anime.title}
               className={`w-full object-cover ${anime.banner ? "aspect-video" : "aspect-video object-top"}`}
             />
-          ) : null}
-        </div>
+          </div>
+        )}
 
         <div className="p-4 sm:p-5">
           <div className="flex gap-5">
-            {/* Desktop: trailer or poster */}
-            <div className="hidden sm:block shrink-0 w-72">
-              {anime.trailer ? (
-                <TrailerPlayer trailerId={anime.trailer} title={anime.title} />
-              ) : anime.image ? (
-                <img
-                  src={anime.image}
-                  alt={anime.title}
-                  className="h-72 w-48 rounded object-cover"
-                />
-              ) : null}
-            </div>
+            {/* Desktop: poster */}
+            {anime.image && (
+              <img
+                src={anime.image}
+                alt={anime.title}
+                className="hidden sm:block h-72 w-48 rounded object-cover shrink-0"
+              />
+            )}
 
             <div className="flex-1 min-w-0">
               <h1 className="text-lg sm:text-xl font-bold">{anime.title}</h1>
@@ -66,6 +60,12 @@ export default async function AnimeDetail({
               )}
               {anime.titleEnglish && (
                 <p className="text-xs text-text-muted">{anime.titleEnglish}</p>
+              )}
+
+              {anime.trailer && (
+                <div className="mt-2">
+                  <TrailerLink trailerId={anime.trailer} title={anime.title} />
+                </div>
               )}
 
               <table className="mt-3 sm:mt-4 text-sm">
