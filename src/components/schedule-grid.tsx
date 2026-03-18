@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AnimeEntry, DayOfWeek, PlatformId } from "@/lib/types";
-import { DAYS, DAY_LABELS } from "@/lib/data";
+import { DAYS, DAY_LABELS } from "@/lib/constants";
 import { platforms } from "@/lib/platforms"; // used in filter select
 
 type Props = {

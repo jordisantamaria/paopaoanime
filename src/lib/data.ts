@@ -1,6 +1,12 @@
+import "server-only";
 import { AnimeEntry, DayOfWeek } from "./types";
+import { DAYS } from "./constants";
 
-function toSlug(entry: { titleRomaji?: string; title: string; anilistId?: number }): string {
+function toSlug(entry: {
+  titleRomaji?: string;
+  title: string;
+  anilistId?: number;
+}): string {
   const base = entry.titleRomaji || entry.title;
   const slug = base
     .toLowerCase()
@@ -9,7 +15,6 @@ function toSlug(entry: { titleRomaji?: string; title: string; anilistId?: number
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  // If slug is empty (pure Japanese title, no romaji), use anilistId or hash
   if (!slug && entry.anilistId) return `anime-${entry.anilistId}`;
   if (!slug) return `anime-${Math.abs(hashCode(entry.title))}`;
   return slug;
@@ -25,26 +30,41 @@ function hashCode(str: string): number {
   return hash;
 }
 
-export function getAnimeData(): AnimeEntry[] {
+function loadAllSeasons(): AnimeEntry[] {
+  // Dynamic require to avoid bundling fs in client
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const raw = require("../../data/winter-2026.json");
-  return raw.map((entry: Omit<AnimeEntry, "slug">) => ({
-    ...entry,
-    slug: toSlug(entry),
-  }));
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+
+  const dataDir = path.join(process.cwd(), "data");
+  const files = fs.readdirSync(dataDir).filter((f: string) => f.endsWith(".json"));
+
+  const allEntries: AnimeEntry[] = [];
+  const seen = new Set<string>();
+
+  for (const file of files) {
+    const raw = JSON.parse(fs.readFileSync(path.join(dataDir, file), "utf-8"));
+    const season = file.replace(".json", "");
+
+    for (const entry of raw) {
+      const withSlug = { ...entry, slug: toSlug(entry), season };
+      if (!seen.has(withSlug.slug)) {
+        seen.add(withSlug.slug);
+        allEntries.push(withSlug);
+      }
+    }
+  }
+
+  return allEntries;
 }
 
-export const DAYS: DayOfWeek[] = ["月", "火", "水", "木", "金", "土", "日"];
+export function getAnimeData(): AnimeEntry[] {
+  return loadAllSeasons();
+}
 
-export const DAY_LABELS: Record<DayOfWeek, string> = {
-  月: "月曜日",
-  火: "火曜日",
-  水: "水曜日",
-  木: "木曜日",
-  金: "金曜日",
-  土: "土曜日",
-  日: "日曜日",
-};
+export { DAYS } from "./constants";
+export { DAY_LABELS } from "./constants";
 
 export function getAnimeByDay(): Record<DayOfWeek, AnimeEntry[]> {
   const data = getAnimeData();

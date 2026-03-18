@@ -38,9 +38,6 @@ export default function RootLayout({
               <NavLinks />
             </nav>
             <div className="flex justify-end">
-              <span className="rounded bg-white/20 px-2 py-1 text-xs font-bold">
-                2026年冬
-              </span>
             </div>
           </div>
         </header>

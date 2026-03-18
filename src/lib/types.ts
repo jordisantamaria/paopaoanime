@@ -21,6 +21,7 @@ export type AnimeEntry = {
   titleRomaji?: string;
   banner?: string;
   streams?: { platform: PlatformId; day: DayOfWeek; time: string | null }[];
+  season?: string;
 };
 
 export type Platform = {
