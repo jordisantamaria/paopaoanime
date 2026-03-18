@@ -86,7 +86,7 @@ export function SearchBar({ animeList }: { animeList: AnimeEntry[] }) {
             setOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          className="w-32 sm:w-44 rounded bg-white/20 pl-3 pr-8 py-1.5 text-xs text-white placeholder-white/60 outline-none focus:bg-white/30 focus:w-48 transition-all"
+          className="w-28 sm:w-44 rounded bg-white/20 pl-3 pr-8 py-1.5 text-xs text-white placeholder-white/60 outline-none focus:bg-white/30 sm:focus:w-48 transition-all"
         />
         <button
           type="submit"
