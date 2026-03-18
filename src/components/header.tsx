@@ -11,10 +11,10 @@ export function Header() {
         <a href="/" className="text-lg font-bold tracking-tight">
           PaoPaoAnime
         </a>
-        <nav className="flex items-center gap-5">
+        <div className="flex items-center gap-5">
           <NavLinks />
-        </nav>
-        <SearchBar animeList={animeList} />
+          <SearchBar animeList={animeList} />
+        </div>
       </div>
     </header>
   );
