@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimeEntry, DayOfWeek, PlatformId } from "@/lib/types";
 import { DAYS, DAY_LABELS } from "@/lib/data";
-import { platforms } from "@/lib/platforms";
+import { platforms } from "@/lib/platforms"; // used in filter select
 
 type Props = {
   animeByDay: Record<DayOfWeek, AnimeEntry[]>;
@@ -134,18 +134,7 @@ function ScheduleCard({ anime }: { anime: AnimeEntry }) {
       href={`/anime/${anime.slug}`}
       className="group"
     >
-      <div className="relative overflow-hidden rounded border border-border bg-bg-card">
-        {/* Platform chip */}
-        <div className="absolute top-1.5 right-1.5 z-10">
-          {anime.platforms.slice(0, 1).map((pid) => (
-            <span
-              key={pid}
-              className="rounded-sm bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white"
-            >
-              {platforms[pid].name}
-            </span>
-          ))}
-        </div>
+      <div className="overflow-hidden rounded border border-border bg-bg-card">
         {thumbnail ? (
           <img
             src={thumbnail}
