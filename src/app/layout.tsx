@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { NavLinks } from "@/components/nav-links";
+import { Header } from "@/components/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,18 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary`}
       >
-        <header className="bg-nav text-white">
-          <div className="mx-auto grid max-w-6xl grid-cols-3 items-center px-4 py-3">
-            <a href="/" className="text-lg font-bold tracking-tight">
-              PaoPaoAnime
-            </a>
-            <nav className="flex items-center justify-center gap-5">
-              <NavLinks />
-            </nav>
-            <div className="flex justify-end">
-            </div>
-          </div>
-        </header>
+        <Header />
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
       </body>
     </html>
