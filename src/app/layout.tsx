@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description:
     "今期のアニメがどのプラットフォームで何曜日の何時に配信されるかをまとめて確認。DMM TV・U-NEXT・dアニメストア・ABEMAなど複数サービスを網羅。",
   icons: {
-    icon: "/favicon.svg",
+    icon: "/logo.png",
   },
   openGraph: {
     title: "PaoPaoAnime - 今期アニメの配信スケジュール",

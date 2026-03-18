@@ -9,8 +9,9 @@ export function Header() {
   return (
     <header className="bg-nav text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <a href="/" className="text-lg font-bold tracking-tight">
-          PaoPaoAnime
+        <a href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
+          <img src="/logo.png" alt="PaoPaoAnime" className="h-8 w-8" />
+          <span className="hidden sm:inline">PaoPaoAnime</span>
         </a>
         <div className="hidden sm:flex items-center gap-5">
           <NavLinks />
