@@ -17,3 +17,7 @@
   --color-accent-hover: #d03058;
   --color-nav: #e8436a;
 }
+
+html {
+  overflow-y: scroll;
+}
