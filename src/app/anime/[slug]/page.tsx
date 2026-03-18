@@ -46,18 +46,15 @@ export default async function AnimeDetail({
           <div className="flex gap-4 sm:gap-5">
             {/* Desktop: poster + PV below */}
             <div className="hidden sm:block shrink-0">
-              {anime.image && (
+              {anime.image && anime.trailer ? (
+                <TrailerLink trailerId={anime.trailer} title={anime.title} variant="poster" posterSrc={anime.image} />
+              ) : anime.image ? (
                 <img
                   src={anime.image}
                   alt={anime.title}
                   className="h-72 w-48 rounded object-cover"
                 />
-              )}
-              {anime.trailer && (
-                <div className="mt-1.5">
-                  <TrailerLink trailerId={anime.trailer} title={anime.title} variant="link" />
-                </div>
-              )}
+              ) : null}
             </div>
 
             <div className="flex-1 min-w-0">
