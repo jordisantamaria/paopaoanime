@@ -17,6 +17,20 @@ export const metadata: Metadata = {
   title: "PaoPaoAnime - 今期アニメの配信スケジュール",
   description:
     "今期のアニメがどのプラットフォームで何曜日の何時に配信されるかをまとめて確認。DMM TV・U-NEXT・dアニメストア・ABEMAなど複数サービスを網羅。",
+  icons: {
+    icon: "/favicon.svg",
+  },
+  openGraph: {
+    title: "PaoPaoAnime - 今期アニメの配信スケジュール",
+    description: "今期アニメ、いつ・どこで配信？パオパオでかんたん確認。DMM TV・U-NEXT・dアニメストア・ABEMA・Netflix・Disney+を網羅。",
+    siteName: "PaoPaoAnime",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PaoPaoAnime - 今期アニメの配信スケジュール",
+    description: "今期アニメ、いつ・どこで配信？パオパオでかんたん確認。",
+  },
 };
 
 export default function RootLayout({
