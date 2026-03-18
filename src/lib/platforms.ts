@@ -62,7 +62,7 @@ export const platforms: Record<string, Platform> = {
     name: "U-NEXT",
     color: "#00b4d8",
     url: "https://video.unext.jp",
-    searchUrl: "https://video.unext.jp/search?query=",
+    searchUrl: "https://video.unext.jp/freeword?query=",
   },
 };
 
