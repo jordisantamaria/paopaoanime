@@ -1,10 +1,28 @@
 import { AnimeEntry, DayOfWeek } from "./types";
 
-function toSlug(title: string): string {
-  return title
+function toSlug(entry: { titleRomaji?: string; title: string; anilistId?: number }): string {
+  const base = entry.titleRomaji || entry.title;
+  const slug = base
     .toLowerCase()
-    .replace(/[^\w\u3000-\u9fff\uff00-\uffef]+/g, "-")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+  // If slug is empty (pure Japanese title, no romaji), use anilistId or hash
+  if (!slug && entry.anilistId) return `anime-${entry.anilistId}`;
+  if (!slug) return `anime-${Math.abs(hashCode(entry.title))}`;
+  return slug;
+}
+
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return hash;
 }
 
 export function getAnimeData(): AnimeEntry[] {
@@ -12,7 +30,7 @@ export function getAnimeData(): AnimeEntry[] {
   const raw = require("../../data/winter-2026.json");
   return raw.map((entry: Omit<AnimeEntry, "slug">) => ({
     ...entry,
-    slug: toSlug(entry.title),
+    slug: toSlug(entry),
   }));
 }
 
