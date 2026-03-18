@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 import { getAnimeBySlug, getAnimeData, DAY_LABELS } from "@/lib/data";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
 import { CurrentEpisode } from "@/components/current-episode";
@@ -21,12 +21,7 @@ export default async function AnimeDetail({
 
   return (
     <div>
-      <Link
-        href="/"
-        className="mb-4 inline-block text-sm text-accent hover:text-accent-hover"
-      >
-        &larr; スケジュールに戻る
-      </Link>
+      <BackButton />
 
       <div className="rounded bg-bg-card border border-border overflow-hidden">
         {/* Mobile: trailer inline or banner */}
