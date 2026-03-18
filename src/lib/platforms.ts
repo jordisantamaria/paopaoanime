@@ -48,7 +48,7 @@ export const platforms: Record<string, Platform> = {
     name: "Disney+",
     color: "#113ccf",
     url: "https://www.disneyplus.com",
-    searchUrl: "https://www.disneyplus.com/search?q=",
+    searchUrl: "https://www.disneyplus.com/ja-jp/search?q=",
   },
   hulu: {
     id: "hulu",
