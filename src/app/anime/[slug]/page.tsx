@@ -18,6 +18,8 @@ export default async function AnimeDetail({
 
   if (!anime) notFound();
 
+  const bannerSrc = anime.banner || anime.image;
+
   return (
     <div>
       <Link
@@ -27,34 +29,41 @@ export default async function AnimeDetail({
         &larr; スケジュールに戻る
       </Link>
 
-      <div className="rounded bg-bg-card border border-border p-4 sm:p-5">
-        {/* Header: image + title side by side always */}
-        <div className="flex gap-4">
-          {anime.image ? (
+      <div className="rounded bg-bg-card border border-border overflow-hidden">
+        {/* Mobile: banner full width */}
+        {bannerSrc && (
+          <div className="sm:hidden">
             <img
-              src={anime.image}
+              src={bannerSrc}
               alt={anime.title}
-              className="h-36 w-24 sm:h-72 sm:w-48 rounded object-cover shrink-0"
+              className={`w-full object-cover ${anime.banner ? "aspect-video" : "aspect-video object-top"}`}
             />
-          ) : (
-            <div className="flex h-36 w-24 sm:h-72 sm:w-48 items-center justify-center rounded bg-bg-primary text-text-muted shrink-0 text-xs">
-              画像なし
-            </div>
-          )}
+          </div>
+        )}
 
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-xl font-bold">{anime.title}</h1>
-            {anime.titleRomaji && (
-              <p className="text-xs sm:text-sm text-text-secondary truncate">{anime.titleRomaji}</p>
-            )}
-            {anime.titleEnglish && (
-              <p className="text-xs text-text-muted truncate">{anime.titleEnglish}</p>
+        <div className="p-4 sm:p-5">
+          {/* Desktop: image + info side by side */}
+          <div className="flex gap-5">
+            {/* Desktop image */}
+            {anime.image && (
+              <img
+                src={anime.image}
+                alt={anime.title}
+                className="hidden sm:block h-72 w-48 rounded object-cover shrink-0"
+              />
             )}
 
-            {/* Desktop: show table inline */}
-            <div className="hidden sm:block">
-              <table className="mt-4 text-sm">
-                <tbody className="[&_td]:py-1 [&_td]:pr-6 [&_td:first-child]:text-text-muted [&_td:last-child]:font-bold">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold">{anime.title}</h1>
+              {anime.titleRomaji && (
+                <p className="text-xs sm:text-sm text-text-secondary">{anime.titleRomaji}</p>
+              )}
+              {anime.titleEnglish && (
+                <p className="text-xs text-text-muted">{anime.titleEnglish}</p>
+              )}
+
+              <table className="mt-3 sm:mt-4 text-sm">
+                <tbody className="[&_td]:py-1 [&_td]:pr-4 sm:[&_td]:pr-6 [&_td:first-child]:text-text-muted [&_td:last-child]:font-bold">
                   <tr>
                     <td>曜日</td>
                     <td>{anime.day} ({DAY_LABELS[anime.day]})</td>
@@ -102,7 +111,7 @@ export default async function AnimeDetail({
 
               <div className="mt-4">
                 <span className="text-xs text-text-muted">視聴可能</span>
-                <div className="mt-1 flex flex-wrap gap-2">
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {anime.platforms.map((pid) => {
                     const p = platforms[pid];
                     return (
@@ -111,7 +120,7 @@ export default async function AnimeDetail({
                         href={getPlatformSearchUrl(pid, anime.title)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-3 py-1.5 text-sm font-bold transition-colors hover:text-accent hover:border-accent"
+                        className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-2.5 py-1 text-xs sm:text-sm sm:px-3 sm:py-1.5 font-bold transition-colors hover:text-accent hover:border-accent"
                       >
                         <span
                           className="h-2 w-2 rounded-full"
@@ -125,80 +134,16 @@ export default async function AnimeDetail({
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Mobile: table below image */}
-        <div className="sm:hidden mt-4">
-          <table className="text-sm w-full">
-            <tbody className="[&_td]:py-1 [&_td]:pr-4 [&_td:first-child]:text-text-muted [&_td:first-child]:w-20 [&_td:last-child]:font-bold">
-              <tr>
-                <td>曜日</td>
-                <td>{anime.day} ({DAY_LABELS[anime.day]})</td>
-              </tr>
-              <CurrentEpisode anime={anime} />
-              <tr>
-                <td>配信時間</td>
-                <td className="font-mono text-accent">{anime.time ?? "未定"}</td>
-              </tr>
-              <tr>
-                <td>配信開始</td>
-                <td>{anime.startDate}</td>
-              </tr>
-              {anime.studio && (
-                <tr>
-                  <td>制作会社</td>
-                  <td>{anime.studio}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {anime.genres && anime.genres.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1">
-              {anime.genres.map((g) => (
-                <span
-                  key={g}
-                  className="rounded-sm bg-bg-card-hover border border-border px-2 py-0.5 text-xs text-text-secondary"
-                >
-                  {g}
-                </span>
-              ))}
+          {anime.synopsis && (
+            <div className="mt-5 border-t border-border pt-4">
+              <h2 className="mb-2 text-xs font-bold text-text-muted">あらすじ</h2>
+              <p className="text-sm leading-relaxed text-text-secondary">
+                {anime.synopsis}
+              </p>
             </div>
           )}
-
-          <div className="mt-4">
-            <span className="text-xs text-text-muted">視聴可能</span>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {anime.platforms.map((pid) => {
-                const p = platforms[pid];
-                return (
-                  <a
-                    key={pid}
-                    href={getPlatformSearchUrl(pid, anime.title)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 rounded border border-border bg-bg-card px-2.5 py-1 text-xs font-bold transition-colors hover:text-accent hover:border-accent"
-                  >
-                    <span
-                      className="h-1.5 w-1.5 rounded-full"
-                      style={{ backgroundColor: p.color }}
-                    />
-                    {p.name}
-                  </a>
-                );
-              })}
-            </div>
-          </div>
         </div>
-
-        {anime.synopsis && (
-          <div className="mt-5 border-t border-border pt-4">
-            <h2 className="mb-2 text-xs font-bold text-text-muted">あらすじ</h2>
-            <p className="text-sm leading-relaxed text-text-secondary">
-              {anime.synopsis}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
