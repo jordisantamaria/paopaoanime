@@ -132,7 +132,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 189258,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx189258-qhtrra5ebBm6.jpg",
@@ -164,6 +165,11 @@
         "platform": "abema",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "18:00"
       }
     ]
   },
@@ -176,7 +182,8 @@
     "platforms": [
       "dmmtv",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 101973,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101973-phinH9pL2wV8.png",
@@ -204,6 +211,11 @@
       {
         "platform": "abema",
         "day": "水",
+        "time": "18:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "月",
         "time": "18:00"
       }
     ]
@@ -263,7 +275,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 178005,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx178005-pCEReATswrup.jpg",
@@ -307,6 +320,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "01:00"
       }
     ]
   },
@@ -321,7 +339,8 @@
       "unext",
       "danime",
       "abema",
-      "netflix"
+      "netflix",
+      "amazon"
     ],
     "anilistId": 177580,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177580-ujQw6Ws3oVCi.jpg",
@@ -361,6 +380,11 @@
         "platform": "netflix",
         "day": "土",
         "time": "22:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "22:00"
       }
     ]
   },
@@ -376,7 +400,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 187264,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187264-aOUNQvTriPkX.jpg",
@@ -420,6 +445,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "23:00"
       }
     ]
   },
@@ -435,7 +465,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 195322,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx195322-hqBf19mBtM5K.jpg",
@@ -481,6 +512,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "月",
+        "time": "22:30"
       }
     ]
   },
@@ -496,7 +532,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 166617,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx166617-34fpC9y47tTx.png",
@@ -543,6 +580,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "火",
+        "time": "12:00"
       }
     ]
   },
@@ -556,7 +598,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 199446,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx199446-2jYnGrTItjyu.jpg",
@@ -589,6 +632,11 @@
         "platform": "abema",
         "day": "火",
         "time": "22:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "22:00"
       }
     ]
   },
@@ -602,7 +650,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 194742,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx194742-Cw08T4vIfD3y.jpg",
@@ -637,6 +686,11 @@
         "platform": "abema",
         "day": "月",
         "time": "22:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "月",
+        "time": "22:00"
       }
     ]
   },
@@ -651,7 +705,8 @@
       "unext",
       "danime",
       "abema",
-      "netflix"
+      "netflix",
+      "amazon"
     ],
     "anilistId": 167152,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx167152-u0cBZkqDowHP.jpg",
@@ -692,6 +747,11 @@
         "platform": "netflix",
         "day": "月",
         "time": "22:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "木",
+        "time": "22:30"
       }
     ]
   },
@@ -707,7 +767,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 185753,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx185753-fKim5yXjaE9I.png",
@@ -749,6 +810,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "木",
+        "time": "23:30"
       }
     ]
   },
@@ -761,7 +827,8 @@
     "platforms": [
       "dmmtv",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 183984,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx183984-uq5scAXrhEdx.jpg",
@@ -787,6 +854,11 @@
       },
       {
         "platform": "abema",
+        "day": "水",
+        "time": "02:00"
+      },
+      {
+        "platform": "amazon",
         "day": "水",
         "time": "02:00"
       }
@@ -843,7 +915,8 @@
       "unext",
       "danime",
       "abema",
-      "netflix"
+      "netflix",
+      "amazon"
     ],
     "anilistId": 180746,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx180746-eqDiHbzoHMFh.jpg",
@@ -884,6 +957,11 @@
         "platform": "netflix",
         "day": "火",
         "time": "23:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "水",
+        "time": "23:30"
       }
     ]
   },
@@ -945,7 +1023,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 185039,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx185039-rVofxrbEyaL9.jpg",
@@ -980,6 +1059,11 @@
         "platform": "abema",
         "day": "金",
         "time": "00:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "00:00"
       }
     ]
   },
@@ -995,7 +1079,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 172463,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx172463-LnXqHzt74SJL.jpg",
@@ -1040,6 +1125,11 @@
         "platform": "disney",
         "day": "金",
         "time": "01:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "01:30"
       }
     ]
   },
@@ -1053,7 +1143,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 189137,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx189137-cCXaEiX0bJb4.jpg",
@@ -1086,6 +1177,11 @@
         "platform": "abema",
         "day": "金",
         "time": "02:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "02:00"
       }
     ]
   },
@@ -1099,7 +1195,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 197731,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx197731-6E0qjPFaNjC6.jpg",
@@ -1131,6 +1228,11 @@
         "platform": "abema",
         "day": "月",
         "time": "00:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "00:00"
       }
     ]
   },
@@ -1144,7 +1246,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 194318,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx194318-V3STmm4wutVQ.jpg",
@@ -1178,6 +1281,11 @@
         "platform": "abema",
         "day": "土",
         "time": "00:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "00:00"
       }
     ]
   },
@@ -1191,7 +1299,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 189565,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx189565-OHhadYSsd0Bg.jpg",
@@ -1225,6 +1334,11 @@
         "platform": "abema",
         "day": "土",
         "time": "00:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "00:30"
       }
     ]
   },
@@ -1238,7 +1352,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 177385,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177385-TBpvkGdF28R7.png",
@@ -1272,6 +1387,11 @@
         "platform": "abema",
         "day": "土",
         "time": "01:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "月",
+        "time": "01:00"
       }
     ]
   },
@@ -1284,7 +1404,8 @@
     "platforms": [
       "dmmtv",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 203296,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx203296-LYXWSdP4N4YF.jpg",
@@ -1312,6 +1433,11 @@
         "platform": "abema",
         "day": "土",
         "time": "08:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "08:30"
       }
     ]
   },
@@ -1326,7 +1452,8 @@
       "unext",
       "danime",
       "abema",
-      "netflix"
+      "netflix",
+      "amazon"
     ],
     "anilistId": 714,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b714-J770J3curufA.jpg",
@@ -1365,6 +1492,11 @@
         "platform": "netflix",
         "day": "金",
         "time": "12:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "12:00"
       }
     ]
   },
@@ -1379,7 +1511,8 @@
       "unext",
       "danime",
       "abema",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 191205,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx191205-ALhucRyrwOW1.jpg",
@@ -1418,6 +1551,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "水",
+        "time": "22:00"
       }
     ]
   },
@@ -1431,7 +1569,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 163144,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx163144-XdVwFRxPGY6j.jpg",
@@ -1467,6 +1606,11 @@
         "platform": "abema",
         "day": "土",
         "time": "23:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "23:30"
       }
     ]
   },
@@ -1480,7 +1624,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 192261,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx192261-oaqwOjlr64ki.jpg",
@@ -1515,6 +1660,11 @@
         "platform": "abema",
         "day": "木",
         "time": "00:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "00:00"
       }
     ]
   },
@@ -1528,7 +1678,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 185993,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx185993-BecPUaWfZJgR.png",
@@ -1563,6 +1714,11 @@
         "platform": "abema",
         "day": "月",
         "time": "00:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "00:00"
       }
     ]
   },
@@ -1576,7 +1732,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 195515,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx195515-p1nD71Hmr4ly.jpg",
@@ -1612,6 +1769,11 @@
         "platform": "abema",
         "day": "日",
         "time": "23:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "23:30"
       }
     ]
   },
@@ -1624,7 +1786,8 @@
     "platforms": [
       "dmmtv",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 187942,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187942-c2cZvunJGfiE.jpg",
@@ -1650,6 +1813,11 @@
       },
       {
         "platform": "abema",
+        "day": "日",
+        "time": "23:30"
+      },
+      {
+        "platform": "amazon",
         "day": "日",
         "time": "23:30"
       }
@@ -1748,7 +1916,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 183270,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx183270-CmZikKu34WPd.jpg",
@@ -1785,6 +1954,11 @@
         "platform": "abema",
         "day": "金",
         "time": "00:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "月",
+        "time": "00:00"
       }
     ]
   },
@@ -1798,7 +1972,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 176276,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx176276-rtF8mYd2OWw2.png",
@@ -1836,6 +2011,11 @@
         "platform": "abema",
         "day": "金",
         "time": "00:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "月",
+        "time": "00:30"
       }
     ]
   },
@@ -1849,7 +2029,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 183661,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx183661-3muPFi4LtHmK.jpg",
@@ -1885,6 +2066,11 @@
         "platform": "abema",
         "day": "月",
         "time": "00:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "月",
+        "time": "00:30"
       }
     ]
   },
@@ -1898,7 +2084,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 191718,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx191718-FeR6bnlkqF0J.png",
@@ -1933,6 +2120,11 @@
       },
       {
         "platform": "abema",
+        "day": "月",
+        "time": "01:00"
+      },
+      {
+        "platform": "amazon",
         "day": "月",
         "time": "01:00"
       }
@@ -1995,7 +2187,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 191967,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx191967-fLWqssc0gPI4.jpg",
@@ -2040,6 +2233,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "00:15"
       }
     ]
   },
@@ -2127,7 +2325,8 @@
       "dmmtv",
       "danime",
       "abema",
-      "netflix"
+      "netflix",
+      "amazon"
     ],
     "anilistId": 181443,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx181443-Df41Nlf7xjgI.jpg",
@@ -2160,6 +2359,11 @@
         "platform": "netflix",
         "day": "月",
         "time": "12:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "火",
+        "time": "12:00"
       }
     ]
   },
@@ -2174,7 +2378,8 @@
       "unext",
       "danime",
       "abema",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 187901,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187901-T91HmZAaNwOF.jpg",
@@ -2213,6 +2418,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "水",
+        "time": "00:00"
       }
     ]
   },
@@ -2226,7 +2436,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 185514,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx185514-mfJqhtz22l1Z.jpg",
@@ -2261,6 +2472,11 @@
         "platform": "abema",
         "day": "水",
         "time": "03:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "水",
+        "time": "02:30"
       }
     ]
   },
@@ -2276,7 +2492,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 184951,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx184951-s8Lg2muPBhdX.jpg",
@@ -2322,6 +2539,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "17:30"
       }
     ]
   },
@@ -2335,7 +2557,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 195518,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx195518-XXcYHi6tXM6v.jpg",
@@ -2369,6 +2592,11 @@
         "platform": "abema",
         "day": "日",
         "time": "23:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "水",
+        "time": "23:30"
       }
     ]
   },
@@ -2382,7 +2610,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 187062,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187062-JuXPEjrLQSeO.png",
@@ -2413,6 +2642,11 @@
       },
       {
         "platform": "abema",
+        "day": "木",
+        "time": "00:00"
+      },
+      {
+        "platform": "amazon",
         "day": "木",
         "time": "00:00"
       }
@@ -2464,7 +2698,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 185262,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx185262-95wbx3Y9hCwm.jpg",
@@ -2499,6 +2734,11 @@
         "platform": "abema",
         "day": "土",
         "time": "01:35"
+      },
+      {
+        "platform": "amazon",
+        "day": "木",
+        "time": "01:35"
       }
     ]
   },
@@ -2512,7 +2752,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 203148,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx203148-fMhz9uyA6HEK.jpg",
@@ -2545,6 +2786,11 @@
         "platform": "abema",
         "day": "金",
         "time": "18:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "木",
+        "time": "05:30"
       }
     ]
   },
@@ -2557,7 +2803,8 @@
     "platforms": [
       "dmmtv",
       "unext",
-      "danime"
+      "danime",
+      "amazon"
     ],
     "anilistId": 202419,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx202419-BmPPSzsegbcv.png",
@@ -2584,6 +2831,11 @@
         "platform": "danime",
         "day": "土",
         "time": "22:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "木",
+        "time": "22:00"
       }
     ]
   },
@@ -2596,7 +2848,8 @@
     "platforms": [
       "dmmtv",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 187941,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187941-ykmc8WRedPpw.jpg",
@@ -2626,6 +2879,11 @@
         "platform": "abema",
         "day": "木",
         "time": "22:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "土",
+        "time": "22:00"
       }
     ]
   },
@@ -2641,7 +2899,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 182587,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx182587-fsU8LOjmd7oj.jpg",
@@ -2687,6 +2946,11 @@
         "platform": "disney",
         "day": "木",
         "time": "23:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "木",
+        "time": "23:00"
       }
     ]
   },
@@ -2701,7 +2965,8 @@
       "unext",
       "danime",
       "abema",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 176370,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx176370-hz2H4TUeyGgt.png",
@@ -2740,6 +3005,11 @@
         "platform": "disney",
         "day": null,
         "time": null
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "00:00"
       }
     ]
   },
@@ -2753,7 +3023,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 187989,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx187989-IjVYJxi0bEcr.jpg",
@@ -2790,6 +3061,11 @@
         "platform": "abema",
         "day": "金",
         "time": "01:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "01:30"
       }
     ]
   },
@@ -2803,7 +3079,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 198374,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx198374-ROZU3qJGX4uS.jpg",
@@ -2840,6 +3117,11 @@
         "platform": "abema",
         "day": "日",
         "time": "02:30"
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "02:30"
       }
     ]
   },
@@ -2853,7 +3135,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 192507,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx192507-SCmImUlUnpAD.jpg",
@@ -2887,6 +3170,11 @@
         "platform": "abema",
         "day": "日",
         "time": "17:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "17:00"
       }
     ]
   },
@@ -2900,7 +3188,8 @@
       "dmmtv",
       "unext",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 183660,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx183660-B6o9cMfSfScX.jpg",
@@ -2935,6 +3224,11 @@
         "platform": "abema",
         "day": "日",
         "time": "18:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "金",
+        "time": "18:00"
       }
     ]
   },
@@ -2950,7 +3244,8 @@
       "danime",
       "abema",
       "netflix",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 182255,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx182255-butzrqd4I0aC.jpg",
@@ -2993,6 +3288,11 @@
       },
       {
         "platform": "disney",
+        "day": "土",
+        "time": "00:00"
+      },
+      {
+        "platform": "amazon",
         "day": "土",
         "time": "00:00"
       }
@@ -3049,7 +3349,8 @@
     "platforms": [
       "dmmtv",
       "danime",
-      "abema"
+      "abema",
+      "amazon"
     ],
     "anilistId": 202957,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx202957-fxZGgJTvwXzP.jpg",
@@ -3078,6 +3379,11 @@
         "platform": "abema",
         "day": "水",
         "time": "00:00"
+      },
+      {
+        "platform": "amazon",
+        "day": "水",
+        "time": "00:00"
       }
     ]
   },
@@ -3091,7 +3397,8 @@
       "dmmtv",
       "danime",
       "abema",
-      "disney"
+      "disney",
+      "amazon"
     ],
     "anilistId": 170166,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx170166-VpX7l0Horthq.jpg",
@@ -3127,6 +3434,11 @@
         "platform": "disney",
         "day": "木",
         "time": "01:50"
+      },
+      {
+        "platform": "amazon",
+        "day": "木",
+        "time": "01:45"
       }
     ]
   },
