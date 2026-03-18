@@ -29,9 +29,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary`}
       >
+        <div className="flex min-h-screen flex-col">
         <Header />
-        <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-        <footer className="border-t border-border mt-12 py-6">
+        <main className="mx-auto max-w-6xl px-4 py-6 w-full flex-1">{children}</main>
+        <footer className="border-t border-border py-6">
           <div className="mx-auto max-w-6xl px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-text-muted">
             <span>© 2026 PaoPaoAnime</span>
             <div className="flex gap-4">
@@ -41,6 +42,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </div>
       </body>
     </html>
   );
