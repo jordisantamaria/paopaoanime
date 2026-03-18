@@ -134,7 +134,18 @@ function ScheduleCard({ anime }: { anime: AnimeEntry }) {
       href={`/anime/${anime.slug}`}
       className="group"
     >
-      <div className="overflow-hidden rounded border border-border bg-bg-card">
+      <div className="relative overflow-hidden rounded border border-border bg-bg-card">
+        {/* Platform chip */}
+        <div className="absolute top-1.5 right-1.5 z-10">
+          {anime.platforms.slice(0, 1).map((pid) => (
+            <span
+              key={pid}
+              className="rounded-sm bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white"
+            >
+              {platforms[pid].name}
+            </span>
+          ))}
+        </div>
         {thumbnail ? (
           <img
             src={thumbnail}
