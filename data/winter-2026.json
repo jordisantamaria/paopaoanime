@@ -3169,5 +3169,367 @@
         "time": "17:15"
       }
     ]
+  },
+  {
+    "title": "地獄楽 第二期",
+    "day": "日",
+    "time": "00:15",
+    "startDate": "2026-01-12",
+    "type": "見放題",
+    "platforms": [
+      "amazon"
+    ],
+    "anilistId": 166613,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx166613-uHB8q3D4qbon.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/166613-drS86exJlIjG.jpg",
+    "synopsis": "『地獄楽』の第2期。",
+    "titleRomaji": "Jigokuraku 2nd Season",
+    "titleEnglish": "Hell’s Paradise Season 2",
+    "genres": [
+      "Action",
+      "Adventure",
+      "Mystery",
+      "Supernatural"
+    ],
+    "episodes": 12,
+    "studio": "MAPPA",
+    "streams": [
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": "00:15"
+      }
+    ]
+  },
+  {
+    "title": "魔術師クノンは見えている",
+    "day": "日",
+    "time": "22:00",
+    "startDate": "2026-01-04",
+    "type": "見放題",
+    "platforms": [
+      "abema",
+      "dmmtv",
+      "danime"
+    ],
+    "anilistId": 186333,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx186333-32qDHxLkndpg.png",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/186333-JN8lx2aNOTg1.jpg",
+    "synopsis": "目の見えない青年クノンは、水魔法で新しい目を作ることを目標としている。魔術の修行を始めてわずか5ヶ月で師匠を超え、未だ誰も成し遂げたことのない偉業に挑むべく才能を磨き続ける。好奇心と魔法への探究心で世界を切り拓く、盲目の天才の物語が始まる。",
+    "titleRomaji": "Majutsushi Kunon wa Mieteiru",
+    "titleEnglish": "Kunon the Sorcerer Can See",
+    "genres": [
+      "Action",
+      "Adventure",
+      "Fantasy"
+    ],
+    "episodes": 13,
+    "studio": "Platinum Vision",
+    "streams": [
+      {
+        "platform": "abema",
+        "day": "日",
+        "time": "22:00"
+      },
+      {
+        "platform": "dmmtv",
+        "day": "月",
+        "time": "00:00"
+      },
+      {
+        "platform": "danime",
+        "day": "月",
+        "time": "00:00"
+      }
+    ]
+  },
+  {
+    "title": "炎炎ノ消防隊 参ノ章",
+    "day": "金",
+    "time": null,
+    "startDate": "2026-01-10",
+    "type": "見放題",
+    "platforms": [
+      "netflix"
+    ],
+    "anilistId": 149118,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx149118-AOQb0xuTssGl.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/149118-neeUO11QUL0R.jpg",
+    "synopsis": "『炎炎ノ消防隊』の第3期。\n\nシンラたちは世界最大の秘密に迫ろうとしていた。しかし、他の特殊消防隊が迫り来る災厄に対抗すべく結束しようとする矢先、大黒柱である大隊長・桜備は東京皇国軍に捕らえられ、第8特殊消防隊は裏切り者の烙印を押される。帝国に追われる身となった彼らは、桜備の救出と伝道者の阻止に孤軍奮闘しなければならない——新たな暗殺者と腐敗した烈火星宮が行く手を阻む中で。",
+    "titleRomaji": "Enen no Shouboutai: San no Shou",
+    "titleEnglish": "Fire Force Season 3",
+    "genres": [
+      "Action",
+      "Drama",
+      "Sci-Fi",
+      "Supernatural"
+    ],
+    "episodes": 12,
+    "studio": "David Production",
+    "streams": [
+      {
+        "platform": "netflix",
+        "day": "金",
+        "time": null
+      }
+    ]
+  },
+  {
+    "title": "ダーウィン事変",
+    "day": "日",
+    "time": null,
+    "startDate": "2026-01-12",
+    "type": "見放題",
+    "platforms": [
+      "amazon"
+    ],
+    "anilistId": 177679,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx177679-BgsgE0fQk3qN.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/177679-9prv8e9LblMw.jpg",
+    "synopsis": "生物科学研究所で生み出された、人間とチンパンジーのハイブリッド「ヒューマンジー」のチャーリー。養父母に育てられ、15歳になった彼は高校に入学する。そこで出会ったのは、賢く孤独な少女ルーシー——チャーリーにとって初めての友達だ。しかし、15年前に母親を研究所から解放した動物愛護過激派がテロリストとして再び姿を現し、チャーリーの「普通の生活」は崩壊する。彼らの目的は、手段を選ばずチャーリーを誘拐すること。",
+    "titleRomaji": "Darwin Jihen",
+    "titleEnglish": "The Darwin Incident",
+    "genres": [
+      "Sci-Fi",
+      "Thriller"
+    ],
+    "episodes": 13,
+    "studio": "BELLNOX FILMS",
+    "streams": [
+      {
+        "platform": "amazon",
+        "day": "日",
+        "time": null
+      }
+    ]
+  },
+  {
+    "title": "ゴールデンカムイ 最終章",
+    "day": "月",
+    "time": "23:00",
+    "startDate": "2026-01-05",
+    "type": "見放題",
+    "platforms": [
+      "amazon"
+    ],
+    "anilistId": 166521,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx166521-PNf7tRAlJJI6.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/166521-f79xGOVNAnBp.jpg",
+    "synopsis": "『ゴールデンカムイ』の第5期にして最終章。",
+    "titleRomaji": "Golden Kamuy: Saishuushou",
+    "titleEnglish": "Golden Kamuy Final Season",
+    "genres": [
+      "Action",
+      "Adventure",
+      "Comedy"
+    ],
+    "episodes": 13,
+    "studio": "Brain's Base",
+    "streams": [
+      {
+        "platform": "amazon",
+        "day": "月",
+        "time": "23:00"
+      }
+    ]
+  },
+  {
+    "title": "茉莉花ちゃんの好感度はぶっ壊れている",
+    "day": "月",
+    "time": "23:30",
+    "startDate": "2026-01-12",
+    "type": "見放題",
+    "platforms": [
+      "abema",
+      "dmmtv",
+      "danime"
+    ],
+    "anilistId": 202523,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx202523-VNSqAWcUtsnq.jpg",
+    "synopsis": "非モテの僕が幼馴染の茉莉花に告白するなんて無理だった。だから流れ星にお願いした！ 目覚めると、恋愛シミュレーションゲームのように人の好感度メーターが見えるように！ さっそく茉莉花の好感度を確認すると——低すぎてメーターがぶっ壊れ、地獄まで落ちていた！ こんなに嫌われているのに、なぜ彼女はあんなに優しいのか？ これが本当の気持ちなのか、それとも……？",
+    "titleRomaji": "Marika-chan no Koukando wa Bukkowareteiru",
+    "titleEnglish": "Marika's Love Meter Malfunction",
+    "genres": [
+      "Comedy",
+      "Drama",
+      "Romance",
+      "Supernatural"
+    ],
+    "episodes": null,
+    "studio": "studio LEO",
+    "streams": [
+      {
+        "platform": "abema",
+        "day": "月",
+        "time": "23:30"
+      },
+      {
+        "platform": "dmmtv",
+        "day": "月",
+        "time": "23:30"
+      },
+      {
+        "platform": "danime",
+        "day": "月",
+        "time": "23:30"
+      }
+    ]
+  },
+  {
+    "title": "ガールズ＆パンツァー もっとらぶらぶ作戦です！",
+    "day": "日",
+    "time": null,
+    "startDate": "2026-01-05",
+    "type": "見放題",
+    "platforms": [
+      "dmmtv",
+      "danime",
+      "abema"
+    ],
+    "anilistId": 188034,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx188034-hlwafdUZhjwD.png",
+    "synopsis": "漫画『ガールズ＆パンツァー もっとらぶらぶ作戦です！』を全4話でアニメ化。",
+    "titleRomaji": "Girls und Panzer: Motto Love Love Sakusen desu!",
+    "titleEnglish": null,
+    "genres": [
+      "Comedy"
+    ],
+    "episodes": 4,
+    "studio": "P.A.WORKS",
+    "streams": [
+      {
+        "platform": "dmmtv",
+        "day": "日",
+        "time": null
+      },
+      {
+        "platform": "danime",
+        "day": "日",
+        "time": null
+      },
+      {
+        "platform": "abema",
+        "day": "日",
+        "time": null
+      }
+    ]
+  },
+  {
+    "title": "ブラックジャックやねん",
+    "day": "火",
+    "time": null,
+    "startDate": "2026-01-13",
+    "type": "見放題",
+    "platforms": [
+      "abema"
+    ],
+    "anilistId": 205676,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx205676-VlzcdwHYdJCe.png",
+    "synopsis": "手塚治虫の名作漫画『ブラック・ジャック』を、YouTube累計再生回数10億回超のチャンネル「そろたにのアニメっち」のクリエイター・そろたにがコメディアニメとしてアレンジした作品。",
+    "titleRomaji": "Black Jack Yanen",
+    "titleEnglish": null,
+    "genres": [
+      "Comedy"
+    ],
+    "episodes": null,
+    "studio": "DLE",
+    "streams": [
+      {
+        "platform": "abema",
+        "day": "火",
+        "time": null
+      }
+    ]
+  },
+  {
+    "title": "秘密結社 鷹の爪XX",
+    "day": "金",
+    "time": null,
+    "startDate": "2026-01-16",
+    "type": "見放題",
+    "platforms": [
+      "abema"
+    ],
+    "anilistId": 203472,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx203472-MJDpus1DWo3Z.png",
+    "synopsis": "シリーズ20周年を記念した『鷹の爪』の新シーズン。",
+    "titleRomaji": "Himitsu Kessha Taka no Tsume XX",
+    "titleEnglish": null,
+    "genres": [
+      "Comedy"
+    ],
+    "episodes": null,
+    "studio": "DLE",
+    "streams": [
+      {
+        "platform": "abema",
+        "day": "金",
+        "time": null
+      }
+    ]
+  },
+  {
+    "title": "ゲルぴよ",
+    "day": "水",
+    "time": null,
+    "startDate": "2026-01-07",
+    "type": "見放題",
+    "platforms": [
+      "abema"
+    ],
+    "anilistId": 204698,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx204698-6v7aAq92mKFl.png",
+    "synopsis": "工業メーカー・タイカのマスコットキャラクター「ゲルぴよ」を原作としたアニメ。ゲルぴよたちは「アルファジェル」の特性を持ち、どんな困難にもバウンドして立ち直る。アルファ・インダストリーの世界征服計画の一環として、謎の街「ゲルタウン」に派遣されたゲルぴよたちは、騒動を起こすつもりが、街のさまざまな出来事に巻き込まれていく。",
+    "titleRomaji": "GelPiyo",
+    "titleEnglish": null,
+    "genres": [
+      "Comedy"
+    ],
+    "episodes": null,
+    "studio": "ODDJOB",
+    "streams": [
+      {
+        "platform": "abema",
+        "day": "水",
+        "time": null
+      }
+    ]
+  },
+  {
+    "title": "お姉ちゃんごっこ",
+    "day": "水",
+    "time": null,
+    "startDate": "2026-01-14",
+    "type": "見放題",
+    "platforms": [
+      "abema",
+      "dmmtv"
+    ],
+    "anilistId": 207084,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b207084-5ERIoIDjU76C.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/207084-QJoOYEulEDz5.jpg",
+    "synopsis": "遠い未来、先端科学技術の都市集中により取り残された辺境に、鏡村と呼ばれる山奥の集落がある。\n「行儀が悪いと、ダブルが来るぞ」\nそんな古い言い伝えが今も残るこの村で暮らす中学生の日暮あかねは、1年間の入院を終えて退院する姉・日暮すいの帰りを心待ちにしていた。\nしかし姉が帰宅して間もなく、あかねのもとに一本の電話がかかってくる。\n\n「今あなたの家にいる子は……お姉ちゃんじゃないよ」",
+    "titleRomaji": "Onee-chan Gokko",
+    "titleEnglish": "Playing Sister",
+    "genres": [
+      "Mystery",
+      "Psychological",
+      "Supernatural",
+      "Thriller"
+    ],
+    "episodes": 3,
+    "studio": "Studio Gohan",
+    "streams": [
+      {
+        "platform": "abema",
+        "day": "水",
+        "time": null
+      },
+      {
+        "platform": "dmmtv",
+        "day": "水",
+        "time": null
+      }
+    ]
   }
 ]

@@ -27,6 +27,9 @@
     "streams": [
       {"platform": "netflix", "day": "土", "time": null}
     ],
+    "anilistId": 136880,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx136880-2sAQF6OtPE5M.png",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/136880-9GNZFWe1LszL.jpg",
     "titleRomaji": "BEASTARS Final Season Part 2",
     "genres": ["Drama", "Slice of Life"],
     "synopsis": "『BEASTARS』ファイナルシーズンの第2クール。"
@@ -41,6 +44,9 @@
     "streams": [
       {"platform": "netflix", "day": "金", "time": null}
     ],
+    "anilistId": 190327,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx190327-fIfMy1LTkdGP.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/190327-bXr8tFZUdxOw.jpg",
     "titleRomaji": "Steel Ball Run: JoJo no Kimyou na Bouken",
     "titleEnglish": "Steel Ball Run: JoJo's Bizarre Adventure",
     "genres": ["Action", "Adventure"],
