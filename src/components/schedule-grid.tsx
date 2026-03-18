@@ -47,6 +47,11 @@ export function ScheduleGrid({ animeByDay }: Props) {
   const daysToShow =
     selectedDay === "all" ? DAYS : DAYS.filter((d) => d === selectedDay);
 
+  const totalFiltered = daysToShow.reduce(
+    (sum, day) => sum + filterAnime(animeByDay[day]).length,
+    0
+  );
+
   return (
     <div>
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -99,6 +104,10 @@ export function ScheduleGrid({ animeByDay }: Props) {
           ))}
         </div>
       </div>
+
+      <p className="mb-5 text-xs text-text-muted">
+        {totalFiltered}作品
+      </p>
 
       <div className="space-y-10">
         {daysToShow.map((day) => {
