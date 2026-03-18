@@ -123,8 +123,8 @@ export default async function AnimeDetail({
 
         {anime.synopsis && (
           <div className="mt-5 border-t border-border pt-4">
-            <h2 className="mb-2 text-xs font-bold text-text-muted">Synopsis</h2>
-            <p className="text-sm leading-relaxed text-text-secondary" lang="en">
+            <h2 className="mb-2 text-xs font-bold text-text-muted">あらすじ</h2>
+            <p className="text-sm leading-relaxed text-text-secondary">
               {anime.synopsis}
             </p>
           </div>
