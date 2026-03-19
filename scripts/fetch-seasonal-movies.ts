@@ -143,6 +143,12 @@ async function main() {
   const newEntries: any[] = [];
 
   for (const media of allMedia) {
+    // Skip hentai
+    if (media.genres?.includes("Hentai")) {
+      console.log(`SKIP (hentai): ${media.title.native || media.title.romaji}`);
+      continue;
+    }
+
     // Skip if already exists
     if (existingIds.has(media.id)) {
       console.log(`SKIP (exists): ${media.title.native || media.title.romaji}`);
