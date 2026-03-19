@@ -833,7 +833,7 @@
       "abema"
     ],
     "anilistId": 204656,
-    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/b204656-KXjxVB4bBhl8.jpg",
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b204656-KXjxVB4bBhl8.jpg",
     "synopsis": "サメニャンはサメのきぐるみを着たオレンジのトラ猫。\nちょっぴりドジで、いつものんびりマイペース。\n大好きな猫友だちと、保護された子猫のリトルニャン——\nみんなとの毎日は、思いがけないハプニングと小さな冒険でいっぱい。\n\n公園のぽかぽか日なた、海のきらめき、\nほかほか焼きたてのお芋から立ちのぼる湯気、\n初雪のふわふわドキドキ……\n小さな日常のひとこまが、あたたかさと幸せで満たしてくれる。\n\n思わず「わかる！」と笑顔になれる、\n毎日をちょっと幸せにする、もふもふ猫アニメ。",
     "titleRomaji": "mofusand",
     "titleEnglish": null,
@@ -1440,7 +1440,7 @@
       "amazon"
     ],
     "anilistId": 714,
-    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/b714-J770J3curufA.jpg",
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b714-J770J3curufA.jpg",
     "synopsis": "自称「変顔グループ」の男子高校生5人組が、ハチャメチャな行動で学校中を騒がせる。",
     "titleRomaji": "High School! Kimengumi",
     "titleEnglish": "High School! Kimengumi",
@@ -3874,7 +3874,7 @@
       "dmmtv"
     ],
     "anilistId": 207084,
-    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/b207084-5ERIoIDjU76C.jpg",
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b207084-5ERIoIDjU76C.jpg",
     "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/207084-QJoOYEulEDz5.jpg",
     "synopsis": "遠い未来、先端科学技術の都市集中により取り残された辺境に、鏡村と呼ばれる山奥の集落がある。\n「行儀が悪いと、ダブルが来るぞ」\nそんな古い言い伝えが今も残るこの村で暮らす中学生の日暮あかねは、1年間の入院を終えて退院する姉・日暮すいの帰りを心待ちにしていた。\nしかし姉が帰宅して間もなく、あかねのもとに一本の電話がかかってくる。\n\n「今あなたの家にいる子は……お姉ちゃんじゃないよ」",
     "titleRomaji": "Onee-chan Gokko",
@@ -3970,7 +3970,9 @@
     "time": null,
     "startDate": "2026-03-19",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "netflix"
+    ],
     "format": "ONA",
     "anilistId": 190327,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx190327-riJNCFL7w9y4.jpg",
@@ -4044,10 +4046,12 @@
     "time": null,
     "startDate": "2026-01-15",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "netflix"
+    ],
     "format": "ONA",
     "anilistId": 202955,
-    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/b202955-TFyTd1zFT1v7.jpg",
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b202955-TFyTd1zFT1v7.jpg",
     "synopsis": "Yoko Kamio, whose manga \"Boys Over Flowers\" enraptured readers around the globe, brings a brand-new classic to viewers worldwide. Set at a London art academy in the opening decade of the 1900s, the Netflix Series \"Love Through a Prism\" follows Lili Ichijoin, a girl enchanted by painting, as she chases her dreams and experiences youth. This ensemble coming-of-age story about young people striving for prismatic radiance against the odds is about to begin.",
     "titleRomaji": "Prism Rondo",
     "titleEnglish": "Love Through A Prism",
@@ -4087,7 +4091,16 @@
     "time": null,
     "startDate": "2026-03-30",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "dmmtv",
+      "unext",
+      "danime",
+      "abema",
+      "amazon",
+      "netflix",
+      "disney",
+      "hulu"
+    ],
     "format": "SPECIAL",
     "anilistId": 170110,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx170110-MzWm7RaFxAnu.png",
@@ -4133,7 +4146,9 @@
     "time": null,
     "startDate": "2026-03-07",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "netflix"
+    ],
     "format": "ONA",
     "anilistId": 187267,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx187267-clvlTabOPdPo.jpg",
@@ -4327,7 +4342,13 @@
     "time": null,
     "startDate": "2026-03-07",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "dmmtv",
+      "unext",
+      "danime",
+      "abema",
+      "amazon"
+    ],
     "format": "ONA",
     "anilistId": 208517,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx208517-cKokYKZaiCKw.jpg",
@@ -4350,10 +4371,19 @@
     "time": null,
     "startDate": "2026-01-19",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "dmmtv",
+      "unext",
+      "danime",
+      "abema",
+      "netflix",
+      "disney",
+      "amazon",
+      "hulu"
+    ],
     "format": "ONA",
     "anilistId": 206425,
-    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/b206425-WOwXsfDbHZwb.jpg",
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b206425-WOwXsfDbHZwb.jpg",
     "synopsis": "A third batch of the ●● no Mahou shorts released alongside the airing of the TV anime's second season, starting with #18. Posted on the official YouTube account of TOHO animation, Frieren Twitter, and Frieren TikTok account.\n\n\n\nIncludes:\n\n• Mita Mono wo Kousoku Suru Mahou (見た者を拘束する魔法), released Jan 19, 2026. \n\n• Doushin ni Kaeru Mahou (童心に還る魔法), released Feb 2, 2026.\n\n• Kokoro to Karada ga Irekawaru Mahou (心と体が入れ替わる魔法), released Feb 17, 2026.\n\n• Osentaku no Mahou  (お洗濯の魔法), released Mar 2, 2026.",
     "titleRomaji": "Sousou no Frieren: ●● no Mahou Part 3",
     "titleEnglish": null,
@@ -4371,7 +4401,12 @@
     "time": null,
     "startDate": "2026-02-06",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "dmmtv",
+      "unext",
+      "danime",
+      "amazon"
+    ],
     "format": "MOVIE",
     "anilistId": 204949,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx204949-aLHdk5zHtnXv.jpg",
@@ -4393,7 +4428,11 @@
     "time": null,
     "startDate": "2026-01-28",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "danime",
+      "amazon",
+      "unext"
+    ],
     "format": "OVA",
     "anilistId": 203127,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx203127-cJqnhI0w5WEk.png",
@@ -4451,7 +4490,9 @@
     "time": null,
     "startDate": "2026-02-06",
     "type": "見放題",
-    "platforms": [],
+    "platforms": [
+      "danime"
+    ],
     "format": "ONA",
     "anilistId": 187508,
     "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx187508-kFWf3Fq0wl56.png",
@@ -4495,7 +4536,7 @@
     "platforms": [],
     "format": "ONA",
     "anilistId": 208105,
-    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/b208105-pYHSBy6n9naY.png",
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b208105-pYHSBy6n9naY.png",
     "synopsis": "Chibi shorts posted on the official  Yani Neko YouTube channel and Twitter account of the main series.",
     "titleRomaji": "Yani Neko Mini",
     "titleEnglish": null,
