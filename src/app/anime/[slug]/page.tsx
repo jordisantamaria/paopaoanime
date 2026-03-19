@@ -26,7 +26,7 @@ export default async function AnimeDetail({
 
       <div className="rounded bg-bg-card border border-border overflow-hidden">
         {/* Mobile: trailer inline or banner */}
-        <div className="sm:hidden">
+        <div className="md:hidden">
           {anime.trailer ? (
             <MobileTrailer trailerId={anime.trailer} title={anime.title} fallbackImage={anime.banner || anime.image} />
           ) : (anime.banner || anime.image) ? (
@@ -38,10 +38,10 @@ export default async function AnimeDetail({
           ) : null}
         </div>
 
-        <div className="p-4 sm:p-5">
-          <div className="flex gap-4 sm:gap-5">
+        <div className="p-4 md:p-5">
+          <div className="flex gap-4 md:gap-5">
             {/* Desktop: poster + PV below */}
-            <div className="hidden sm:block shrink-0">
+            <div className="hidden md:block shrink-0">
               {anime.image && anime.trailer ? (
                 <>
                   <TrailerLink trailerId={anime.trailer} title={anime.title} variant="poster" posterSrc={anime.image} />
