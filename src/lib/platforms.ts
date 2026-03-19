@@ -64,6 +64,13 @@ export const platforms: Record<string, Platform> = {
     url: "https://video.unext.jp",
     searchUrl: "https://video.unext.jp/freeword?query=",
   },
+  theater: {
+    id: "theater",
+    name: "映画館",
+    color: "#d4a017",
+    url: "https://movies.yahoo.co.jp",
+    searchUrl: "https://movies.yahoo.co.jp/movie?q=",
+  },
 };
 
 export function getPlatformSearchUrl(platformId: string, animeTitle: string): string {

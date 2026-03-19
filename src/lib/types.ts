@@ -1,6 +1,6 @@
 export type DayOfWeek = "月" | "火" | "水" | "木" | "金" | "土" | "日";
 
-export type PlatformId = "dmmtv" | "netflix" | "abema" | "crunchyroll" | "amazon" | "danime" | "disney" | "hulu" | "unext";
+export type PlatformId = "dmmtv" | "netflix" | "abema" | "crunchyroll" | "amazon" | "danime" | "disney" | "hulu" | "unext" | "theater";
 
 export type AnimeFormat = "TV" | "TV_SHORT" | "MOVIE" | "OVA" | "SPECIAL" | "ONA" | "MUSIC";
 
