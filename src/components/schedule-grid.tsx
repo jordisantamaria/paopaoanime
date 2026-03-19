@@ -27,13 +27,17 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
     ),
   ];
 
+  function normalize(s: string): string {
+    return s.toLowerCase().replace(/[-ー～〜・:：]/g, "").replace(/\s+/g, "");
+  }
+
   function filterAnime(list: AnimeEntry[]): AnimeEntry[] {
     return list.filter((anime) => {
       if (search) {
-        const q = search.toLowerCase();
-        const matchTitle = anime.title.toLowerCase().includes(q);
-        const matchRomaji = anime.titleRomaji?.toLowerCase().includes(q);
-        const matchEnglish = anime.titleEnglish?.toLowerCase().includes(q);
+        const q = normalize(search);
+        const matchTitle = normalize(anime.title).includes(q);
+        const matchRomaji = anime.titleRomaji ? normalize(anime.titleRomaji).includes(q) : false;
+        const matchEnglish = anime.titleEnglish ? normalize(anime.titleEnglish).includes(q) : false;
         if (!matchTitle && !matchRomaji && !matchEnglish) return false;
       }
       if (

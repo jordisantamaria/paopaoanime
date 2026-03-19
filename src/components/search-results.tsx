@@ -8,13 +8,17 @@ export function SearchResults({ animeList }: { animeList: AnimeEntry[] }) {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") ?? "";
 
+  function normalize(s: string): string {
+    return s.toLowerCase().replace(/[-ー～〜・:：]/g, "").replace(/\s+/g, "");
+  }
+
   const results = q.length >= 1
     ? animeList.filter((a) => {
-        const query = q.toLowerCase();
+        const query = normalize(q);
         return (
-          a.title.toLowerCase().includes(query) ||
-          a.titleRomaji?.toLowerCase().includes(query) ||
-          a.titleEnglish?.toLowerCase().includes(query)
+          normalize(a.title).includes(query) ||
+          (a.titleRomaji ? normalize(a.titleRomaji).includes(query) : false) ||
+          (a.titleEnglish ? normalize(a.titleEnglish).includes(query) : false)
         );
       })
     : [];
