@@ -4568,5 +4568,91 @@
       "Comedy"
     ],
     "episodes": null
+  },
+  {
+    "title": "イチゴ哀歌 ～雑で生イキな妹と割り切れない兄～",
+    "day": "金",
+    "time": null,
+    "startDate": "2025-12-12",
+    "type": "見放題",
+    "platforms": [
+      "dmmtv",
+      "danime",
+      "abema"
+    ],
+    "anilistId": 198767,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx198767-PoG84HHFXTit.jpg",
+    "synopsis": "コウタの日常が一変する。父の再婚により、新しい義妹・アイカができたのだが、初対面から彼女は自分とは正反対の存在だと気づく。昼間は両親の前で「完璧な天使」を演じるアイカだが、二人きりになると本性を現す生意気な少女で、コウタとは全く噛み合わない。性格は激しくぶつかり合い、目が合えば即口喧嘩。世界最悪の兄妹として、絶え間ない意地の張り合いを繰り広げる。しかし、とんでもなく険悪なスタートを切ったにもかかわらず、少しずつ変化が生まれ始める。奔放な外見の裏で、アイカの心に優しい兄への淡い想いが芽生えていく。",
+    "titleRomaji": "Ichigo Aika: Zatsu de Namaiki na Imouto to Warikirenai Ani",
+    "titleEnglish": "Ichigo Aika: Strawberry Elegy",
+    "genres": [
+      "Comedy",
+      "Hentai",
+      "Romance"
+    ],
+    "episodes": 12,
+    "studio": "Studio Houkiboshi",
+    "streams": [
+      {
+        "platform": "dmmtv",
+        "day": "金",
+        "time": null
+      },
+      {
+        "platform": "danime",
+        "day": "木",
+        "time": null
+      },
+      {
+        "platform": "abema",
+        "day": "木",
+        "time": null
+      }
+    ],
+    "trailer": "j5m10YML4b4",
+    "format": "ONA"
+  },
+  {
+    "title": "有栖川煉ってホントは女なんだよね。",
+    "day": "金",
+    "time": null,
+    "startDate": "2025-12-12",
+    "type": "見放題",
+    "platforms": [
+      "dmmtv",
+      "danime",
+      "abema"
+    ],
+    "anilistId": 189259,
+    "image": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx189259-vXGvEI1QcJS0.png",
+    "synopsis": "芸能界を揺るがす秘密——甘くてピュアなラブコメが大人気ロングセラー！ キョウヘイの唯一の自慢は、超人気男性アイドル・有栖川レンの従兄弟であること。幼い頃から会っていなかった二人だが、突然レンがキョウヘイのボロアパートに転がり込んでくる。ところが、着替え中のレンをふざけて覗こうとしたキョウヘイが目にした衝撃の事実——レンは実は女の子だった！ 芸能界を激震させかねないスキャンダラスな秘密を握ってしまったキョウヘイは、レンの秘密を守るため専属マネージャーにさせられることに……！ 秘密とスキャンダルに満ちた芸能界で、二人は禁断の関係を隠し通せるのか？",
+    "titleRomaji": "Arisugawa Ren tte Honto wa Onna Nanda yo ne.",
+    "titleEnglish": "Ren Arisugawa Is Actually a Girl",
+    "genres": [
+      "Comedy",
+      "Drama",
+      "Hentai"
+    ],
+    "episodes": 8,
+    "studio": "studio LEO",
+    "streams": [
+      {
+        "platform": "dmmtv",
+        "day": "金",
+        "time": null
+      },
+      {
+        "platform": "danime",
+        "day": "水",
+        "time": null
+      },
+      {
+        "platform": "abema",
+        "day": "水",
+        "time": null
+      }
+    ],
+    "trailer": "8RKp5c-QT5A",
+    "format": "ONA"
   }
 ]
