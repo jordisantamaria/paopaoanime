@@ -2,6 +2,8 @@ export type DayOfWeek = "月" | "火" | "水" | "木" | "金" | "土" | "日";
 
 export type PlatformId = "dmmtv" | "netflix" | "abema" | "crunchyroll" | "amazon" | "danime" | "disney" | "hulu" | "unext";
 
+export type AnimeFormat = "TV" | "TV_SHORT" | "MOVIE" | "OVA" | "SPECIAL" | "ONA" | "MUSIC";
+
 export type AnimeEntry = {
   title: string;
   slug: string;
@@ -10,6 +12,7 @@ export type AnimeEntry = {
   startDate: string;
   type: "見放題" | "レンタル";
   platforms: PlatformId[];
+  format?: AnimeFormat;
   anilistId?: number;
   image?: string;
   synopsis?: string;
@@ -23,6 +26,7 @@ export type AnimeEntry = {
   streams?: { platform: PlatformId; day: DayOfWeek; time: string | null }[];
   season?: string;
   trailer?: string;
+  batchRelease?: boolean;
 };
 
 export type Platform = {

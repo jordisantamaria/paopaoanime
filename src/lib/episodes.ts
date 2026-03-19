@@ -26,6 +26,16 @@ export function getRecentEpisodes(
     const startDate = new Date(anime.startDate + "T00:00:00+09:00");
     if (startDate > now) continue;
 
+    // Batch releases (e.g. Netflix drops): all episodes available from startDate
+    if (anime.batchRelease) {
+      episodes.push({
+        anime,
+        episode: anime.episodes ?? 1,
+        airedAt: startDate,
+      });
+      continue;
+    }
+
     const dayNum = DAY_TO_NUMBER[anime.day];
     const [hours, minutes] = anime.time
       ? anime.time.split(":").map(Number)

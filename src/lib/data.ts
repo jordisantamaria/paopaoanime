@@ -1,6 +1,6 @@
 import "server-only";
 import { AnimeEntry, DayOfWeek } from "./types";
-import { DAYS } from "./constants";
+import { DAYS, NON_TV_FORMATS } from "./constants";
 
 function toSlug(entry: {
   titleRomaji?: string;
@@ -66,8 +66,14 @@ export function getAnimeData(): AnimeEntry[] {
 export { DAYS } from "./constants";
 export { DAY_LABELS } from "./constants";
 
+/** Returns true if the anime doesn't follow a weekly schedule */
+function isNonWeekly(anime: AnimeEntry): boolean {
+  if (anime.batchRelease) return true;
+  return !!anime.format && NON_TV_FORMATS.includes(anime.format);
+}
+
 export function getAnimeByDay(): Record<DayOfWeek, AnimeEntry[]> {
-  const data = getAnimeData();
+  const data = getAnimeData().filter((a) => !isNonWeekly(a));
   const byDay = Object.fromEntries(
     DAYS.map((day) => [day, [] as AnimeEntry[]])
   ) as Record<DayOfWeek, AnimeEntry[]>;
@@ -85,6 +91,12 @@ export function getAnimeByDay(): Record<DayOfWeek, AnimeEntry[]> {
   }
 
   return byDay;
+}
+
+export function getNonWeeklyAnime(): AnimeEntry[] {
+  return getAnimeData()
+    .filter(isNonWeekly)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate));
 }
 
 export function getAnimeBySlug(slug: string): AnimeEntry | undefined {

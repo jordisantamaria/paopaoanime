@@ -67,7 +67,7 @@ export function RecentEpisodes({ animeList }: { animeList: AnimeEntry[] }) {
 
               {/* Episode badge - top left */}
               <span className="absolute top-1.5 left-1.5 rounded-sm bg-accent px-1 py-px text-xs font-bold text-white">
-                第{ep.episode}話
+                {ep.anime.batchRelease ? `全${ep.episode}話` : `第${ep.episode}話`}
               </span>
             </div>
 

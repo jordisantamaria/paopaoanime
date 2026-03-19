@@ -1,4 +1,4 @@
-import { DayOfWeek, PlatformId } from "./types";
+import { AnimeFormat, DayOfWeek, PlatformId } from "./types";
 
 // Ordered by number of anime (most → least)
 export const PLATFORM_ORDER: PlatformId[] = [
@@ -16,3 +16,15 @@ export const DAY_LABELS: Record<DayOfWeek, string> = {
   土: "土曜日",
   日: "日曜日",
 };
+
+export const FORMAT_LABELS: Record<AnimeFormat, string> = {
+  TV: "TV",
+  TV_SHORT: "TV短編",
+  MOVIE: "映画",
+  OVA: "OVA",
+  SPECIAL: "特別",
+  ONA: "ONA",
+  MUSIC: "MV",
+};
+
+export const NON_TV_FORMATS: AnimeFormat[] = ["MOVIE", "OVA", "SPECIAL", "MUSIC"];

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { BackButton } from "@/components/back-button";
 import { getAnimeBySlug, getAnimeData, DAY_LABELS } from "@/lib/data";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
+import { FORMAT_LABELS } from "@/lib/constants";
 import { CurrentEpisode } from "@/components/current-episode";
 import { TrailerLink, MobileTrailer } from "@/components/trailer-player";
 
@@ -85,6 +86,12 @@ export default async function AnimeDetail({
                     <td>タイプ</td>
                     <td>{anime.type}</td>
                   </tr>
+                  {anime.format && (
+                    <tr>
+                      <td>形式</td>
+                      <td>{FORMAT_LABELS[anime.format]}</td>
+                    </tr>
+                  )}
                   {anime.episodes && (
                     <tr>
                       <td>話数</td>

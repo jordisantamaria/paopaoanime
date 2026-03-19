@@ -11,6 +11,7 @@ const QUERY = `
 query ($search: String) {
   Media(search: $search, type: ANIME) {
     id
+    format
     title {
       romaji
       english
@@ -46,6 +47,7 @@ type RawEntry = {
   genres?: string[];
   episodes?: number;
   studio?: string;
+  format?: string;
 };
 
 async function searchAniList(title: string) {
@@ -116,6 +118,7 @@ async function main() {
 
     if (media) {
       entry.anilistId = media.id;
+      entry.format = media.format; // TV, MOVIE, OVA, SPECIAL, ONA, MUSIC
       entry.image = media.coverImage?.large;
       entry.synopsis = cleanDescription(media.description);
       entry.titleRomaji = media.title?.romaji;
