@@ -4,7 +4,7 @@ import { getAnimeBySlug, getAnimeData, DAY_LABELS } from "@/lib/data";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
 import { FORMAT_LABELS } from "@/lib/constants";
 import { CurrentEpisode } from "@/components/current-episode";
-import { TrailerLink, MobileTrailer } from "@/components/trailer-player";
+import { TrailerLink } from "@/components/trailer-player";
 
 export function generateStaticParams() {
   return getAnimeData().map((anime) => ({ slug: anime.slug }));
@@ -25,10 +25,10 @@ export default async function AnimeDetail({
       <BackButton />
 
       <div className="rounded bg-bg-card border border-border overflow-hidden">
-        {/* Mobile: trailer inline or banner */}
-        <div className="md:hidden">
+        {/* Mobile: banner with play button (opens modal) */}
+        <div className="sm:hidden">
           {anime.trailer ? (
-            <MobileTrailer trailerId={anime.trailer} title={anime.title} fallbackImage={anime.banner || anime.image} />
+            <TrailerLink trailerId={anime.trailer} title={anime.title} variant="banner" posterSrc={anime.banner || anime.image} />
           ) : (anime.banner || anime.image) ? (
             <img
               src={anime.banner || anime.image!}
@@ -38,10 +38,10 @@ export default async function AnimeDetail({
           ) : null}
         </div>
 
-        <div className="p-4 md:p-5">
-          <div className="flex gap-4 md:gap-5">
+        <div className="p-4 sm:p-5">
+          <div className="flex gap-4 sm:gap-5">
             {/* Desktop: poster + PV below */}
-            <div className="hidden md:block shrink-0">
+            <div className="hidden sm:block shrink-0">
               {anime.image && anime.trailer ? (
                 <>
                   <TrailerLink trailerId={anime.trailer} title={anime.title} variant="poster" posterSrc={anime.image} />
