@@ -2703,8 +2703,7 @@
     "startDate": "2026-01-15",
     "type": "レンタル",
     "platforms": [
-      "dmmtv",
-      "danime"
+      "dmmtv"
     ],
     "anilistId": 182771,
     "image": "/img/cover/182771.jpg",
@@ -3642,7 +3641,15 @@
     "startDate": "2026-01-10",
     "type": "見放題",
     "platforms": [
-      "netflix"
+      "dmmtv",
+      "netflix",
+      "abema",
+      "crunchyroll",
+      "amazon",
+      "danime",
+      "disney",
+      "hulu",
+      "unext"
     ],
     "anilistId": 149118,
     "image": "/img/cover/149118.jpg",
