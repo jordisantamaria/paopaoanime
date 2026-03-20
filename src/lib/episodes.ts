@@ -66,7 +66,11 @@ export function getRecentEpisodes(
 
     if (episode < 1) continue;
     // Skip if anime has finished
-    if (anime.episodes && episode > anime.episodes) continue;
+    // episodes = season episode count, so add episodeStart to get the absolute max
+    const maxEpisode = anime.episodes
+      ? anime.episodes + (anime.episodeStart ?? 1) - 1
+      : null;
+    if (maxEpisode && episode > maxEpisode) continue;
 
     episodes.push({ anime, episode, airedAt: recent });
   }
