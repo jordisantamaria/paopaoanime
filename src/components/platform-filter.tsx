@@ -28,7 +28,7 @@ export function PlatformFilter({ available, selected, onChange }: Props) {
           <button
             key={pid}
             onClick={() => toggle(pid)}
-            className={`rounded-sm px-2.5 py-1 text-xs font-bold transition-colors border ${
+            className={`cursor-pointer rounded-sm px-2.5 py-1 text-xs font-bold transition-colors border ${
               isActive
                 ? "bg-accent text-white border-accent"
                 : "bg-bg-card text-text-muted border-border hover:text-accent hover:border-accent"
@@ -41,7 +41,7 @@ export function PlatformFilter({ available, selected, onChange }: Props) {
       {selected.length > 0 && (
         <button
           onClick={() => onChange([])}
-          className="rounded-sm px-2 py-1 text-xs text-text-muted hover:text-accent"
+          className="cursor-pointer rounded-sm px-2 py-1 text-xs text-text-muted hover:text-accent"
         >
           クリア
         </button>
