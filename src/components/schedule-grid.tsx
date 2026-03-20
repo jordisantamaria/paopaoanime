@@ -80,7 +80,7 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
             onChange={(e) =>
               setSelectedPlatform(e.target.value as PlatformId | "all")
             }
-            className="w-full appearance-none rounded border border-border bg-bg-card pl-3 pr-8 py-2 text-sm text-text-primary outline-none focus:border-accent"
+            className="w-full cursor-pointer appearance-none rounded border border-border bg-bg-card pl-3 pr-8 py-2 text-sm text-text-primary outline-none focus:border-accent"
           >
             <option value="all">全プラットフォーム</option>
             {PLATFORM_ORDER.filter((pid) => allPlatformIds.includes(pid)).map((pid) => (
@@ -97,7 +97,7 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
         <div className="flex gap-0.5">
           <button
             onClick={() => setSelectedDay("all")}
-            className={`rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
+            className={`cursor-pointer rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
               selectedDay === "all"
                 ? "bg-accent text-white"
                 : "bg-bg-card text-text-muted border border-border hover:text-accent"
@@ -109,7 +109,7 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
             <button
               key={day}
               onClick={() => setSelectedDay(day)}
-              className={`rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
+              className={`cursor-pointer rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
                 selectedDay === day
                   ? "bg-accent text-white"
                   : "bg-bg-card text-text-muted border border-border hover:text-accent"
@@ -120,7 +120,7 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
           ))}
           <button
             onClick={() => setSelectedDay("他")}
-            className={`rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
+            className={`cursor-pointer rounded-sm px-2.5 py-1.5 text-xs font-bold transition-colors ${
               selectedDay === "他"
                 ? "bg-yellow-500 text-black"
                 : "bg-bg-card text-text-muted border border-border hover:text-yellow-500"
