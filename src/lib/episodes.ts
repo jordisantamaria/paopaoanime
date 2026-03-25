@@ -26,6 +26,9 @@ export function getRecentEpisodes(
     const startDate = new Date(anime.startDate + "T00:00:00+09:00");
     if (startDate > now) continue;
 
+    // Skip anime on pause
+    if (anime.pausedUntil && new Date(anime.pausedUntil + "T00:00:00+09:00") > now) continue;
+
     // Batch releases (e.g. Netflix drops): all episodes available from startDate
     if (anime.batchRelease) {
       episodes.push({

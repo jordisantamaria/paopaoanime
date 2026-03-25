@@ -103,6 +103,25 @@ async function main() {
     const next = json.data?.Media?.nextAiringEpisode;
 
     if (next) {
+      // Detect pause: if next episode airs more than 9 days from now, anime is on break
+      const airingAt = new Date(next.airingAt * 1000);
+      const daysUntilNext = (airingAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (daysUntilNext > 9) {
+        const pauseDate = airingAt.toISOString().slice(0, 10);
+        if (anime.pausedUntil !== pauseDate) {
+          anime.pausedUntil = pauseDate;
+          updated++;
+          console.log(
+            `  [${i + 1}] ${anime.title}: paused until ${pauseDate} (${Math.round(daysUntilNext)}d away)`
+          );
+        }
+      } else if (anime.pausedUntil) {
+        delete anime.pausedUntil;
+        updated++;
+        console.log(`  [${i + 1}] ${anime.title}: resumed (removed pausedUntil)`);
+      }
+
       // nextAiringEpisode.episode is per-season (e.g. S3 ep 12)
       // So current per-season episode = next - 1
       // Our raw calc is weeksSinceStart + 1 (no episodeStart, no offset)
@@ -119,7 +138,12 @@ async function main() {
         );
       }
     } else {
-      // No next episode = finished airing, remove offset
+      // No next episode = finished airing, remove offset and pause
+      if (anime.pausedUntil) {
+        delete anime.pausedUntil;
+        updated++;
+        console.log(`  [${i + 1}] ${anime.title}: removed pausedUntil (finished)`);
+      }
       if (anime.episodeOffset) {
         delete anime.episodeOffset;
         updated++;
@@ -130,10 +154,13 @@ async function main() {
     await sleep(1500);
   }
 
-  // Clean up undefined episodeOffset fields
+  // Clean up undefined fields
   for (const anime of data) {
     if (anime.episodeOffset === undefined || anime.episodeOffset === 0) {
       delete anime.episodeOffset;
+    }
+    if (anime.pausedUntil === undefined) {
+      delete anime.pausedUntil;
     }
   }
 

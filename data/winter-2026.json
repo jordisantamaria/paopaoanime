@@ -266,8 +266,7 @@
       }
     ],
     "trailer": "qFmSz2ZVxCA",
-    "format": "ONA",
-    "episodeOffset": 1
+    "format": "ONA"
   },
   {
     "title": "花ざかりの君たちへ",
@@ -775,7 +774,8 @@
     ],
     "trailer": "HJuYJpMJdGs",
     "format": "ONA",
-    "episodeStart": 25
+    "episodeStart": 25,
+    "episodeOffset": 1
   },
   {
     "title": "アルネの事件簿",
@@ -978,8 +978,7 @@
       }
     ],
     "trailer": "URcT4mR6KSU",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "透明男と人間女〜そのうち夫婦になるふたり〜",
@@ -1216,8 +1215,7 @@
       }
     ],
     "trailer": "EIJOU7qjq6s",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "鎧真伝サムライトルーパー",
@@ -1272,8 +1270,7 @@
       }
     ],
     "trailer": "loJ05nefclc",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "幼馴染とはラブコメにならない",
@@ -1328,8 +1325,7 @@
       }
     ],
     "trailer": "iSRJs8e5aRo",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "違国日記",
@@ -1554,8 +1550,7 @@
       }
     ],
     "trailer": "-lgT3jToqOI",
-    "format": "ONA",
-    "episodeOffset": 1
+    "format": "ONA"
   },
   {
     "title": "TRIGUN STARGAZE",
@@ -1668,8 +1663,7 @@
       }
     ],
     "trailer": "_htCsAG0hUo",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "貴族転生 ～恵まれた生まれから最強の力を得る～",
@@ -1725,8 +1719,7 @@
       }
     ],
     "trailer": "RIj0yJCVNuU",
-    "format": "ONA",
-    "episodeOffset": 1
+    "format": "ONA"
   },
   {
     "title": "勇者パーティーにかわいい子がいたので、告白してみた。",
@@ -1832,8 +1825,7 @@
       }
     ],
     "trailer": "poUibdNvxPQ",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "闇芝居 十六期",
@@ -2093,8 +2085,7 @@
       }
     ],
     "trailer": "4JenstiukSo",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "「お前ごときが魔王に勝てると思うな」と勇者パーティを追放されたので、王都で気ままに暮らしたい",
@@ -2199,8 +2190,7 @@
       }
     ],
     "trailer": "0wPR_-NPgQo",
-    "format": "TV_SHORT",
-    "episodeOffset": 1
+    "format": "TV_SHORT"
   },
   {
     "title": "地獄先生ぬ〜べ〜 第2クール（2025）",
@@ -2268,8 +2258,7 @@
       }
     ],
     "trailer": "qWHY5_G_BG0",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "魔都精兵のスレイブ2 ご褒美Ver.",
@@ -2461,7 +2450,8 @@
       }
     ],
     "trailer": "ynnk0CIyu10",
-    "format": "TV"
+    "format": "TV",
+    "episodeOffset": 1
   },
   {
     "title": "シャンピニオンの魔女",
@@ -2517,8 +2507,7 @@
       }
     ],
     "trailer": "v3JunzVhGwQ",
-    "format": "TV",
-    "episodeOffset": 1
+    "format": "TV"
   },
   {
     "title": "正反対な君と僕",
@@ -2586,7 +2575,8 @@
         "time": "17:30"
       }
     ],
-    "format": "TV"
+    "format": "TV",
+    "episodeOffset": 1
   },
   {
     "title": "悪役令嬢は隣国の王太子に溺愛される",
@@ -2640,7 +2630,8 @@
         "time": "23:30"
       }
     ],
-    "format": "TV"
+    "format": "TV",
+    "episodeOffset": 1
   },
   {
     "title": "火喰鳥 羽州ぼろ鳶組",
@@ -2693,8 +2684,7 @@
         "time": "00:00"
       }
     ],
-    "format": "TV",
-    "episodeOffset": -1
+    "format": "TV"
   },
   {
     "title": "穏やか貴族の休暇のすすめ。",
@@ -2786,7 +2776,8 @@
         "time": "01:35"
       }
     ],
-    "format": "TV"
+    "format": "TV",
+    "episodeOffset": 1
   },
   {
     "title": "ほっぺちゃん ～サン王国と黒ほっぺ団の秘密～",
@@ -2839,7 +2830,8 @@
         "time": "05:30"
       }
     ],
-    "format": "TV"
+    "format": "TV",
+    "episodeOffset": 1
   },
   {
     "title": "お前はまだグンマを知らない ～令和版～",
@@ -3004,7 +2996,6 @@
       }
     ],
     "format": "TV",
-    "episodeOffset": 0,
     "episodeStart": 25
   },
   {
@@ -3452,7 +3443,8 @@
         "time": "00:00"
       }
     ],
-    "format": "TV"
+    "format": "TV",
+    "episodeOffset": 1
   },
   {
     "title": "時光代理人 -LINK CLICK- 英都篇",
@@ -3631,8 +3623,7 @@
         "time": "00:00"
       }
     ],
-    "format": "ONA",
-    "episodeOffset": 1
+    "format": "ONA"
   },
   {
     "title": "炎炎ノ消防隊 参ノ章",
@@ -3701,7 +3692,7 @@
       }
     ],
     "format": "TV",
-    "episodeOffset": 2
+    "episodeOffset": 1
   },
   {
     "title": "ゴールデンカムイ 最終章",
@@ -3776,7 +3767,8 @@
       }
     ],
     "format": "TV_SHORT",
-    "episodeOffset": -10
+    "episodeOffset": -11,
+    "pausedUntil": "2026-04-05"
   },
   {
     "title": "ガールズ＆パンツァー もっとらぶらぶ作戦です！",
@@ -3817,7 +3809,8 @@
       }
     ],
     "format": "MOVIE",
-    "episodeOffset": -7
+    "episodeOffset": -8,
+    "pausedUntil": "2026-04-09"
   },
   {
     "title": "ブラックジャックやねん",
@@ -3845,8 +3838,7 @@
         "time": null
       }
     ],
-    "format": "ONA",
-    "episodeOffset": 1
+    "format": "ONA"
   },
   {
     "title": "秘密結社 鷹の爪XX",
@@ -4030,8 +4022,7 @@
       "Supernatural"
     ],
     "episodes": null,
-    "studio": "David Production",
-    "episodeOffset": -1
+    "studio": "David Production"
   },
   {
     "title": "超かぐや姫！",
@@ -4564,8 +4555,7 @@
       }
     ],
     "trailer": "j5m10YML4b4",
-    "format": "ONA",
-    "episodeOffset": -3
+    "format": "ONA"
   },
   {
     "title": "有栖川煉ってホントは女なんだよね。",
@@ -4715,8 +4705,7 @@
       "Slice of Life"
     ],
     "episodes": 50,
-    "studio": "DLE",
-    "episodeOffset": -1
+    "studio": "DLE"
   },
   {
     "title": "最強王図鑑 ～The Ultimate Tournament～",
@@ -4741,7 +4730,7 @@
     ],
     "episodes": null,
     "studio": "OLM",
-    "episodeOffset": -1
+    "episodeOffset": -2
   },
   {
     "title": "ちびゴジラの逆襲(第3期)",
@@ -4786,7 +4775,8 @@
     ],
     "episodes": null,
     "studio": "Tsumupapa",
-    "episodeOffset": -26
+    "episodeOffset": -30,
+    "pausedUntil": "2026-04-18"
   },
   {
     "title": "不滅のあなたへ Season 3",
@@ -4844,7 +4834,7 @@
     ],
     "episodes": 13,
     "studio": "feel.",
-    "episodeOffset": -14
+    "episodeOffset": -15
   },
   {
     "title": "東島丹三郎は仮面ライダーになりたい",
@@ -4871,8 +4861,7 @@
       "Comedy"
     ],
     "episodes": 24,
-    "studio": "LIDENFILMS",
-    "episodeOffset": -1
+    "studio": "LIDENFILMS"
   },
   {
     "title": "DIGIMON BEATBREAK",
@@ -4981,6 +4970,6 @@
     ],
     "episodes": 52,
     "studio": "AtoriE",
-    "episodeOffset": -2
+    "episodeOffset": -1
   }
 ]
