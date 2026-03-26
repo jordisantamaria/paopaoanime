@@ -14,9 +14,9 @@ export default async function DropsPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-bold">切り捨てリスト</h1>
+      <h1 className="mb-2 text-xl font-bold">切り捨てリスト</h1>
       <p className="mb-6 text-xs text-text-muted">
-        ホーム画面から非表示にした作品の一覧です。
+        ホーム画面から非表示にした作品の一覧です。「Remove」で完全に削除、「Undo」で取り消せます。
       </p>
       <DropsContent items={items} />
     </div>

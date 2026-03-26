@@ -1,102 +1,80 @@
 # Roadmap — PaoPaoAnime
 
-## Pre-Launch (必須 para compartir)
+## Pre-Launch (Must-have before sharing)
 
-### Branding
-- [x] Nombre definitivo: PaoPaoAnime
-- [ ] Logo (simple, reconocible, estilo anime)
-- [ ] Favicon + OG image para compartir en redes
-- [ ] Dominio custom
 
 ### Landing / About
-- [ ] Página /about explicando el problema (fragmentación de plataformas en Japón) y la solución
-- [ ] Sección de FAQ (¿es gratis? ¿cada cuánto se actualiza? ¿cómo se obtienen los datos?)
+- [ ] /about page explaining the problem (platform fragmentation in Japan) and the solution
+- [ ] FAQ section (Is it free? How often is it updated? How is the data collected?)
 
 ### SEO & Meta
-- [ ] OG tags por página (título + imagen del anime en detalle)
+- [ ] OG tags per page (title + anime image on detail page)
 - [ ] Sitemap.xml
 - [ ] robots.txt
-- [ ] Structured data (JSON-LD) para anime entries
+- [ ] Structured data (JSON-LD) for anime entries
 
 ### Polish
-- [ ] Mobile responsive review (navbar, cards, filtros)
-- [ ] 404 page personalizada
-- [ ] Footer con links (About, GitHub, Twitter/X)
+- [ ] Custom 404 page
+- [ ] Footer with links (About, GitHub, Twitter/X)
 - [ ] Loading states
 
 ---
 
-## Post-Launch v1.1 — Personalización
+## Post-Launch v1.1 — Personalization
 
-- [ ] Guardar "mis plataformas" en localStorage (onboarding modal)
-- [ ] Home filtra automáticamente por tus plataformas
-- [ ] Notificación visual cuando hay episodio nuevo
-
----
-
-## v1.2 — Comparador de plataformas
-
-- [ ] Página /platforms — tabla comparativa
-- [ ] Precio mensual de cada plataforma
-- [ ] Número de animes de temporada por plataforma
-- [ ] "Simulador": selecciona los animes que quieres ver → te dice la combinación óptima de suscripciones
+- [ ] Save "my platforms" in localStorage (onboarding modal)
+- [ ] Home automatically filters by your platforms
+- [ ] Visual notification when a new episode is available
 
 ---
 
-## v1.3 — Blog & Contenido
+## v1.2 — Platform Comparison
 
-- [ ] Blog con MDX (Next.js built-in)
-- [ ] Posts tipo "Mejores animes de Winter 2026" para SEO
-- [ ] Guías por plataforma ("Guía completa de DMM TV para anime")
-- [ ] Resumen semanal automático de episodios
-
----
-
-## v2.0 — Auth & Freemium
-
-- [ ] Login (Auth.js — Google/Twitter)
-- [ ] Base de datos (Neon/Drizzle)
-- [ ] Sync plataformas entre dispositivos
-- [ ] Premium features:
-  - [ ] Drop anime — ocultar animes que no te interesan
-    - Interfaz limpia: solo ves lo nuevo + lo que no has descartado
-    - Botón de drop en cada card y en la página de detalle
-    - Vista para gestionar drops (restaurar si cambias de opinión)
-  - [ ] Google Calendar sync (evento por episodio)
-  - [ ] Notificaciones push/email
-  - [ ] Historial de episodios vistos
+- [ ] /platforms page — comparison table
+- [ ] Monthly price per platform
+- [ ] Number of seasonal anime per platform
+- [ ] "Simulator": select the anime you want to watch → shows the optimal subscription combination
 
 ---
 
-## v2.1 — Comunidad
+## v1.3 — Blog & Content
 
-- [ ] Discord server (discusión de animes, feature requests, feedback)
-- [ ] Icono Discord en nav (desktop) y footer
-- [ ] Ratings por episodio
-- [ ] Comentarios por anime
-- [ ] Rankings en tiempo real
-
----
-
-## Futuro
-
-- [ ] Spring 2026 season (abril) — primer test de cambio de temporada
-- [ ] Automatizar extracción de datos con LLM al inicio de temporada
-- [ ] Más plataformas (Hulu JP, Disney+, FOD, Lemino)
-- [ ] Multi-idioma (EN/ES) para audiencia internacional
+- [ ] Blog with MDX (Next.js built-in)
+- [ ] Posts like "Best anime of Winter 2026" for SEO
+- [ ] Platform guides ("Complete guide to DMM TV for anime")
+- [ ] Automated weekly episode recap
 
 ---
 
-## Launch plan
+## v2.1 — Community
 
-### Dónde lanzar
-1. **Product Hunt** — launch day con assets preparados
-2. **Hacker News** (Show HN) — enfoque técnico: "Built an anime schedule aggregator for Japan with LLM-extracted data"
+- [ ] Discord server (anime discussion, feature requests, feedback)
+- [ ] Discord icon in nav (desktop) and footer
+- [ ] Per-episode ratings
+- [ ] Comments per anime
+- [ ] Real-time rankings
+
+---
+
+## Future
+
+- [ ] Spring 2026 season (April) — first season transition test
+- [ ] Automate data extraction with LLM at the start of each season
+- [ ] More platforms (Hulu JP, Disney+, FOD, Lemino)
+- [ ] Multi-language (EN/ES) for international audience
+
+---
+
+## Launch Plan
+
+### Where to launch
+1. **Product Hunt** — launch day with prepared assets
+2. **Hacker News** (Show HN) — technical angle: "Built an anime schedule aggregator for Japan with LLM-extracted data"
 3. **Reddit** — r/anime, r/japan, r/animepiracy (ironically for legal alternative)
 4. **Twitter/X** — anime community JP + dev community
-5. **日本語コミュニティ** — はてなブックマーク, Qiita (tech angle), 5ch
+5. **Japanese communities** — Hatena Bookmark, Qiita (tech angle), 5ch
 
-### Assets necesarios para launch
-- [ ] Screenshot/GIF del producto
-- [ ] One-liner pitch en JP y EN
-- [ ] GitHub README pulido (para open source angle)
+### Assets needed for launch
+- [ ] Product screenshot/GIF
+- [ ] One-liner pitch in JP and EN
+- [ ] Polished GitHub README (for open source angle)
