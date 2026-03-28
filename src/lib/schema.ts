@@ -1,3 +1,4 @@
+// Database schema — Auth tables + anime data
 import { pgTable, text, timestamp, primaryKey, integer } from "drizzle-orm/pg-core";
 
 export const users = pgTable("user", {
