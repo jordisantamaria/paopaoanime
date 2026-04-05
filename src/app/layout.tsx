@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://paopaoanime.com"),
   title: "PaoPaoAnime - 今期アニメの配信スケジュール",
   description:
     "今期のアニメがどのプラットフォームで何曜日の何時に配信されるかをまとめて確認。DMM TV・U-NEXT・dアニメストア・ABEMAなど複数サービスを網羅。",
@@ -26,11 +27,20 @@ export const metadata: Metadata = {
     description: "今期アニメ、いつ・どこで配信？パオパオでかんたん確認。DMM TV・U-NEXT・dアニメストア・ABEMA・Netflix・Disney+を網羅。",
     siteName: "PaoPaoAnime",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "PaoPaoAnime - 今期アニメの配信スケジュール",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "PaoPaoAnime - 今期アニメの配信スケジュール",
     description: "今期アニメ、いつ・どこで配信？パオパオでかんたん確認。",
+    images: ["/og-image.png"],
   },
 };
 
