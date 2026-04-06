@@ -13,7 +13,7 @@ for (const line of fs.readFileSync(envPath, "utf-8").split("\n")) {
   if (eqIdx === -1) continue;
   const key = trimmed.slice(0, eqIdx);
   const val = trimmed.slice(eqIdx + 1).replace(/^"|"$/g, "");
-  process.env[key] = val;
+  if (!process.env[key]) process.env[key] = val;
 }
 
 const sql = neon(process.env.DATABASE_URL!);
