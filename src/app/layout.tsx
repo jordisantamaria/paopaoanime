@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://paopaoanime.com"),
+  metadataBase: new URL("https://www.paopaoanime.com"),
   title: "PaoPaoAnime - 今期アニメの配信スケジュール",
   description:
     "今期のアニメがどのプラットフォームで何曜日の何時に配信されるかをまとめて確認。DMM TV・U-NEXT・dアニメストア・ABEMAなど複数サービスを網羅。",
