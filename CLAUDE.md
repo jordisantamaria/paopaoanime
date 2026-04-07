@@ -66,6 +66,8 @@ La documentación vive en `docs/`:
 - `docs/ROADMAP.md` — Features planificadas y prioridades
 - `docs/architecture.md` — Decisiones de arquitectura y por qué se tomaron
 - `docs/database.md` — Estructura de tablas, relaciones y razones de diseño
+- `docs/data-pipeline.md` — ETL pipeline: scripts, orden de ejecución, flujo de datos
 
 Cuando se tomen decisiones de arquitectura relevantes, actualizar `docs/architecture.md`.
 Cuando se modifique el esquema de DB, actualizar `docs/database.md`.
+Cuando se añadan/modifiquen scripts de datos, actualizar `docs/data-pipeline.md`.
