@@ -7,10 +7,12 @@ export const dynamic = "force-dynamic";
 export default async function DropsPage() {
   const dropped = await getDroppedAnimeList();
 
-  const items = dropped.map((d) => ({
-    slug: d.slug,
-    anime: getAnimeBySlug(d.slug) ?? null,
-  }));
+  const items = await Promise.all(
+    dropped.map(async (d) => ({
+      slug: d.slug,
+      anime: (await getAnimeBySlug(d.slug)) ?? null,
+    }))
+  );
 
   return (
     <div>

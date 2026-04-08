@@ -1,9 +1,9 @@
 import { getAnimeByDay, getNonWeeklyAnime } from "@/lib/data";
 import { ScheduleGrid } from "@/components/schedule-grid";
 
-export default function Schedule() {
-  const animeByDay = getAnimeByDay();
-  const nonWeeklyAnime = getNonWeeklyAnime();
+export default async function Schedule() {
+  const animeByDay = await getAnimeByDay();
+  const nonWeeklyAnime = await getNonWeeklyAnime();
 
   return (
     <div>

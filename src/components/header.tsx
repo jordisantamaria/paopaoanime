@@ -4,8 +4,8 @@ import { SearchBar } from "@/components/search-bar";
 import { AuthButton } from "@/components/auth-button";
 import Link from "next/link";
 
-export function Header() {
-  const animeList = getAnimeData();
+export async function Header() {
+  const animeList = await getAnimeData();
 
   return (
     <header className="bg-nav text-white">

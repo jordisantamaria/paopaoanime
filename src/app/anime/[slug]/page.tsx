@@ -1,14 +1,16 @@
 import { notFound } from "next/navigation";
 import { BackButton } from "@/components/back-button";
 import { getAnimeBySlug, getAnimeData, DAY_LABELS } from "@/lib/data";
+import { AnimeEntry } from "@/lib/types";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
 import { FORMAT_LABELS } from "@/lib/constants";
 import { CurrentEpisode } from "@/components/current-episode";
 import { AnimeTrailer } from "@/components/trailer-player";
 
 
-export function generateStaticParams() {
-  return getAnimeData().map((anime) => ({ slug: anime.slug }));
+export async function generateStaticParams() {
+  const data = await getAnimeData();
+  return data.map((anime) => ({ slug: anime.slug }));
 }
 
 export default async function AnimeDetail({
@@ -17,7 +19,7 @@ export default async function AnimeDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const anime = getAnimeBySlug(slug);
+  const anime = await getAnimeBySlug(slug);
 
   if (!anime) notFound();
 
@@ -68,7 +70,7 @@ export default async function AnimeDetail({
   );
 }
 
-function AnimeInfo({ anime }: { anime: ReturnType<typeof getAnimeBySlug> & {} }) {
+function AnimeInfo({ anime }: { anime: AnimeEntry }) {
   return (
     <div className="flex-1 min-w-0">
       <h1 className="text-base sm:text-xl font-bold">{anime.title}</h1>

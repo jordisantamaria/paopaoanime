@@ -1,85 +1,88 @@
 import "server-only";
-import { AnimeEntry, DayOfWeek } from "./types";
-import { DAYS, NON_TV_FORMATS } from "./constants";
-
-function toSlug(entry: {
-  titleRomaji?: string;
-  title: string;
-  anilistId?: number;
-}): string {
-  const base = entry.titleRomaji || entry.title;
-  const slug = base
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  if (!slug && entry.anilistId) return `anime-${entry.anilistId}`;
-  if (!slug) return `anime-${Math.abs(hashCode(entry.title))}`;
-  return slug;
-}
-
-function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
-  }
-  return hash;
-}
-
-function loadAllSeasons(): AnimeEntry[] {
-  // Dynamic require to avoid bundling fs in client
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const fs = require("fs");
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const path = require("path");
-
-  const dataDir = path.join(process.cwd(), "data");
-  const files = fs.readdirSync(dataDir).filter((f: string) => f.endsWith(".json"));
-
-  const allEntries: AnimeEntry[] = [];
-  const seen = new Set<string>();
-
-  for (const file of files) {
-    const raw = JSON.parse(fs.readFileSync(path.join(dataDir, file), "utf-8"));
-    const season = file.replace(".json", "");
-
-    for (const entry of raw) {
-      const withSlug = { ...entry, slug: toSlug(entry), season };
-      if (!seen.has(withSlug.slug)) {
-        seen.add(withSlug.slug);
-        allEntries.push(withSlug);
-      }
-    }
-  }
-
-  return allEntries;
-}
-
-export function getAnimeData(): AnimeEntry[] {
-  return loadAllSeasons();
-}
+import { eq } from "drizzle-orm";
+import { db } from "./db";
+import { anime, animePlatforms } from "./schema";
+import { AnimeEntry, DayOfWeek, PlatformId } from "./types";
+import { DAYS, NON_TV_FORMATS, PLATFORM_ORDER } from "./constants";
 
 export { DAYS } from "./constants";
 export { DAY_LABELS } from "./constants";
 
-/** Returns true if the anime doesn't follow a weekly schedule */
+function sortByPlatformOrder<T extends { platform: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const ia = PLATFORM_ORDER.indexOf(a.platform as PlatformId);
+    const ib = PLATFORM_ORDER.indexOf(b.platform as PlatformId);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+}
+
+function rowToAnimeEntry(
+  row: typeof anime.$inferSelect,
+  platforms: (typeof animePlatforms.$inferSelect)[]
+): AnimeEntry {
+  const sorted = sortByPlatformOrder(platforms);
+  return {
+    title: row.title,
+    slug: row.slug,
+    day: row.day as DayOfWeek,
+    time: row.time,
+    startDate: row.startDate ?? "",
+    type: row.type as "見放題" | "レンタル",
+    platforms: sorted.map((p) => p.platform as PlatformId),
+    format: row.format as AnimeEntry["format"],
+    anilistId: row.anilistId ?? undefined,
+    image: row.image ?? undefined,
+    synopsis: row.synopsis ?? undefined,
+    synopsisJa: row.synopsisJa ?? undefined,
+    genres: row.genres ?? undefined,
+    episodes: row.episodes ?? undefined,
+    studio: row.studio ?? undefined,
+    titleEnglish: row.titleEnglish ?? undefined,
+    titleRomaji: row.titleRomaji ?? undefined,
+    banner: row.banner ?? undefined,
+    streams: sorted.map((p) => ({
+      platform: p.platform as PlatformId,
+      day: p.day as DayOfWeek,
+      time: p.time,
+    })),
+    season: row.season,
+    trailer: row.trailer ?? undefined,
+    batchRelease: row.batchRelease ?? undefined,
+    episodeOffset: row.episodeOffset ?? undefined,
+    episodeStart: row.episodeStart ?? undefined,
+    pausedUntil: row.pausedUntil ?? undefined,
+  };
+}
+
+export async function getAnimeData(): Promise<AnimeEntry[]> {
+  const allAnime = await db.select().from(anime);
+  const allPlatforms = await db.select().from(animePlatforms);
+
+  const platformsBySlug = new Map<string, (typeof animePlatforms.$inferSelect)[]>();
+  for (const p of allPlatforms) {
+    const list = platformsBySlug.get(p.animeSlug) ?? [];
+    list.push(p);
+    platformsBySlug.set(p.animeSlug, list);
+  }
+
+  return allAnime.map((row) =>
+    rowToAnimeEntry(row, platformsBySlug.get(row.slug) ?? [])
+  );
+}
+
 function isNonWeekly(anime: AnimeEntry): boolean {
   if (anime.batchRelease) return true;
   return !!anime.format && NON_TV_FORMATS.includes(anime.format);
 }
 
-export function getAnimeByDay(): Record<DayOfWeek, AnimeEntry[]> {
-  const data = getAnimeData().filter((a) => !isNonWeekly(a));
+export async function getAnimeByDay(): Promise<Record<DayOfWeek, AnimeEntry[]>> {
+  const data = (await getAnimeData()).filter((a) => !isNonWeekly(a));
   const byDay = Object.fromEntries(
     DAYS.map((day) => [day, [] as AnimeEntry[]])
   ) as Record<DayOfWeek, AnimeEntry[]>;
 
-  for (const anime of data) {
-    byDay[anime.day].push(anime);
+  for (const a of data) {
+    byDay[a.day]?.push(a);
   }
 
   for (const day of DAYS) {
@@ -93,12 +96,21 @@ export function getAnimeByDay(): Record<DayOfWeek, AnimeEntry[]> {
   return byDay;
 }
 
-export function getNonWeeklyAnime(): AnimeEntry[] {
-  return getAnimeData()
+export async function getNonWeeklyAnime(): Promise<AnimeEntry[]> {
+  const data = await getAnimeData();
+  return data
     .filter(isNonWeekly)
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
 }
 
-export function getAnimeBySlug(slug: string): AnimeEntry | undefined {
-  return getAnimeData().find((a) => a.slug === slug);
+export async function getAnimeBySlug(slug: string): Promise<AnimeEntry | undefined> {
+  const [row] = await db.select().from(anime).where(eq(anime.slug, slug));
+  if (!row) return undefined;
+
+  const platforms = await db
+    .select()
+    .from(animePlatforms)
+    .where(eq(animePlatforms.animeSlug, slug));
+
+  return rowToAnimeEntry(row, platforms);
 }
