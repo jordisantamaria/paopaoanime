@@ -1,54 +1,58 @@
 # Project Instructions
 
-## Workflow: Plan con Checklist
+## Language
 
-Cuando el usuario pide implementar, arreglar o modificar algo:
+All committed files, code comments, commit messages, PR descriptions, documentation, and CHANGELOG entries must be in **English**. Conversations with the user remain in Spanish.
 
-1. **Crear `PROGRESS.md`** en la raíz del proyecto con el plan y checklist ANTES de escribir código
-2. **Marcar cada item como completado** (`- [x]`) inmediatamente después de terminarlo
-3. **Mantener tareas granulares** - cada item debe ser una acción concreta
-4. Si el plan cambia durante la ejecución, actualizar `PROGRESS.md` para reflejarlo
-5. **Al terminar la tarea**, vaciar `PROGRESS.md` (el historial queda en `CHANGELOG.md`)
+## Workflow: Plan with Checklist
 
-> `PROGRESS.md` es temporal (en `.gitignore`). Solo refleja el trabajo en curso. El registro permanente es `CHANGELOG.md`.
+When the user asks to implement, fix, or modify something:
 
-## Changelog Automático
+1. **Create `PROGRESS.md`** at the project root with a plan and checklist BEFORE writing code
+2. **Mark each item as completed** (`- [x]`) immediately after finishing it
+3. **Keep tasks granular** - each item should be a concrete action
+4. If the plan changes during execution, update `PROGRESS.md` to reflect it
+5. **When the task is done**, clear `PROGRESS.md` (history lives in `CHANGELOG.md`)
 
-Cada vez que se completa una tarea o feature, **añadir una entrada en `CHANGELOG.md`** en la raíz del proyecto.
+> `PROGRESS.md` is temporary (in `.gitignore`). It only reflects work in progress. The permanent record is `CHANGELOG.md`.
 
-- Añadir la entrada al completar el trabajo (no antes)
-- Las entradas más recientes van arriba
-- Agrupar por fecha
+## Automatic Changelog
 
-### Formato de CHANGELOG.md
+When a task or feature is completed, **add an entry to `CHANGELOG.md`** at the project root.
+
+- Add the entry when work is complete (not before)
+- Most recent entries go at the top
+- Group by date
+
+### CHANGELOG.md Format
 
 ```markdown
 # Changelog
 
 ## 2026-04-07
 
-### feat: Nombre de la feature
-- Descripción de lo que se hizo
-- Detalles relevantes
+### feat: Feature name
+- Description of what was done
+- Relevant details
 
-### fix: Descripción del bug corregido
-- Qué se arregló y por qué
+### fix: Bug fix description
+- What was fixed and why
 
 ## 2026-04-06
 
-### chore: Migración de datos a Neon PostgreSQL
-- Se migraron los datos de anime desde JSON a la base de datos
+### chore: Data migration to Neon PostgreSQL
+- Migrated anime data from JSON files to database
 ```
 
-## Documentación del Proyecto
+## Project Documentation
 
-La documentación vive en `docs/`:
+Documentation lives in `docs/`:
 
-- `docs/ROADMAP.md` — Features planificadas y prioridades
-- `docs/architecture.md` — Decisiones de arquitectura y por qué se tomaron
-- `docs/database.md` — Estructura de tablas, relaciones y razones de diseño
-- `docs/data-pipeline.md` — ETL pipeline: scripts, orden de ejecución, flujo de datos
+- `docs/ROADMAP.md` — Planned features and priorities
+- `docs/architecture.md` — Architecture decisions and rationale
+- `docs/database.md` — Table structure, relationships, and design decisions
+- `docs/data-pipeline.md` — ETL pipeline: scripts, execution order, data flow
 
-Cuando se tomen decisiones de arquitectura relevantes, actualizar `docs/architecture.md`.
-Cuando se modifique el esquema de DB, actualizar `docs/database.md`.
-Cuando se añadan/modifiquen scripts de datos, actualizar `docs/data-pipeline.md`.
+When relevant architecture decisions are made, update `docs/architecture.md`.
+When the DB schema is modified, update `docs/database.md`.
+When data scripts are added/modified, update `docs/data-pipeline.md`.
