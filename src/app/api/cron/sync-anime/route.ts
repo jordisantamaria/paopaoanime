@@ -501,6 +501,14 @@ async function syncEpisodes(log: string[]): Promise<number> {
     const entry = airingAnime[i];
     if (!entry.day || !entry.startDate || !entry.anilistId) continue;
 
+    // Skip anime that have clearly finished (episode count known and past end date)
+    if (entry.episodes) {
+      const weeksNeeded = entry.episodes + 2; // buffer
+      const start = new Date(entry.startDate + "T00:00:00+09:00");
+      const endEstimate = new Date(start.getTime() + weeksNeeded * 7 * 24 * 60 * 60 * 1000);
+      if (now > endEstimate) continue;
+    }
+
     const rawEpisode = calcRawEpisode(entry.startDate, entry.day, entry.time, now);
     if (rawEpisode === null) continue;
 
@@ -568,7 +576,7 @@ async function syncEpisodes(log: string[]): Promise<number> {
       updated++;
     }
 
-    await sleep(1500);
+    await sleep(700);
   }
 
   return updated;
