@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { AnimeEntry, PlatformId } from "@/lib/types";
-import { RecentEpisode } from "@/lib/episodes";
+import { RecentEpisode, getRecentEpisodes } from "@/lib/episodes";
 import { PlatformFilter } from "@/components/platform-filter";
 import { FORMAT_LABELS } from "@/lib/constants";
 import { toggleDrop } from "@/actions/drops";
@@ -13,19 +13,19 @@ const NON_WEEKLY_FORMATS = new Set(["MOVIE", "OVA", "SPECIAL", "MUSIC"]);
 
 export function HomeContent({ animeList, droppedSlugs: initialDropped = [], initialEpisodes = [] }: { animeList: AnimeEntry[]; droppedSlugs?: string[]; initialEpisodes?: RecentEpisode[] }) {
   const { data: session } = useSession();
-  const [episodes] = useState<RecentEpisode[]>(initialEpisodes);
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
   const [droppedSlugs, setDroppedSlugs] = useState<Set<string>>(new Set(initialDropped));
   const [pending, startTransition] = useTransition();
 
+  // Recalculate episodes when platform filter changes
+  const episodes = useMemo(() => {
+    if (selectedPlatforms.length === 0) return initialEpisodes;
+    return getRecentEpisodes(animeList, new Date(), selectedPlatforms);
+  }, [animeList, selectedPlatforms, initialEpisodes]);
+
   const allPlatforms = [
     ...new Set(animeList.flatMap((a) => a.platforms)),
   ] as PlatformId[];
-
-  function filterByPlatform(anime: AnimeEntry): boolean {
-    if (selectedPlatforms.length === 0) return true;
-    return anime.platforms.some((p) => selectedPlatforms.includes(p as PlatformId));
-  }
 
   function handleDrop(slug: string) {
     setDroppedSlugs((prev) => {
@@ -43,7 +43,7 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
     anime.platforms.length > 0 && anime.platforms.every((p) => p === "theater");
 
   const filteredEpisodes = episodes.filter(
-    (ep) => !isTheaterOnly(ep.anime) && filterByPlatform(ep.anime) && !droppedSlugs.has(ep.anime.slug)
+    (ep) => !isTheaterOnly(ep.anime) && !droppedSlugs.has(ep.anime.slug)
   );
   const seen = new Set<string>();
   const deduplicatedEpisodes = filteredEpisodes
@@ -59,7 +59,9 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
   const latestAnime = animeList
     .filter((a) => {
       const start = new Date(a.startDate + "T00:00:00+09:00");
-      return start <= now && filterByPlatform(a) && !droppedSlugs.has(a.slug);
+      if (start > now || droppedSlugs.has(a.slug)) return false;
+      if (selectedPlatforms.length === 0) return true;
+      return a.platforms.some((p) => selectedPlatforms.includes(p as PlatformId));
     })
     .sort((a, b) => b.startDate.localeCompare(a.startDate))
     .slice(0, 20);

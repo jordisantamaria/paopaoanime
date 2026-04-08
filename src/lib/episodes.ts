@@ -32,6 +32,18 @@ function calcEpisodeForSchedule(
 
   const [hours, minutes] = time ? time.split(":").map(Number) : [0, 0];
 
+  // Calculate the first publication date on this platform
+  // = first occurrence of `day` on or after startDate
+  const firstPub = new Date(start);
+  const startDayNum = firstPub.getDay();
+  let daysUntilFirst = dayNum - startDayNum;
+  if (daysUntilFirst < 0) daysUntilFirst += 7;
+  firstPub.setDate(firstPub.getDate() + daysUntilFirst);
+  firstPub.setHours(hours, minutes, 0, 0);
+
+  if (firstPub > now) return null; // First episode not yet published on this platform
+
+  // Find the most recent publication date
   const recent = new Date(now);
   recent.setHours(hours, minutes, 0, 0);
 
@@ -41,13 +53,13 @@ function calcEpisodeForSchedule(
   if (diff === 0 && recent > now) diff = 7;
   recent.setDate(recent.getDate() - diff);
 
-  if (recent < start) return null;
+  if (recent < firstPub) return null;
 
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const weeksSinceStart = Math.floor(
-    (recent.getTime() - start.getTime()) / msPerWeek
+  const weeksSinceFirst = Math.floor(
+    (recent.getTime() - firstPub.getTime()) / msPerWeek
   );
-  const episode = weeksSinceStart + episodeStart + episodeOffset;
+  const episode = weeksSinceFirst + episodeStart + episodeOffset;
 
   if (episode < 1) return null;
 
@@ -56,7 +68,8 @@ function calcEpisodeForSchedule(
 
 export function getRecentEpisodes(
   animeList: AnimeEntry[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  platformFilter?: string[]
 ): RecentEpisode[] {
   const episodes: RecentEpisode[] = [];
 
@@ -66,6 +79,11 @@ export function getRecentEpisodes(
 
     // Skip anime on pause
     if (anime.pausedUntil && new Date(anime.pausedUntil + "T00:00:00+09:00") > now) continue;
+
+    // If platform filter is active, skip anime not on those platforms
+    if (platformFilter && platformFilter.length > 0) {
+      if (!anime.platforms.some((p) => platformFilter.includes(p))) continue;
+    }
 
     // Batch releases (e.g. Netflix drops): all episodes available from startDate
     if (anime.batchRelease) {
@@ -80,14 +98,17 @@ export function getRecentEpisodes(
     const episodeStart = anime.episodeStart ?? 1;
     const episodeOffset = anime.episodeOffset ?? 0;
 
-    // Calculate episode per platform schedule, take the LOWEST among those that
-    // have already published at least one episode. Platforms that haven't published
-    // yet (result is null) are ignored — we show what's available, not what isn't.
+    // When filtering by platform, use only that platform's schedule
+    // Otherwise use all platforms and take the lowest (most conservative)
     let best: { episode: number; airedAt: Date } | null = null;
 
-    const platformSchedules = (anime.streams ?? []).filter((s) => s.day);
-    if (platformSchedules.length > 0) {
-      for (const stream of platformSchedules) {
+    const allStreams = (anime.streams ?? []).filter((s) => s.day);
+    const relevantStreams = platformFilter && platformFilter.length > 0
+      ? allStreams.filter((s) => platformFilter.includes(s.platform))
+      : allStreams;
+
+    if (relevantStreams.length > 0) {
+      for (const stream of relevantStreams) {
         const result = calcEpisodeForSchedule(
           anime.startDate,
           stream.day,
@@ -96,15 +117,23 @@ export function getRecentEpisodes(
           episodeOffset,
           now
         );
-        if (!result) continue; // Platform hasn't published yet — skip
-        if (!best || result.episode < best.episode) {
-          best = result;
+        if (!result) continue;
+        if (platformFilter && platformFilter.length > 0) {
+          // With filter: take the highest among selected platforms
+          if (!best || result.episode > best.episode) {
+            best = result;
+          }
+        } else {
+          // Without filter: take the lowest (conservative)
+          if (!best || result.episode < best.episode) {
+            best = result;
+          }
         }
       }
     }
 
-    // Fallback to anime's main day/time (TV broadcast) if no platform schedules
-    if (!best && anime.day) {
+    // Fallback to anime's main day/time only when NO platform filter is active
+    if (!best && anime.day && (!platformFilter || platformFilter.length === 0)) {
       best = calcEpisodeForSchedule(
         anime.startDate,
         anime.day,
