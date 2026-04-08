@@ -127,7 +127,7 @@ Translates English synopses to Japanese using OpenAI API.
 
 ### Stage 6 — Episode Sync (Maintenance)
 
-#### `sync-episodes.ts`
+#### `sync-episodes.ts` (legacy — JSON files)
 Keeps episode calculations accurate by comparing with AniList's actual airing data.
 
 - **Calculates** expected episode number from start date + weekly schedule
@@ -138,38 +138,58 @@ Keeps episode calculations accurate by comparing with AniList's actual airing da
 - **Rate limit:** 1.5s delay + 60s backoff on 429 errors
 - **Usage:** `npx tsx scripts/sync-episodes.ts [filename]`
 
+#### `API: /api/cron/sync-episodes` (fallback — episode sync only)
+Vercel Cron that syncs only episode offsets. Replaced by the unified pipeline below.
+
+- **Auth:** Protected by `CRON_SECRET` Bearer token
+
 ---
 
 ### Stage 7 — Database Migration
 
-#### `migrate-to-db.ts`
-Final step: loads all JSON files and inserts into PostgreSQL.
+#### `migrate-to-db.ts` (legacy — initial load)
+One-time migration from JSON files to PostgreSQL. Replaced by the automated pipeline for ongoing updates.
 
-- **Reads** all `data/*.json` files
-- **Generates slugs** from `titleRomaji` or `title` (NFD normalization → lowercase → strip diacritics)
-- **Inserts into `anime` table** with `onConflictDoNothing()` (idempotent)
-- **Inserts into `anime_platform` table** with per-platform schedules
-- **Handles both formats:** new `streams[]` array and legacy `platforms[]` array
-- **Env:** Reads `DATABASE_URL` from `.env.local`
 - **Usage:** `npx tsx scripts/migrate-to-db.ts`
 
 ---
 
-## Execution Order
+## Automated Pipeline (Weekly Cron)
+
+### `API: /api/cron/sync-anime`
+
+Unified weekly cron that replaces all manual scripts. Runs every Sunday at 21:00 UTC (Monday 06:00 JST).
+
+| Step | What it does | Source |
+|------|-------------|--------|
+| 1. Fetch seasonal anime | Queries AniList for current season, inserts new anime to DB | AniList GraphQL API |
+| 2. Extract platforms | Crawls animebb.jp, uses Claude Haiku to extract platform data, matches to DB | animebb.jp + Anthropic API |
+| 3. Sync episodes | Updates `episodeOffset` and `pausedUntil` from AniList airing data | AniList GraphQL API |
+| 4. Upload images | Downloads covers/banners from AniList CDN, uploads to Cloudflare R2 | AniList CDN → Cloudflare R2 |
+
+- **Auth:** `CRON_SECRET` Bearer token
+- **Config:** `vercel.json` → `crons` array
+- **Env vars:** `DATABASE_URL`, `CRON_SECRET`, `ANTHROPIC_API_KEY`, `CLOUDFLARE_*` (R2)
+- **Response:** JSON with counts of new anime, matched platforms, updated episodes, uploaded images
+
+---
+
+## Legacy Scripts
+
+The scripts in `/scripts/` were used for the initial data pipeline. They still work against JSON files but are no longer needed for ongoing maintenance — the cron handles everything.
 
 ```
-1. [Manual]              Create/update data/<season>.json with base data
-2. enrich.ts             Add AniList metadata (synopsis, genres, image, studio...)
-3. add-platforms.ts      Add dAnime, ABEMA, Netflix schedules
-4. add-unext.ts          Add U-NEXT schedules
-5. add-format.ts         Fill missing format fields (optional)
-6. fetch-banners.ts      Fetch banner images (optional)
-7. download-images.ts    Download images to local filesystem
-8. translate-synopsis.ts Translate synopses to Japanese (optional)
-9. migrate-to-db.ts      Insert everything into PostgreSQL
+enrich.ts               Add AniList metadata
+add-platforms.ts        Add dAnime, ABEMA, Netflix schedules (hardcoded arrays)
+add-unext.ts            Add U-NEXT schedules (hardcoded arrays)
+add-format.ts           Fill missing format fields
+fetch-banners.ts        Fetch banner images
+download-images.ts      Download images to local filesystem
+translate-synopsis.ts   Translate synopses to Japanese
+sync-episodes.ts        Sync episode offsets from AniList
+migrate-to-db.ts        Insert JSON data into PostgreSQL
+fetch-seasonal-movies.ts  Fetch movies/OVAs from AniList
 ```
-
-After the initial load, `sync-episodes.ts` runs periodically to keep episode offsets and pause states up to date.
 
 ---
 

@@ -22,14 +22,17 @@ cd paopaoanime
 # Install dependencies
 pnpm install
 
-# Set up environment
-cp .env.example .env.local
+# Pull environment variables from Vercel
+vercel link
+vercel env pull .env.local
 
 # Start dev server
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+> **Note:** `vercel env pull` pulls from the Development environment by default. All env vars must be configured in Vercel Dashboard with the **Development** environment selected, or they won't appear in `.env.local`.
 
 ## Setup Guide
 
@@ -81,7 +84,48 @@ Paste the output as `AUTH_SECRET` in `.env.local`.
 > - Scopes: just the defaults (email, profile, openid)
 > - Test users: add your own email while in "Testing" mode
 
-### 4. Verify
+### 4. Cloudflare R2 (Image Storage)
+
+Anime cover and banner images are stored in Cloudflare R2 (S3-compatible, 10GB free).
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → **R2** → **Add R2 subscription** (free tier)
+2. **Create bucket** → name: `paopaoanime-images`, Location: Automatic, Storage: Standard
+3. In the bucket → **Settings** → **Public Development URL** → **Enable**
+   - Copy the public URL (e.g., `https://pub-xxx.r2.dev`)
+4. Go back to **R2** → **Manage R2 API Tokens** → **Create Account API Token**
+   - Permission: **Object Read & Write**
+   - Bucket: **Apply to specific buckets only** → `paopaoanime-images`
+   - TTL: Forever
+   - Copy the **Access Key ID** and **Secret Access Key** (shown only once)
+5. Your **Account ID** is in the S3 API endpoint URL: `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
+6. Add to `.env.local`:
+
+```env
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+CLOUDFLARE_R2_ACCESS_KEY_ID=your-access-key
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-secret-key
+CLOUDFLARE_R2_BUCKET_NAME=paopaoanime-images
+CLOUDFLARE_R2_PUBLIC_URL=https://pub-xxx.r2.dev
+```
+
+### 5. Cron Secret
+
+Generate a secret for the weekly anime sync cron job:
+
+```bash
+openssl rand -base64 32
+```
+
+Add to `.env.local` as `CRON_SECRET`. Also add it in Vercel (Production + Preview).
+
+### 6. Anthropic API Key
+
+The cron uses Claude to extract platform data from anime schedule pages.
+
+1. Get an API key from [console.anthropic.com](https://console.anthropic.com)
+2. Add to `.env.local` as `ANTHROPIC_API_KEY`
+
+### 7. Verify
 
 ```bash
 pnpm build    # Should complete with 0 errors
@@ -96,6 +140,13 @@ pnpm dev      # Open http://localhost:3000, click login
 | `AUTH_SECRET` | Random string for signing JWTs | `openssl rand -base64 33` |
 | `AUTH_GOOGLE_ID` | Google OAuth Client ID | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) |
 | `AUTH_GOOGLE_SECRET` | Google OAuth Client Secret | Same as above |
+| `CRON_SECRET` | Secret for cron job auth | `openssl rand -base64 32` |
+| `ANTHROPIC_API_KEY` | Claude API key for platform extraction | [Anthropic Console](https://console.anthropic.com) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | R2 S3 API endpoint URL |
+| `CLOUDFLARE_R2_ACCESS_KEY_ID` | R2 API access key | R2 → Manage API Tokens |
+| `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | R2 API secret key | Same as above |
+| `CLOUDFLARE_R2_BUCKET_NAME` | R2 bucket name | `paopaoanime-images` |
+| `CLOUDFLARE_R2_PUBLIC_URL` | R2 public URL | Bucket Settings → Public Dev URL |
 
 ## Commands
 
@@ -138,8 +189,9 @@ src/
 
 1. Push to GitHub
 2. Import the repo in [Vercel](https://vercel.com)
-3. Add the 4 environment variables from the table above
-4. Make sure to update the Google OAuth redirect URI to your production domain
+3. Add all environment variables from the table above
+4. **Important:** Add each variable to all 3 environments (Production, Preview, Development). `vercel env pull` only pulls from Development — missing variables there won't appear in `.env.local`
+5. Update the Google OAuth redirect URI to your production domain
 
 ## License
 

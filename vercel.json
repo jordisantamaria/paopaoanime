@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-anime",
+      "schedule": "0 21 * * 0"
+    }
+  ]
+}
