@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-04-09
+
+### feat: User platform preferences
+- Logged-in users can configure their preferred streaming platforms in `/settings`
+- Home page sorts anime by platform preference (preferred platforms first)
+- Platform filter chips reordered to show preferred platforms first
+- New `user_platform_preferences` table stores ordered platform list per user
+- All platforms remain visible — preferences only affect sort order
+
 ## 2026-04-08
 
 ### feat: Unified weekly anime sync cron pipeline

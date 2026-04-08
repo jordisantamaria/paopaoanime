@@ -11,7 +11,25 @@ import { toggleDrop } from "@/actions/drops";
 
 const NON_WEEKLY_FORMATS = new Set(["MOVIE", "OVA", "SPECIAL", "MUSIC"]);
 
-export function HomeContent({ animeList, droppedSlugs: initialDropped = [], initialEpisodes = [] }: { animeList: AnimeEntry[]; droppedSlugs?: string[]; initialEpisodes?: RecentEpisode[] }) {
+/** Returns the best (lowest) rank among an anime's platforms in the user's preference list.
+ *  Platforms not in preferences get Infinity so they sort last. */
+function bestPlatformRank(animePlatforms: string[], preferences: PlatformId[]): number {
+  let best = Infinity;
+  for (const p of animePlatforms) {
+    const idx = preferences.indexOf(p as PlatformId);
+    if (idx !== -1 && idx < best) best = idx;
+  }
+  return best;
+}
+
+type HomeContentProps = {
+  animeList: AnimeEntry[];
+  droppedSlugs?: string[];
+  initialEpisodes?: RecentEpisode[];
+  platformPreferences?: PlatformId[];
+};
+
+export function HomeContent({ animeList, droppedSlugs: initialDropped = [], initialEpisodes = [], platformPreferences = [] }: HomeContentProps) {
   const { data: session } = useSession();
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
   const [droppedSlugs, setDroppedSlugs] = useState<Set<string>>(new Set(initialDropped));
@@ -51,20 +69,48 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
       if (seen.has(ep.anime.slug)) return false;
       seen.add(ep.anime.slug);
       return true;
-    })
-    .slice(0, 20);
+    });
 
-  // Latest anime
-  const now = new Date();
-  const latestAnime = animeList
-    .filter((a) => {
-      const start = new Date(a.startDate + "T00:00:00+09:00");
-      if (start > now || droppedSlugs.has(a.slug)) return false;
-      if (selectedPlatforms.length === 0) return true;
-      return a.platforms.some((p) => selectedPlatforms.includes(p as PlatformId));
-    })
-    .sort((a, b) => b.startDate.localeCompare(a.startDate))
-    .slice(0, 20);
+  // Sort by platform preference when no filter is active
+  const sortedEpisodes = useMemo(() => {
+    if (platformPreferences.length === 0 || selectedPlatforms.length > 0) {
+      return deduplicatedEpisodes.slice(0, 20);
+    }
+    return [...deduplicatedEpisodes]
+      .sort((a, b) => {
+        const aRank = bestPlatformRank(a.anime.platforms, platformPreferences);
+        const bRank = bestPlatformRank(b.anime.platforms, platformPreferences);
+        if (aRank !== bRank) return aRank - bRank;
+        // Same rank: keep original order (by airedAt)
+        return 0;
+      })
+      .slice(0, 20);
+  }, [deduplicatedEpisodes, platformPreferences, selectedPlatforms]);
+
+  // Latest anime — `now` is intentionally re-created each render for freshness
+  const latestAnime = useMemo(() => {
+    const now = new Date();
+    const filtered = animeList
+      .filter((a) => {
+        const start = new Date(a.startDate + "T00:00:00+09:00");
+        if (start > now || droppedSlugs.has(a.slug)) return false;
+        if (selectedPlatforms.length === 0) return true;
+        return a.platforms.some((p) => selectedPlatforms.includes(p as PlatformId));
+      })
+      .sort((a, b) => b.startDate.localeCompare(a.startDate));
+
+    // Apply platform preference sorting when no filter is active
+    if (platformPreferences.length > 0 && selectedPlatforms.length === 0) {
+      filtered.sort((a, b) => {
+        const aRank = bestPlatformRank(a.platforms, platformPreferences);
+        const bRank = bestPlatformRank(b.platforms, platformPreferences);
+        if (aRank !== bRank) return aRank - bRank;
+        return b.startDate.localeCompare(a.startDate);
+      });
+    }
+
+    return filtered.slice(0, 20);
+  }, [animeList, droppedSlugs, selectedPlatforms, platformPreferences]);
 
   return (
     <div>
@@ -73,12 +119,13 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
           available={allPlatforms}
           selected={selectedPlatforms}
           onChange={setSelectedPlatforms}
+          preferences={platformPreferences}
         />
       </div>
 
       <h2 className="mb-4 text-xl font-bold">最新エピソード</h2>
       <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {deduplicatedEpisodes.map((ep) => (
+        {sortedEpisodes.map((ep) => (
           <div key={ep.anime.slug} className="relative group">
             <Link
               href={`/anime/${ep.anime.slug}`}

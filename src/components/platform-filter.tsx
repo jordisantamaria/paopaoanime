@@ -8,9 +8,10 @@ type Props = {
   available: PlatformId[];
   selected: PlatformId[];
   onChange: (selected: PlatformId[]) => void;
+  preferences?: PlatformId[];
 };
 
-export function PlatformFilter({ available, selected, onChange }: Props) {
+export function PlatformFilter({ available, selected, onChange, preferences = [] }: Props) {
   function toggle(pid: PlatformId) {
     if (selected.includes(pid)) {
       onChange(selected.filter((s) => s !== pid));
@@ -19,9 +20,17 @@ export function PlatformFilter({ available, selected, onChange }: Props) {
     }
   }
 
+  // Show preferred platforms first, then the rest in default order
+  const orderedPlatforms = preferences.length > 0
+    ? [
+        ...preferences.filter((pid) => available.includes(pid)),
+        ...PLATFORM_ORDER.filter((pid) => available.includes(pid) && !preferences.includes(pid)),
+      ]
+    : PLATFORM_ORDER.filter((pid) => available.includes(pid));
+
   return (
     <div className="flex flex-wrap gap-1.5">
-      {PLATFORM_ORDER.filter((pid) => available.includes(pid)).map((pid) => {
+      {orderedPlatforms.map((pid) => {
         const p = platforms[pid];
         const isActive = selected.includes(pid);
         return (

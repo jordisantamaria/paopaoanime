@@ -33,6 +33,16 @@ ORM: **Drizzle ORM** — schema in `src/lib/schema.ts`, migrations in `/drizzle/
 │ createdAt         │
 └──────────────────┘
 
+       │  userId
+       ▼
+┌──────────────────────────────┐
+│  user_platform_preferences    │
+│──────────────────────────────│
+│ userId (PK, FK)               │───► user.id
+│ platforms (text[])            │
+│ updatedAt                     │
+└──────────────────────────────┘
+
 ┌──────────────────┐       ┌────────────────────┐
 │     anime         │       │  anime_platform     │
 │──────────────────│       │────────────────────│
@@ -190,6 +200,18 @@ Allows users to hide anime they're not interested in.
 
 ---
 
+### `user_platform_preferences` — User's preferred platforms
+
+Stores an ordered list of streaming platforms the user subscribes to. Used to sort anime on the home page (preferred platforms first).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `userId` | text PK FK | References `user.id` (CASCADE on delete) |
+| `platforms` | text[] NOT NULL | Ordered list of platform IDs (first = highest priority) |
+| `updatedAt` | timestamp with tz | Last update timestamp |
+
+---
+
 ### `verificationToken` — Verification tokens
 
 Managed by Auth.js for email verification and password reset.
@@ -210,6 +232,7 @@ Migrations are stored in `/drizzle/`:
 |------|----------|
 | `0000_even_mandarin.sql` | Auth tables: user, account, verificationToken |
 | `0001_needy_mattie_franklin.sql` | Anime tables: anime, anime_platform + password field on user |
+| `0002_even_sunset_bain.sql` | User platform preferences table |
 
 Run migrations: `npx drizzle-kit push`
 

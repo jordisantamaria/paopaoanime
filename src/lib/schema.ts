@@ -77,6 +77,12 @@ export const animePlatforms = pgTable(
 
 // --- User data tables ---
 
+export const userPlatformPreferences = pgTable("user_platform_preferences", {
+  userId: text("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  platforms: text("platforms").array().notNull(), // ordered list of preferred platform IDs
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
 export const droppedAnime = pgTable(
   "dropped_anime",
   {

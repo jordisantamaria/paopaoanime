@@ -64,6 +64,13 @@ export function AuthButton() {
           >
             切り捨てリスト
           </Link>
+          <Link
+            href="/settings"
+            onClick={() => setOpen(false)}
+            className="block px-3 py-2 text-sm hover:bg-bg-card-hover"
+          >
+            設定
+          </Link>
           <button
             onClick={() => signOut()}
             className="block w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-bg-card-hover cursor-pointer"
