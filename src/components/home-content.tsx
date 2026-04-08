@@ -1,26 +1,22 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { AnimeEntry, PlatformId } from "@/lib/types";
-import { RecentEpisode, getRecentEpisodes } from "@/lib/episodes";
+import { RecentEpisode } from "@/lib/episodes";
 import { PlatformFilter } from "@/components/platform-filter";
 import { FORMAT_LABELS } from "@/lib/constants";
 import { toggleDrop } from "@/actions/drops";
 
 const NON_WEEKLY_FORMATS = new Set(["MOVIE", "OVA", "SPECIAL", "MUSIC"]);
 
-export function HomeContent({ animeList, droppedSlugs: initialDropped = [] }: { animeList: AnimeEntry[]; droppedSlugs?: string[] }) {
+export function HomeContent({ animeList, droppedSlugs: initialDropped = [], initialEpisodes = [] }: { animeList: AnimeEntry[]; droppedSlugs?: string[]; initialEpisodes?: RecentEpisode[] }) {
   const { data: session } = useSession();
-  const [episodes, setEpisodes] = useState<RecentEpisode[]>([]);
+  const [episodes] = useState<RecentEpisode[]>(initialEpisodes);
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
   const [droppedSlugs, setDroppedSlugs] = useState<Set<string>>(new Set(initialDropped));
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    setEpisodes(getRecentEpisodes(animeList));
-  }, [animeList]);
 
   const allPlatforms = [
     ...new Set(animeList.flatMap((a) => a.platforms)),
@@ -42,13 +38,12 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [] }: { 
     });
   }
 
-  // Recent episodes - exclude theater-only anime
-  const STREAMING_EXCLUDED: PlatformId[] = ["theater"];
-  const hasStreaming = (anime: AnimeEntry) =>
-    anime.platforms.some((p) => !STREAMING_EXCLUDED.includes(p));
+  // Recent episodes - exclude theater-only anime (but include anime with no platforms yet)
+  const isTheaterOnly = (anime: AnimeEntry) =>
+    anime.platforms.length > 0 && anime.platforms.every((p) => p === "theater");
 
   const filteredEpisodes = episodes.filter(
-    (ep) => hasStreaming(ep.anime) && filterByPlatform(ep.anime) && !droppedSlugs.has(ep.anime.slug)
+    (ep) => !isTheaterOnly(ep.anime) && filterByPlatform(ep.anime) && !droppedSlugs.has(ep.anime.slug)
   );
   const seen = new Set<string>();
   const deduplicatedEpisodes = filteredEpisodes

@@ -3,15 +3,24 @@ import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { anime, animePlatforms } from "./schema";
 import { AnimeEntry, DayOfWeek, PlatformId } from "./types";
-import { DAYS, NON_TV_FORMATS } from "./constants";
+import { DAYS, NON_TV_FORMATS, PLATFORM_ORDER } from "./constants";
 
 export { DAYS } from "./constants";
 export { DAY_LABELS } from "./constants";
+
+function sortByPlatformOrder<T extends { platform: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const ia = PLATFORM_ORDER.indexOf(a.platform as PlatformId);
+    const ib = PLATFORM_ORDER.indexOf(b.platform as PlatformId);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+}
 
 function rowToAnimeEntry(
   row: typeof anime.$inferSelect,
   platforms: (typeof animePlatforms.$inferSelect)[]
 ): AnimeEntry {
+  const sorted = sortByPlatformOrder(platforms);
   return {
     title: row.title,
     slug: row.slug,
@@ -19,7 +28,7 @@ function rowToAnimeEntry(
     time: row.time,
     startDate: row.startDate ?? "",
     type: row.type as "見放題" | "レンタル",
-    platforms: platforms.map((p) => p.platform as PlatformId),
+    platforms: sorted.map((p) => p.platform as PlatformId),
     format: row.format as AnimeEntry["format"],
     anilistId: row.anilistId ?? undefined,
     image: row.image ?? undefined,
@@ -31,7 +40,7 @@ function rowToAnimeEntry(
     titleEnglish: row.titleEnglish ?? undefined,
     titleRomaji: row.titleRomaji ?? undefined,
     banner: row.banner ?? undefined,
-    streams: platforms.map((p) => ({
+    streams: sorted.map((p) => ({
       platform: p.platform as PlatformId,
       day: p.day as DayOfWeek,
       time: p.time,

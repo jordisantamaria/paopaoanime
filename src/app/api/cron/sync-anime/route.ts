@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import { db } from "@/lib/db";
 import { anime, animePlatforms } from "@/lib/schema";
 import { eq, and, isNotNull, sql } from "drizzle-orm";
@@ -50,6 +49,7 @@ query ($season: MediaSeason, $seasonYear: Int, $page: Int) {
 const AIRING_QUERY = `
 query ($id: Int) {
   Media(id: $id, type: ANIME) {
+    episodes
     nextAiringEpisode { episode airingAt }
   }
 }
@@ -171,16 +171,32 @@ async function upsertAnimeFromAniList(
   media: AniListMedia[],
   seasonSlug: string,
   log: string[]
-): Promise<number> {
-  const existing = await db.select({ anilistId: anime.anilistId, slug: anime.slug })
+): Promise<{ added: number; updated: number }> {
+  const existing = await db.select({ anilistId: anime.anilistId, slug: anime.slug, episodes: anime.episodes })
     .from(anime)
     .where(isNotNull(anime.anilistId));
-  const existingIds = new Set(existing.map((e) => e.anilistId));
+  const existingMap = new Map(existing.map((e) => [e.anilistId, e]));
 
   let added = 0;
+  let updated = 0;
 
   for (const m of media) {
-    if (existingIds.has(m.id)) continue;
+    const ex = existingMap.get(m.id);
+
+    if (ex) {
+      // Update metadata for existing anime (episodes count, synopsis, etc.)
+      const updates: Record<string, unknown> = {};
+      if (m.episodes && m.episodes !== ex.episodes) {
+        updates.episodes = m.episodes;
+      }
+      if (Object.keys(updates).length > 0) {
+        updates.updatedAt = new Date();
+        await db.update(anime).set(updates).where(eq(anime.anilistId, m.id));
+        updated++;
+        log.push(`UPDATED: ${m.title.native ?? m.title.romaji} (episodes: ${m.episodes})`);
+      }
+      continue;
+    }
 
     const title = m.title.native || m.title.romaji || "Unknown";
     const startDateStr = formatStartDate(m.startDate);
@@ -221,10 +237,10 @@ async function upsertAnimeFromAniList(
     }
   }
 
-  return added;
+  return { added, updated };
 }
 
-// --- Step 2: Extract platform data via LLM ---
+// --- Step 2: Extract platform data from uzurea.net (HTML parsing, no LLM, $0.00) ---
 
 interface PlatformEntry {
   title: string;
@@ -233,106 +249,175 @@ interface PlatformEntry {
   time: string | null;
 }
 
+// Map uzurea.net CSS classes to our platform IDs
+const UZUREA_PLATFORM_MAP: Record<string, string> = {
+  dmmtv: "dmmtv",
+  d: "danime",
+  abema: "abema",
+  amazon: "amazon",
+  unext: "unext",
+  netflix: "netflix",
+  disneyplus: "disney",
+};
+
+// URL patterns for per-platform schedule pages on uzurea.net
+function getPlatformScheduleUrls(seasonName: string, year: string): { platform: string; url: string }[] {
+  const month = { winter: "1", spring: "4", summer: "7", fall: "10" }[seasonName] ?? "4";
+  return [
+    { platform: "dmmtv", url: `https://uzurea.net/dmm-tv-${seasonName}-${year}-anime/` },
+    { platform: "danime", url: `https://uzurea.net/d-animestore-anime-list-${seasonName}${year}/` },
+    { platform: "abema", url: `https://uzurea.net/abema-${year}-${seasonName}-anime-list/` },
+    { platform: "amazon", url: `https://uzurea.net/amazon-primevideo-${year}-${month}/` },
+    { platform: "unext", url: `https://uzurea.net/u-next-${year}-${month}/` },
+    { platform: "netflix", url: `https://uzurea.net/new-on-netflix-${year}-${month.padStart(2, "0")}/` },
+    { platform: "disney", url: `https://uzurea.net/disneyplus-${month}-${year}/` },
+  ];
+}
+
+const DAY_JA_TO_DAY: Record<string, string> = {
+  月: "月", 火: "火", 水: "水", 木: "木", 金: "金", 土: "土", 日: "日",
+};
+
+// Parse per-platform schedule pages for day/time per anime
+// HTML structure: <ul class="vc_monthly_list"> → <li><strong>Title</strong> M月DD日（曜） HH:MM</li>
+function parseSchedulePage(html: string): { title: string; day: string | null; time: string | null }[] {
+  const listMatch = html.match(/<ul[^>]*class="vc_monthly_list"[^>]*>([\s\S]*?)<\/ul>/i);
+  if (!listMatch) return [];
+
+  const items = listMatch[1].match(/<li>[\s\S]*?<\/li>/gi) ?? [];
+  const results: { title: string; day: string | null; time: string | null }[] = [];
+
+  for (const li of items) {
+    // Extract title from <strong> (may contain <a> inside)
+    const titleMatch = li.match(/<strong>(?:<a[^>]*>)?([\s\S]*?)(?:<\/a>)?\s*<\/strong>/i);
+    if (!titleMatch) continue;
+    const title = titleMatch[1].replace(/<[^>]+>/g, "").trim();
+    if (!title) continue;
+
+    // Extract day of week from （曜）
+    const dayMatch = li.match(/（([月火水木金土日])）/);
+    const day = dayMatch ? DAY_JA_TO_DAY[dayMatch[1]] ?? null : null;
+
+    // Extract time HH:MM
+    const timeMatch = li.match(/(\d{1,2}:\d{2})/);
+    const time = timeMatch ? timeMatch[1] : null;
+
+    results.push({ title, day, time });
+  }
+
+  return results;
+}
+
 async function fetchPlatformData(seasonSlug: string, log: string[]): Promise<PlatformEntry[]> {
-  // Determine the animebb.jp URL for the current season
   const [seasonName, year] = seasonSlug.split("-");
   const seasonJa: Record<string, string> = {
     winter: "冬", spring: "春", summer: "夏", fall: "秋",
   };
-  const searchTerm = `${year}年${seasonJa[seasonName]}アニメ 配信`;
 
-  // Try animebb.jp — the cross-platform comparison page
-  const animeBbUrl = `https://animebb.jp/${year}-${seasonName}-anime-streaming-services-animebb/`;
+  // Step 2a: Master page — which platforms per anime
+  const tagUrl = `https://uzurea.net/vc_tags/${year}年${seasonJa[seasonName]}アニメ/?posts_per_page=200`;
+  const entries: PlatformEntry[] = [];
 
-  let html: string;
+  let masterHtml: string | null = null;
   try {
-    const res = await fetch(animeBbUrl, {
+    const res = await fetch(tagUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; PaoPaoAnime/1.0)" },
     });
-    if (!res.ok) {
-      log.push(`Platform crawl failed: ${animeBbUrl} (${res.status})`);
-      return [];
-    }
-    html = await res.text();
+    if (res.ok) masterHtml = await res.text();
+    else log.push(`Master page failed: ${res.status}`);
   } catch (err) {
-    log.push(`Platform crawl error: ${String(err)}`);
-    return [];
+    log.push(`Master page error: ${String(err)}`);
   }
 
-  // Trim HTML to reduce tokens — keep only table/main content
-  const bodyMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i)
-    ?? html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
-  const content = bodyMatch?.[1] ?? html.slice(0, 100000);
+  if (masterHtml) {
+    const articles = masterHtml.match(/<article[^>]*>[\s\S]*?<\/article>/gi) ?? [];
+    let animeCount = 0;
 
-  // Strip script/style tags to reduce noise
-  const cleaned = content
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<nav[\s\S]*?<\/nav>/gi, "");
+    for (const article of articles) {
+      const titleMatch = article.match(/<a[^>]*class="[^"]*entry-title[^"]*"[^>]*><h2>([\s\S]*?)<\/h2><\/a>/i);
+      if (!titleMatch) continue;
+      const title = titleMatch[1].replace(/<[^>]+>/g, "").trim();
+      if (!title) continue;
 
-  const anthropic = new Anthropic();
+      const platformListMatch = article.match(/<ul[^>]*class="vc_distlist01[^"]*"[^>]*>([\s\S]*?)<\/ul>/i);
+      if (!platformListMatch) continue;
 
-  const response = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 4096,
-    messages: [
-      {
-        role: "user",
-        content: `以下のHTMLはアニメ配信サービス比較ページです。各アニメがどの配信プラットフォームで見られるかを抽出してください。
-
-対象プラットフォーム: DMM TV (dmmtv), dアニメストア (danime), ABEMA (abema), Amazon Prime Video (amazon), U-NEXT (unext), Netflix (netflix), Disney+ (disney)
-
-JSON配列で返してください。各エントリ:
-{"title": "アニメタイトル", "platforms": ["dmmtv", "abema", "unext"]}
-
-タイトルは日本語のまま。プラットフォームIDはカッコ内のIDを使用。配信されていないプラットフォームは含めない。
-
-HTMLのみ参照し、推測しないでください。JSONのみ返してください、説明不要。
-
-HTML:
-${cleaned.slice(0, 80000)}`,
-      },
-    ],
-  });
-
-  const text = response.content[0].type === "text" ? response.content[0].text : "";
-
-  // Parse JSON from response
-  const jsonMatch = text.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) {
-    log.push("LLM returned no parseable JSON for platforms");
-    return [];
-  }
-
-  try {
-    const parsed: { title: string; platforms: string[] }[] = JSON.parse(jsonMatch[0]);
-    const entries: PlatformEntry[] = [];
-    for (const item of parsed) {
-      for (const platform of item.platforms) {
-        if (PLATFORM_IDS.includes(platform as typeof PLATFORM_IDS[number])) {
-          entries.push({ title: item.title, platform, day: null, time: null });
+      const platformItems = platformListMatch[1].match(/<li[^>]*class="([^"]*)"[^>]*>/gi) ?? [];
+      for (const li of platformItems) {
+        const classMatch = li.match(/class="([^"]*)"/i);
+        if (!classMatch) continue;
+        const platformId = UZUREA_PLATFORM_MAP[classMatch[1].trim()];
+        if (platformId) {
+          entries.push({ title, platform: platformId, day: null, time: null });
+          animeCount++;
         }
       }
     }
-    log.push(`LLM extracted ${parsed.length} anime with platform data`);
-    return entries;
-  } catch {
-    log.push("Failed to parse LLM platform JSON");
-    return [];
+    log.push(`Master: ${animeCount} platform entries from ${articles.length} articles`);
   }
+
+  // Step 2b: Per-platform pages — day/time schedules
+  const scheduleUrls = getPlatformScheduleUrls(seasonName, year);
+  // Build a lookup: normalized title → entry indices in entries[]
+  const entryIndices = new Map<string, number[]>();
+  for (let i = 0; i < entries.length; i++) {
+    const norm = normalize(entries[i].title);
+    const list = entryIndices.get(norm) ?? [];
+    list.push(i);
+    entryIndices.set(norm, list);
+  }
+
+  for (const { platform, url } of scheduleUrls) {
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; PaoPaoAnime/1.0)" },
+      });
+      if (!res.ok) {
+        log.push(`Schedule ${platform}: ${res.status}`);
+        continue;
+      }
+      const html = await res.text();
+      const schedules = parseSchedulePage(html);
+      let matched = 0;
+
+      for (const sched of schedules) {
+        const norm = normalize(sched.title);
+        // Find matching entries for this platform
+        for (const [key, indices] of entryIndices) {
+          if (key.includes(norm) || norm.includes(key)) {
+            for (const idx of indices) {
+              if (entries[idx].platform === platform && !entries[idx].day) {
+                entries[idx].day = sched.day;
+                entries[idx].time = sched.time;
+                matched++;
+              }
+            }
+          }
+        }
+      }
+      log.push(`Schedule ${platform}: ${schedules.length} anime, ${matched} schedules matched`);
+    } catch {
+      log.push(`Schedule ${platform}: fetch error`);
+    }
+  }
+
+  return entries;
 }
 
 function normalize(t: string): string {
   return t
+    // Fullwidth → halfwidth numbers and letters
+    .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[Ａ-Ｚａ-ｚ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
     .replace(/\s+/g, "")
     .replace(/[～〜~]/g, "")
-    .replace(/[！!？?。、・「」『』【】（）()]/g, "")
+    .replace(/[！!？?。、・「」『』【】（）()：:]/g, "")
     .replace(/TVアニメ/g, "")
     .replace(/第\d+期/g, "")
     .replace(/第\d+クール/g, "")
     .replace(/Season\d+/gi, "")
     .replace(/シーズン\d+/g, "")
-    .replace(/２/g, "2")
+    .replace(/編/g, "")
     .toLowerCase();
 }
 
@@ -371,15 +456,31 @@ async function matchAndUpsertPlatforms(
     if (!slug) continue;
 
     try {
-      await db.insert(animePlatforms).values({
-        animeSlug: slug,
-        platform: entry.platform,
-        day: entry.day,
-        time: entry.time,
-      }).onConflictDoNothing();
-      matched++;
+      // Insert new or update existing with schedule data
+      const [existing] = await db.select({ id: animePlatforms.id, day: animePlatforms.day })
+        .from(animePlatforms)
+        .where(and(
+          eq(animePlatforms.animeSlug, slug),
+          eq(animePlatforms.platform, entry.platform)
+        ));
+
+      if (!existing) {
+        await db.insert(animePlatforms).values({
+          animeSlug: slug,
+          platform: entry.platform,
+          day: entry.day,
+          time: entry.time,
+        });
+        matched++;
+      } else if (!existing.day && entry.day) {
+        // Update existing entry that was missing schedule
+        await db.update(animePlatforms)
+          .set({ day: entry.day, time: entry.time })
+          .where(eq(animePlatforms.id, existing.id));
+        matched++;
+      }
     } catch {
-      // Skip conflicts silently
+      // Skip errors silently
     }
   }
 
@@ -420,8 +521,15 @@ async function syncEpisodes(log: string[]): Promise<number> {
     }
 
     const json = await res.json();
-    const next = json.data?.Media?.nextAiringEpisode;
-    const updates: { episodeOffset?: number; pausedUntil?: string | null } = {};
+    const mediaData = json.data?.Media;
+    const next = mediaData?.nextAiringEpisode;
+    const updates: { episodeOffset?: number; pausedUntil?: string | null; episodes?: number } = {};
+
+    // Update episode count if AniList has it and we don't (or it changed)
+    if (mediaData?.episodes && mediaData.episodes !== entry.episodes) {
+      updates.episodes = mediaData.episodes;
+      log.push(`EPISODES: ${entry.title} ${entry.episodes ?? "null"} → ${mediaData.episodes}`);
+    }
 
     if (next) {
       const airingAt = new Date(next.airingAt * 1000);
@@ -481,12 +589,17 @@ async function uploadImages(log: string[]): Promise<number> {
 
   for (const entry of entries) {
     if (!entry.anilistId) continue;
+    const isOnR2 = (url: string) => url.startsWith(r2PublicUrl!);
 
-    // Upload cover if it's still an external URL
-    if (entry.image && !entry.image.startsWith(r2PublicUrl!) && !entry.image.startsWith("/img/")) {
+    // Upload cover if not already on R2
+    if (entry.image && !isOnR2(entry.image)) {
       try {
         const key = `cover/${entry.anilistId}.jpg`;
-        const newUrl = await uploadImageToR2(key, entry.image);
+        // Local paths (/img/...) need to be re-fetched from AniList
+        const sourceUrl = entry.image.startsWith("/")
+          ? `https://s3.anilist.co/media/anime/cover/large/b${entry.anilistId}.jpg`
+          : entry.image;
+        const newUrl = await uploadImageToR2(key, sourceUrl);
         await db.update(anime).set({ image: newUrl, updatedAt: new Date() }).where(eq(anime.id, entry.id));
         uploaded++;
       } catch (err) {
@@ -494,11 +607,14 @@ async function uploadImages(log: string[]): Promise<number> {
       }
     }
 
-    // Upload banner if it's still an external URL
-    if (entry.banner && !entry.banner.startsWith(r2PublicUrl!) && !entry.banner.startsWith("/img/")) {
+    // Upload banner if not already on R2
+    if (entry.banner && !isOnR2(entry.banner)) {
       try {
         const key = `banner/${entry.anilistId}.jpg`;
-        const newUrl = await uploadImageToR2(key, entry.banner);
+        const sourceUrl = entry.banner.startsWith("/")
+          ? `https://s3.anilist.co/media/anime/banner/${entry.anilistId}.jpg`
+          : entry.banner;
+        const newUrl = await uploadImageToR2(key, sourceUrl);
         await db.update(anime).set({ banner: newUrl, updatedAt: new Date() }).where(eq(anime.id, entry.id));
         uploaded++;
       } catch (err) {
@@ -535,8 +651,9 @@ export async function GET(request: Request) {
     log.push(`--- Step 1: Fetch ${season} ${year} from AniList ---`);
     const media = await fetchSeasonalAnime(season, year);
     log.push(`AniList returned ${media.length} anime`);
-    const newAnime = await upsertAnimeFromAniList(media, seasonSlug, log);
-    results.newAnime = newAnime;
+    const { added, updated: metaUpdated } = await upsertAnimeFromAniList(media, seasonSlug, log);
+    results.newAnime = added;
+    results.metadataUpdated = metaUpdated;
   }
 
   // Step 2: Extract and match platform data
