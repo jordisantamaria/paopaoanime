@@ -32,7 +32,8 @@
     "otherDelivery": "映画・OVA・一挙配信",
     "scheduled": "予定",
     "tbd": "未定",
-    "batch": "一挙"
+    "batch": "一挙",
+    "noImage": "画像なし"
   },
   "anime": {
     "day": "曜日",

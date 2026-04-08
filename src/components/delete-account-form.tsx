@@ -22,7 +22,7 @@ export function DeleteAccountForm() {
     <div className="rounded border border-red-500/30 bg-red-500/5 p-5">
       <h2 className="text-sm font-bold text-red-400">{t("title")}</h2>
       <p className="mt-2 text-xs text-text-secondary">
-        {t("description")}
+        {t("warning")}
       </p>
 
       {!confirming ? (
@@ -30,12 +30,12 @@ export function DeleteAccountForm() {
           onClick={() => setConfirming(true)}
           className="mt-4 rounded bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-red-600 cursor-pointer transition-colors"
         >
-          {t("deleteButton")}
+          {t("openButton")}
         </button>
       ) : (
         <div className="mt-4">
           <p className="mb-2 text-xs text-text-primary">
-            {t("confirmPrompt", { word: t("confirmWord") })}
+            {t("confirmPrompt")}
           </p>
           <input
             type="text"
@@ -51,7 +51,7 @@ export function DeleteAccountForm() {
               disabled={confirmText !== t("confirmWord") || deleting}
               className="rounded bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50 cursor-pointer transition-colors"
             >
-              {deleting ? t("deleting") : t("confirmDelete")}
+              {deleting ? t("deleting") : t("deleteForever")}
             </button>
             <button
               onClick={() => {

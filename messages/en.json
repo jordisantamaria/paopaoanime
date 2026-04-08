@@ -32,7 +32,8 @@
     "otherDelivery": "Movies, OVAs & Batch releases",
     "scheduled": "Scheduled",
     "tbd": "TBD",
-    "batch": "Batch"
+    "batch": "Batch",
+    "noImage": "No image"
   },
   "anime": {
     "day": "Day",

@@ -87,13 +87,13 @@ export function DropsContent({ items }: { items: DroppedItem[] }) {
         </svg>
         <p className="text-sm font-bold text-text-primary">{t("empty")}</p>
         <p className="mt-1 text-xs text-text-muted">
-          {t("emptyDescription")}
+          {t("emptyHint")}
         </p>
         <Link
           href="/"
           className="mt-4 rounded bg-accent px-4 py-2 text-sm font-bold text-white hover:bg-accent/90 transition-colors"
         >
-          {t("backToHome")}
+          {t("goHome")}
         </Link>
       </div>
     );

@@ -61,10 +61,10 @@ export function PlatformSettings({ initialPreferences }: Props) {
   return (
     <div>
       <h2 className="mb-2 text-sm font-bold text-text-primary">
-        {t("platformTitle")}
+        {t("platforms")}
       </h2>
       <p className="mb-4 text-xs text-text-muted">
-        {t("platformDescription")}
+        {t("platformsDescription")}
       </p>
 
       {/* Selected platforms - ordered */}
@@ -103,7 +103,7 @@ export function PlatformSettings({ initialPreferences }: Props) {
                 <button
                   onClick={() => removePlatform(pid)}
                   className="text-xs text-red-400 hover:text-red-300 cursor-pointer"
-                  title={t("remove")}
+                  title={t("removePlatform")}
                 >
                   ✕
                 </button>
@@ -116,7 +116,7 @@ export function PlatformSettings({ initialPreferences }: Props) {
       {/* Available platforms to add */}
       {remaining.length > 0 && (
         <div className="mb-6">
-          <p className="mb-2 text-xs text-text-muted">{t("add")}:</p>
+          <p className="mb-2 text-xs text-text-muted">{t("addLabel")}</p>
           <div className="flex flex-wrap gap-1.5">
             {remaining.map((pid) => {
               const p = platforms[pid];
