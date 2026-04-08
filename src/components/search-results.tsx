@@ -1,12 +1,16 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { AnimeEntry } from "@/lib/types";
+import { useTranslations, useLocale } from "next-intl";
+import { getDisplayTitle } from "@/lib/localized";
 
 export function SearchResults({ animeList }: { animeList: AnimeEntry[] }) {
   const searchParams = useSearchParams();
   const q = searchParams.get("q") ?? "";
+  const t = useTranslations("search");
+  const locale = useLocale();
 
   function normalize(s: string): string {
     return s.toLowerCase().replace(/[-ー～〜・:：]/g, "").replace(/\s+/g, "");
@@ -26,14 +30,14 @@ export function SearchResults({ animeList }: { animeList: AnimeEntry[] }) {
   return (
     <div>
       <h1 className="mb-4 text-xl font-bold">
-        「{q}」の検索結果
+        {t("results", { query: q })}
         <span className="ml-2 text-sm font-normal text-text-muted">
-          {results.length}件
+          {t("count", { count: results.length })}
         </span>
       </h1>
 
       {results.length === 0 ? (
-        <p className="text-text-muted">該当するアニメが見つかりませんでした。</p>
+        <p className="text-text-muted">{t("noResults")}</p>
       ) : (
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {results.map((a) => (
@@ -47,15 +51,18 @@ export function SearchResults({ animeList }: { animeList: AnimeEntry[] }) {
                   />
                 ) : (
                   <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
-                    画像なし
+                    {t("noImage")}
                   </div>
                 )}
               </div>
               <div className="mt-1.5">
                 <h3 className="line-clamp-1 text-sm font-bold text-text-primary group-hover:text-accent">
-                  {a.title}
+                  {getDisplayTitle(a, locale)}
                 </h3>
-                {a.titleRomaji && (
+                {locale === "en" && (
+                  <p className="text-xs text-text-muted truncate">{a.title}</p>
+                )}
+                {locale === "ja" && a.titleRomaji && (
                   <p className="text-xs text-text-muted truncate">{a.titleRomaji}</p>
                 )}
               </div>

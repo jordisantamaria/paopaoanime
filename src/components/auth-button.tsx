@@ -2,12 +2,14 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export function AuthButton() {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const t = useTranslations("auth");
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -29,7 +31,7 @@ export function AuthButton() {
         href="/login"
         className="rounded bg-white/10 px-3 py-1 text-xs font-bold text-white hover:bg-white/20 transition-colors"
       >
-        ログイン
+        {t("login")}
       </Link>
     );
   }
@@ -62,20 +64,20 @@ export function AuthButton() {
             onClick={() => setOpen(false)}
             className="block px-3 py-2 text-sm hover:bg-bg-card-hover"
           >
-            切り捨てリスト
+            {t("droppedList")}
           </Link>
           <Link
             href="/settings"
             onClick={() => setOpen(false)}
             className="block px-3 py-2 text-sm hover:bg-bg-card-hover"
           >
-            設定
+            {t("settings")}
           </Link>
           <button
             onClick={() => signOut()}
             className="block w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-bg-card-hover cursor-pointer"
           >
-            ログアウト
+            {t("logout")}
           </button>
         </div>
       )}

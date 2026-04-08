@@ -1,17 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { AnimeEntry } from "@/lib/types";
+import { useTranslations, useLocale } from "next-intl";
+import { getDisplayTitle } from "@/lib/localized";
 
 export function SearchBar({ animeList }: { animeList: AnimeEntry[] }) {
+  const locale = useLocale();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const t = useTranslations("search");
 
   const results =
     query.length >= 1
@@ -85,7 +89,7 @@ export function SearchBar({ animeList }: { animeList: AnimeEntry[] }) {
         <input
           ref={inputRef}
           type="text"
-          placeholder="検索..."
+          placeholder={t("placeholder")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -128,7 +132,7 @@ export function SearchBar({ animeList }: { animeList: AnimeEntry[] }) {
                   className="h-8 w-6 rounded-sm object-cover"
                 />
               )}
-              <span className="truncate">{a.title}</span>
+              <span className="truncate">{getDisplayTitle(a, locale)}</span>
             </Link>
           ))}
         </div>

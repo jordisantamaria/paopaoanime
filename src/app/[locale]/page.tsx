@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getAnimeData } from "@/lib/data";
 import { getRecentEpisodes } from "@/lib/episodes";
 import { HomeContent } from "@/components/home-content";
@@ -7,6 +8,7 @@ import { getPlatformPreferences } from "@/actions/platform-preferences";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const t = await getTranslations("home");
   const animeList = await getAnimeData();
   const [droppedSlugs, platformPreferences] = await Promise.all([
     getDroppedSlugs(),
@@ -17,7 +19,7 @@ export default async function Home() {
   return (
     <div>
       <p className="mb-5 text-xs text-text-muted text-center">
-        今期アニメ、いつ・どこで配信？パオパオでかんたん確認。
+        {t("tagline")}
       </p>
       <HomeContent
         animeList={animeList}

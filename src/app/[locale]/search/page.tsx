@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getAnimeData } from "@/lib/data";
 import { Suspense } from "react";
 import { SearchResults } from "@/components/search-results";

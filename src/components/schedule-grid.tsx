@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { AnimeEntry, DayOfWeek, PlatformId } from "@/lib/types";
-import { DAYS, DAY_LABELS, PLATFORM_ORDER, FORMAT_LABELS } from "@/lib/constants";
+import { DAYS, PLATFORM_ORDER } from "@/lib/constants";
 import { platforms } from "@/lib/platforms";
+import { useTranslations, useLocale } from "next-intl";
+import { getDisplayTitle } from "@/lib/localized";
 
 type DayFilter = DayOfWeek | "all" | "他";
 
@@ -19,6 +21,12 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
     "all"
   );
   const [selectedDay, setSelectedDay] = useState<DayFilter>("all");
+  const tSchedule = useTranslations("schedule");
+  const tDaysShort = useTranslations("daysShort");
+  const tDays = useTranslations("days");
+  const tFormats = useTranslations("formats");
+  const tPlatforms = useTranslations("platforms");
+  const locale = useLocale();
 
   const allPlatformIds = [
     ...new Set(
@@ -68,7 +76,7 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
           type="text"
-          placeholder="アニメを検索..."
+          placeholder={tSchedule("searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="rounded border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none focus:border-accent"
@@ -82,10 +90,10 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
             }
             className="w-full cursor-pointer appearance-none rounded border border-border bg-bg-card pl-3 pr-8 py-2 text-sm text-text-primary outline-none focus:border-accent"
           >
-            <option value="all">全プラットフォーム</option>
+            <option value="all">{tSchedule("allPlatforms")}</option>
             {PLATFORM_ORDER.filter((pid) => allPlatformIds.includes(pid)).map((pid) => (
               <option key={pid} value={pid}>
-                {platforms[pid].name}
+                {tPlatforms(pid)}
               </option>
             ))}
           </select>
@@ -103,7 +111,7 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
                 : "bg-bg-card text-text-muted border border-border hover:text-accent"
             }`}
           >
-            全部
+            {tSchedule("all")}
           </button>
           {DAYS.map((day) => (
             <button
@@ -115,7 +123,7 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
                   : "bg-bg-card text-text-muted border border-border hover:text-accent"
               }`}
             >
-              {day}
+              {tDaysShort(day)}
             </button>
           ))}
           <button
@@ -126,13 +134,13 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
                 : "bg-bg-card text-text-muted border border-border hover:text-yellow-500"
             }`}
           >
-            他
+            {tSchedule("other")}
           </button>
         </div>
       </div>
 
       <p className="mb-5 text-xs text-text-muted">
-        {totalFiltered}作品
+        {tSchedule("worksCount", { count: totalFiltered })}
       </p>
 
       <div className="space-y-10">
@@ -143,14 +151,14 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
           return (
             <section key={day}>
               <h2 className="mb-3 border-l-4 border-accent pl-3 text-base font-bold">
-                {day}曜配信
+                {tSchedule("dayDelivery", { day: tDaysShort(day) })}
                 <span className="ml-2 text-xs font-normal text-text-muted">
-                  {DAY_LABELS[day]}
+                  {tDays(day)}
                 </span>
               </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {filtered.map((anime) => (
-                  <ScheduleCard key={anime.slug} anime={anime} />
+                  <ScheduleCard key={anime.slug} anime={anime} tSchedule={tSchedule} tFormats={tFormats} locale={locale} />
                 ))}
               </div>
             </section>
@@ -160,14 +168,11 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
         {filteredNonWeekly.length > 0 && (
           <section>
             <h2 className="mb-3 border-l-4 border-yellow-500 pl-3 text-base font-bold">
-              他配信
-              <span className="ml-2 text-xs font-normal text-text-muted">
-                映画・OVA・一挙配信
-              </span>
+              {tSchedule("otherDelivery")}
             </h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {filteredNonWeekly.map((anime) => (
-                <ScheduleCard key={anime.slug} anime={anime} />
+                <ScheduleCard key={anime.slug} anime={anime} tSchedule={tSchedule} tFormats={tFormats} locale={locale} />
               ))}
             </div>
           </section>
@@ -177,10 +182,17 @@ export function ScheduleGrid({ animeByDay, nonWeeklyAnime = [] }: Props) {
   );
 }
 
-function ScheduleCard({ anime }: { anime: AnimeEntry }) {
+type ScheduleCardProps = {
+  anime: AnimeEntry;
+  tSchedule: ReturnType<typeof useTranslations<"schedule">>;
+  tFormats: ReturnType<typeof useTranslations<"formats">>;
+  locale: string;
+};
+
+function ScheduleCard({ anime, tSchedule, tFormats, locale }: ScheduleCardProps) {
   const thumbnail = anime.banner || anime.image;
   const isNonWeekly = anime.batchRelease || (anime.format && ["MOVIE", "OVA", "SPECIAL", "MUSIC"].includes(anime.format));
-  const formatLabel = anime.batchRelease ? "一挙" : (anime.format ? FORMAT_LABELS[anime.format] : null);
+  const formatLabel = anime.batchRelease ? tSchedule("batch") : (anime.format ? tFormats(anime.format) : null);
 
   return (
     <Link
@@ -198,7 +210,7 @@ function ScheduleCard({ anime }: { anime: AnimeEntry }) {
           />
         ) : (
           <div className="flex aspect-video w-full items-center justify-center bg-bg-card text-xs text-text-muted">
-            画像なし
+            {tSchedule("noImage")}
           </div>
         )}
         {isNonWeekly && formatLabel && (
@@ -209,10 +221,10 @@ function ScheduleCard({ anime }: { anime: AnimeEntry }) {
       </div>
       <div className="mt-1.5">
         <p className="text-xs font-bold text-accent">
-          {isNonWeekly ? anime.startDate : (anime.time ?? "未定") + " 予定"}
+          {isNonWeekly ? anime.startDate : (anime.time ?? tSchedule("tbd")) + " " + tSchedule("scheduled")}
         </p>
         <h3 className="text-sm font-bold leading-snug text-text-primary group-hover:text-accent line-clamp-2">
-          {anime.title}
+          {getDisplayTitle(anime, locale)}
         </h3>
       </div>
     </Link>

@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { AnimeEntry } from "@/lib/types";
 import { getRecentEpisodes } from "@/lib/episodes";
+import { useTranslations } from "next-intl";
 
 export function CurrentEpisode({ anime }: { anime: AnimeEntry }) {
   const [episode, setEpisode] = useState<number | null>(null);
+  const t = useTranslations("anime");
 
   useEffect(() => {
     // Movies/OVAs/Specials don't have weekly episodes
@@ -22,8 +24,8 @@ export function CurrentEpisode({ anime }: { anime: AnimeEntry }) {
   if (anime.batchRelease) {
     return (
       <tr>
-        <td>配信形式</td>
-        <td className="text-accent">全話一挙配信</td>
+        <td>{t("deliveryFormat")}</td>
+        <td className="text-accent">{t("batchRelease")}</td>
       </tr>
     );
   }
@@ -32,8 +34,8 @@ export function CurrentEpisode({ anime }: { anime: AnimeEntry }) {
 
   return (
     <tr>
-      <td>最新話</td>
-      <td className="text-accent">第{episode}話</td>
+      <td>{t("currentEpisode")}</td>
+      <td className="text-accent">{t("episode", { ep: episode })}</td>
     </tr>
   );
 }

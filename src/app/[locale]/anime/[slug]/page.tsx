@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDisplayTitle, getDisplaySynopsis } from "@/lib/localized";
 import { BackButton } from "@/components/back-button";
-import { getAnimeBySlug, getAnimeData, DAY_LABELS } from "@/lib/data";
+import { getAnimeBySlug, getAnimeData } from "@/lib/data";
 import { AnimeEntry } from "@/lib/types";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
-import { FORMAT_LABELS } from "@/lib/constants";
 import { CurrentEpisode } from "@/components/current-episode";
 import { AnimeTrailer } from "@/components/trailer-player";
 
@@ -25,6 +26,16 @@ export default async function AnimeDetail({
 
   const bannerSrc = anime.banner || anime.image;
 
+  const [tAnime, tDays, tFormats, tPlatforms, locale] = await Promise.all([
+    getTranslations("anime"),
+    getTranslations("days"),
+    getTranslations("formats"),
+    getTranslations("platforms"),
+    getLocale(),
+  ]);
+
+  const displaySynopsis = getDisplaySynopsis(anime, locale);
+
   return (
     <div>
       <BackButton />
@@ -36,9 +47,9 @@ export default async function AnimeDetail({
             title={anime.title}
             posterSrc={anime.image}
             bannerSrc={bannerSrc}
-            footer={anime.synopsis ? <Synopsis text={anime.synopsis} /> : undefined}
+            footer={displaySynopsis ? <Synopsis text={displaySynopsis} label={tAnime("synopsis")} /> : undefined}
           >
-            <AnimeInfo anime={anime} />
+            <AnimeInfo anime={anime} tAnime={tAnime} tDays={tDays} tFormats={tFormats} tPlatforms={tPlatforms} locale={locale} />
           </AnimeTrailer>
         ) : (
           <>
@@ -59,9 +70,9 @@ export default async function AnimeDetail({
                     <img src={anime.image} alt={anime.title} className="h-72 w-48 rounded object-cover" />
                   </div>
                 )}
-                <AnimeInfo anime={anime} />
+                <AnimeInfo anime={anime} tAnime={tAnime} tDays={tDays} tFormats={tFormats} tPlatforms={tPlatforms} locale={locale} />
               </div>
-              {anime.synopsis && <Synopsis text={anime.synopsis} />}
+              {displaySynopsis && <Synopsis text={displaySynopsis} label={tAnime("synopsis")} />}
             </div>
           </>
         )}
@@ -70,51 +81,73 @@ export default async function AnimeDetail({
   );
 }
 
-function AnimeInfo({ anime }: { anime: AnimeEntry }) {
+interface AnimeInfoProps {
+  anime: AnimeEntry;
+  tAnime: Awaited<ReturnType<typeof getTranslations<"anime">>>;
+  tDays: Awaited<ReturnType<typeof getTranslations<"days">>>;
+  tFormats: Awaited<ReturnType<typeof getTranslations<"formats">>>;
+  tPlatforms: Awaited<ReturnType<typeof getTranslations<"platforms">>>;
+  locale: string;
+}
+
+function AnimeInfo({ anime, tAnime, tDays, tFormats, tPlatforms, locale }: AnimeInfoProps) {
+  // EN: romaji as main title, Japanese + English as subtitles
+  // JA: Japanese as main title, romaji + English as subtitles
+  const mainTitle = locale === "en"
+    ? (anime.titleRomaji || anime.title)
+    : anime.title;
+  const subtitles: string[] = [];
+  if (locale === "en") {
+    subtitles.push(anime.title); // Japanese subtitle
+    if (anime.titleEnglish) subtitles.push(anime.titleEnglish);
+  } else {
+    if (anime.titleRomaji) subtitles.push(anime.titleRomaji);
+    if (anime.titleEnglish) subtitles.push(anime.titleEnglish);
+  }
+
   return (
     <div className="flex-1 min-w-0">
-      <h1 className="text-base sm:text-xl font-bold">{anime.title}</h1>
-      {anime.titleRomaji && (
-        <p className="text-xs sm:text-sm text-text-secondary">{anime.titleRomaji}</p>
-      )}
-      {anime.titleEnglish && (
-        <p className="text-xs text-text-muted">{anime.titleEnglish}</p>
+      <h1 className="text-base sm:text-xl font-bold">{mainTitle}</h1>
+      {subtitles.length > 0 && (
+        <p className="text-xs sm:text-sm text-text-muted">
+          {subtitles.join("　")}
+        </p>
       )}
 
       <table className="mt-3 sm:mt-4 text-sm">
         <tbody className="[&_td]:py-1 [&_td]:pr-4 sm:[&_td]:pr-6 [&_td:first-child]:text-text-muted [&_td:last-child]:font-bold">
           <tr>
-            <td>曜日</td>
-            <td>{anime.day} ({DAY_LABELS[anime.day]})</td>
+            <td>{tAnime("day")}</td>
+            <td>{anime.day} ({tDays(anime.day as "月" | "火" | "水" | "木" | "金" | "土" | "日")})</td>
           </tr>
           <CurrentEpisode anime={anime} />
           <tr>
-            <td>配信時間</td>
-            <td className="font-mono text-accent">{anime.time ?? "未定"}</td>
+            <td>{tAnime("deliveryTime")}</td>
+            <td className="font-mono text-accent">{anime.time ?? tAnime("tbd")}</td>
           </tr>
           <tr>
-            <td>配信開始</td>
+            <td>{tAnime("startDate")}</td>
             <td>{anime.startDate}</td>
           </tr>
           <tr>
-            <td>タイプ</td>
-            <td>{anime.type}</td>
+            <td>{tAnime("type")}</td>
+            <td>{anime.type === "見放題" ? tAnime("subscription") : tAnime("rental")}</td>
           </tr>
           {anime.format && (
             <tr>
-              <td>形式</td>
-              <td>{FORMAT_LABELS[anime.format]}</td>
+              <td>{tAnime("format")}</td>
+              <td>{tFormats(anime.format as "TV" | "TV_SHORT" | "MOVIE" | "OVA" | "SPECIAL" | "ONA" | "MUSIC")}</td>
             </tr>
           )}
           {anime.episodes && (
             <tr>
-              <td>話数</td>
-              <td>{anime.episodes}話</td>
+              <td>{tAnime("episodeCount", { count: anime.episodes })}</td>
+              <td>{anime.episodes}</td>
             </tr>
           )}
           {anime.studio && (
             <tr>
-              <td>制作会社</td>
+              <td>{tAnime("studio")}</td>
               <td>{anime.studio}</td>
             </tr>
           )}
@@ -135,7 +168,7 @@ function AnimeInfo({ anime }: { anime: AnimeEntry }) {
       )}
 
       <div className="mt-4">
-        <span className="text-xs text-text-muted">視聴可能</span>
+        <span className="text-xs text-text-muted">{tAnime("available")}</span>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {anime.platforms.map((pid) => {
             const p = platforms[pid];
@@ -151,7 +184,7 @@ function AnimeInfo({ anime }: { anime: AnimeEntry }) {
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: p.color }}
                 />
-                {p.name}
+                {tPlatforms(pid as "dmmtv" | "netflix" | "abema" | "amazon" | "danime" | "disney" | "unext" | "theater")}
               </a>
             );
           })}
@@ -161,10 +194,10 @@ function AnimeInfo({ anime }: { anime: AnimeEntry }) {
   );
 }
 
-function Synopsis({ text }: { text: string }) {
+function Synopsis({ text, label }: { text: string; label: string }) {
   return (
     <div className="mt-5 border-t border-border pt-4">
-      <h2 className="mb-2 text-xs font-bold text-text-muted">あらすじ</h2>
+      <h2 className="mb-2 text-xs font-bold text-text-muted">{label}</h2>
       <p className="text-sm leading-relaxed text-text-secondary">{text}</p>
     </div>
   );

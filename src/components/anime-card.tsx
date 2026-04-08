@@ -1,8 +1,13 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { AnimeEntry } from "@/lib/types";
-import { platforms } from "@/lib/platforms";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDisplayTitle } from "@/lib/localized";
 
-export function AnimeCard({ anime }: { anime: AnimeEntry }) {
+export async function AnimeCard({ anime }: { anime: AnimeEntry }) {
+  const t = await getTranslations("anime");
+  const tPlatforms = await getTranslations("platforms");
+  const locale = await getLocale();
+
   return (
     <Link
       href={`/anime/${anime.slug}`}
@@ -22,19 +27,19 @@ export function AnimeCard({ anime }: { anime: AnimeEntry }) {
 
       <div className="flex-1 min-w-0">
         <h3 className="truncate text-sm font-bold text-text-primary group-hover:text-accent">
-          {anime.title}
+          {getDisplayTitle(anime, locale)}
         </h3>
         <div className="mt-1 flex items-center gap-2 text-xs">
           <span className="font-mono font-bold text-accent">
-            {anime.time ?? "未定"}
+            {anime.time ?? t("tbd")}
           </span>
           {anime.platforms.map((pid) => (
             <span key={pid} className="text-text-muted">
-              {platforms[pid].name}
+              {tPlatforms(pid)}
             </span>
           ))}
           {anime.type === "レンタル" && (
-            <span className="text-orange-500 font-bold">レンタル</span>
+            <span className="text-orange-500 font-bold">{t("rental")}</span>
           )}
         </div>
       </div>

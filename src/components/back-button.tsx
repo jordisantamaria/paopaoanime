@@ -1,6 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 export function BackButton() {
+  const t = useTranslations("common");
+
   return (
     <button
       onClick={() => {
@@ -12,7 +16,7 @@ export function BackButton() {
       }}
       className="mb-4 inline-block text-sm text-accent hover:text-accent-hover cursor-pointer"
     >
-      &larr; 戻る
+      &larr; {t("back")}
     </button>
   );
 }

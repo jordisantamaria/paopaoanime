@@ -3,6 +3,7 @@
 import { PlatformId } from "@/lib/types";
 import { platforms } from "@/lib/platforms";
 import { PLATFORM_ORDER } from "@/lib/constants";
+import { useTranslations } from "next-intl";
 
 type Props = {
   available: PlatformId[];
@@ -12,6 +13,9 @@ type Props = {
 };
 
 export function PlatformFilter({ available, selected, onChange, preferences = [] }: Props) {
+  const t = useTranslations("common");
+  const tPlatforms = useTranslations("platforms");
+
   function toggle(pid: PlatformId) {
     if (selected.includes(pid)) {
       onChange(selected.filter((s) => s !== pid));
@@ -43,7 +47,7 @@ export function PlatformFilter({ available, selected, onChange, preferences = []
                 : "bg-bg-card text-text-muted border-border hover:text-accent hover:border-accent"
             }`}
           >
-            {p.name}
+            {tPlatforms(pid)}
           </button>
         );
       })}
@@ -52,7 +56,7 @@ export function PlatformFilter({ available, selected, onChange, preferences = []
           onClick={() => onChange([])}
           className="cursor-pointer rounded-sm px-2 py-1 text-xs text-text-muted hover:text-accent"
         >
-          クリア
+          {t("clear")}
         </button>
       )}
     </div>

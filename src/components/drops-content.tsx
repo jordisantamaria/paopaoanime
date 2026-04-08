@@ -2,9 +2,11 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { AnimeEntry } from "@/lib/types";
 import { toggleDrop } from "@/actions/drops";
+import { useTranslations, useLocale } from "next-intl";
+import { getDisplayTitle } from "@/lib/localized";
 
 type DroppedItem = { slug: string; anime: AnimeEntry | null };
 
@@ -12,10 +14,12 @@ const UNDO_TIMEOUT = 5000;
 
 export function DropsContent({ items }: { items: DroppedItem[] }) {
   const { data: session } = useSession();
+  const locale = useLocale();
   const [list, setList] = useState(items);
   const [pendingRemoval, setPendingRemoval] = useState<Set<string>>(new Set());
   const [timers, setTimers] = useState<Map<string, NodeJS.Timeout>>(new Map());
   const [, startTransition] = useTransition();
+  const t = useTranslations("drops");
 
   const confirmRemoval = useCallback(
     (slug: string) => {
@@ -61,7 +65,7 @@ export function DropsContent({ items }: { items: DroppedItem[] }) {
   }
 
   if (!session?.user) {
-    return <p className="text-text-muted text-sm">ログインしてください。</p>;
+    return <p className="text-text-muted text-sm">{t("loginRequired")}</p>;
   }
 
   if (list.length === 0) {
@@ -81,15 +85,15 @@ export function DropsContent({ items }: { items: DroppedItem[] }) {
             d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
           />
         </svg>
-        <p className="text-sm font-bold text-text-primary">切り捨てた作品はありません</p>
+        <p className="text-sm font-bold text-text-primary">{t("empty")}</p>
         <p className="mt-1 text-xs text-text-muted">
-          ホーム画面でカードの ✕ ボタンを押すとここに表示されます
+          {t("emptyDescription")}
         </p>
         <Link
           href="/"
           className="mt-4 rounded bg-accent px-4 py-2 text-sm font-bold text-white hover:bg-accent/90 transition-colors"
         >
-          ホームに戻る
+          {t("backToHome")}
         </Link>
       </div>
     );
@@ -135,7 +139,7 @@ export function DropsContent({ items }: { items: DroppedItem[] }) {
                 >
                   <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                 </svg>
-                Remove
+                {t("remove")}
               </button>
             )}
 
@@ -154,13 +158,13 @@ export function DropsContent({ items }: { items: DroppedItem[] }) {
                   />
                 ) : (
                   <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
-                    画像なし
+                    {t("noImage")}
                   </div>
                 )}
               </div>
               <div className={`mt-1.5 transition-opacity ${isPending ? "opacity-30" : ""}`}>
                 <h3 className="line-clamp-2 text-sm font-bold text-text-primary group-hover:text-accent">
-                  {anime?.title ?? slug}
+                  {anime ? getDisplayTitle(anime, locale) : slug}
                 </h3>
               </div>
             </Link>

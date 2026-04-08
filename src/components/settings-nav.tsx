@@ -1,15 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-const tabs = [
-  { href: "/settings", label: "一般" },
-  { href: "/settings/danger-zone", label: "アカウント削除" },
-];
+import { Link } from "@/i18n/navigation";
+import { usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export function SettingsNav() {
   const pathname = usePathname();
+  const t = useTranslations("settings");
+
+  const tabs = [
+    { href: "/settings", label: t("general") },
+    { href: "/settings/danger-zone", label: t("dangerZone") },
+  ];
 
   return (
     <nav className="flex gap-1 border-b border-border">

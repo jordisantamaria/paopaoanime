@@ -2,6 +2,17 @@
 
 ## 2026-04-09
 
+### feat: i18n support (English + Japanese)
+- Added `next-intl` with URL-based locale routing (`/en/*` for English, `/*` for Japanese default)
+- Extracted ~300 hardcoded Japanese strings into `messages/ja.json` and `messages/en.json`
+- All pages moved under `[locale]` dynamic segment
+- Middleware handles locale detection from Accept-Language header
+- Locale switcher (JA/EN toggle) in the footer
+- Localized metadata and SEO (hreflang alternate links, locale-specific titles/descriptions)
+- Database content uses `titleEnglish`/`synopsis` for English, `title`/`synopsisJa` for Japanese
+- Platform names, day labels, format labels all translated
+- All internal links are locale-aware (preserve current locale on navigation)
+
 ### feat: User account management pages
 - Settings page with tab navigation (General / Danger Zone)
 - Change display name form in general settings

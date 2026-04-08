@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useTransition } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { AnimeEntry, PlatformId } from "@/lib/types";
 import { RecentEpisode, getRecentEpisodes } from "@/lib/episodes";
 import { PlatformFilter } from "@/components/platform-filter";
-import { FORMAT_LABELS } from "@/lib/constants";
 import { toggleDrop } from "@/actions/drops";
+import { useTranslations, useLocale } from "next-intl";
+import { getDisplayTitle } from "@/lib/localized";
 
 const NON_WEEKLY_FORMATS = new Set(["MOVIE", "OVA", "SPECIAL", "MUSIC"]);
 
@@ -34,6 +35,9 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
   const [droppedSlugs, setDroppedSlugs] = useState<Set<string>>(new Set(initialDropped));
   const [pending, startTransition] = useTransition();
+  const t = useTranslations("home");
+  const tFormats = useTranslations("formats");
+  const locale = useLocale();
 
   // Recalculate episodes when platform filter changes
   const episodes = useMemo(() => {
@@ -112,6 +116,17 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
     return filtered.slice(0, 20);
   }, [animeList, droppedSlugs, selectedPlatforms, platformPreferences]);
 
+  function formatRelativeTime(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 0) return t("daysAgo", { count: diffDays });
+    if (diffHours > 0) return t("hoursAgo", { count: diffHours });
+    return t("streaming");
+  }
+
   return (
     <div>
       <div className="mb-4">
@@ -123,7 +138,7 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
         />
       </div>
 
-      <h2 className="mb-4 text-xl font-bold">最新エピソード</h2>
+      <h2 className="mb-4 text-xl font-bold">{t("latestEpisodes")}</h2>
       <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {sortedEpisodes.map((ep) => (
           <div key={ep.anime.slug} className="relative group">
@@ -139,16 +154,16 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
                   />
                 ) : (
                   <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
-                    画像なし
+                    {t("noImage")}
                   </div>
                 )}
                 <span className="absolute top-1.5 left-1.5 rounded-sm bg-accent px-1 py-px text-xs font-bold text-white">
-                  {ep.anime.batchRelease ? `全${ep.episode}話` : `第${ep.episode}話`}
+                  {ep.anime.batchRelease ? t("batchEpisode", { ep: ep.episode }) : t("episode", { ep: ep.episode })}
                 </span>
               </div>
               <div className="mt-1.5">
                 <h3 className="line-clamp-1 text-sm font-bold text-text-primary group-hover:text-accent">
-                  {ep.anime.title}
+                  {getDisplayTitle(ep.anime, locale)}
                 </h3>
                 <p className="text-xs text-text-muted">
                   {formatRelativeTime(ep.airedAt)}
@@ -159,7 +174,7 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
               <button
                 onClick={() => handleDrop(ep.anime.slug)}
                 className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 cursor-pointer"
-                title="この作品を非表示"
+                title={t("hideTitle")}
               >
                 &times;
               </button>
@@ -169,13 +184,13 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
       </div>
 
       <div className="mt-12 mb-4 border-t border-border pt-8">
-        <h2 className="text-xl font-bold">最新追加アニメ</h2>
+        <h2 className="text-xl font-bold">{t("latestAnime")}</h2>
       </div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {latestAnime.map((anime) => {
           const formatLabel =
             anime.format && anime.format !== "TV" && anime.format !== "TV_SHORT"
-              ? FORMAT_LABELS[anime.format]
+              ? tFormats(anime.format)
               : null;
 
           return (
@@ -193,7 +208,7 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
                   />
                 ) : (
                   <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
-                    画像なし
+                    {t("noImage")}
                   </div>
                 )}
                 {formatLabel && (
@@ -204,7 +219,7 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
               </div>
               <div className="mt-1.5">
                 <h3 className="line-clamp-1 text-sm font-bold text-text-primary group-hover:text-accent">
-                  {anime.title}
+                  {getDisplayTitle(anime, locale)}
                 </h3>
                 <p className="text-xs text-text-muted">{anime.startDate}</p>
               </div>
@@ -214,15 +229,4 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
       </div>
     </div>
   );
-}
-
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffDays > 0) return `${diffDays}日前`;
-  if (diffHours > 0) return `${diffHours}時間前`;
-  return "配信中";
 }

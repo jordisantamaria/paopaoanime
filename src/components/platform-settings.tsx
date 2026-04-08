@@ -5,6 +5,7 @@ import { PlatformId } from "@/lib/types";
 import { platforms } from "@/lib/platforms";
 import { PLATFORM_ORDER } from "@/lib/constants";
 import { savePlatformPreferences } from "@/actions/platform-preferences";
+import { useTranslations } from "next-intl";
 
 type Props = {
   initialPreferences: PlatformId[];
@@ -14,6 +15,8 @@ export function PlatformSettings({ initialPreferences }: Props) {
   const [preferred, setPreferred] = useState<PlatformId[]>(initialPreferences);
   const [saving, startSaving] = useTransition();
   const [saved, setSaved] = useState(false);
+  const t = useTranslations("settings");
+  const tPlatforms = useTranslations("platforms");
 
   // Platforms not yet in the preferred list
   const remaining = PLATFORM_ORDER.filter((p) => !preferred.includes(p));
@@ -58,10 +61,10 @@ export function PlatformSettings({ initialPreferences }: Props) {
   return (
     <div>
       <h2 className="mb-2 text-sm font-bold text-text-primary">
-        利用プラットフォーム
+        {t("platformTitle")}
       </h2>
       <p className="mb-4 text-xs text-text-muted">
-        使っているプラットフォームを選んで優先順に並べると、ホーム画面でそのプラットフォームのアニメが上に表示されます。
+        {t("platformDescription")}
       </p>
 
       {/* Selected platforms - ordered */}
@@ -79,13 +82,13 @@ export function PlatformSettings({ initialPreferences }: Props) {
                   style={{ backgroundColor: p.color }}
                 />
                 <span className="text-sm font-bold text-text-primary flex-1">
-                  {p.name}
+                  {tPlatforms(pid)}
                 </span>
                 <button
                   onClick={() => moveUp(i)}
                   disabled={i === 0}
                   className="text-xs text-text-muted hover:text-accent disabled:opacity-30 cursor-pointer disabled:cursor-default"
-                  title="上に移動"
+                  title={t("moveUp")}
                 >
                   ▲
                 </button>
@@ -93,14 +96,14 @@ export function PlatformSettings({ initialPreferences }: Props) {
                   onClick={() => moveDown(i)}
                   disabled={i === preferred.length - 1}
                   className="text-xs text-text-muted hover:text-accent disabled:opacity-30 cursor-pointer disabled:cursor-default"
-                  title="下に移動"
+                  title={t("moveDown")}
                 >
                   ▼
                 </button>
                 <button
                   onClick={() => removePlatform(pid)}
                   className="text-xs text-red-400 hover:text-red-300 cursor-pointer"
-                  title="削除"
+                  title={t("remove")}
                 >
                   ✕
                 </button>
@@ -113,7 +116,7 @@ export function PlatformSettings({ initialPreferences }: Props) {
       {/* Available platforms to add */}
       {remaining.length > 0 && (
         <div className="mb-6">
-          <p className="mb-2 text-xs text-text-muted">追加:</p>
+          <p className="mb-2 text-xs text-text-muted">{t("add")}:</p>
           <div className="flex flex-wrap gap-1.5">
             {remaining.map((pid) => {
               const p = platforms[pid];
@@ -127,7 +130,7 @@ export function PlatformSettings({ initialPreferences }: Props) {
                     className="h-2 w-2 rounded-full"
                     style={{ backgroundColor: p.color }}
                   />
-                  {p.name}
+                  {tPlatforms(pid)}
                 </button>
               );
             })}
@@ -140,10 +143,10 @@ export function PlatformSettings({ initialPreferences }: Props) {
         disabled={saving}
         className="rounded bg-accent px-4 py-2 text-sm font-bold text-white hover:bg-accent/90 disabled:opacity-50 cursor-pointer transition-colors"
       >
-        {saving ? "保存中..." : "保存"}
+        {saving ? t("saving") : t("save")}
       </button>
       {saved && (
-        <span className="ml-3 text-sm text-green-400">保存しました</span>
+        <span className="ml-3 text-sm text-green-400">{t("saved")}</span>
       )}
     </div>
   );

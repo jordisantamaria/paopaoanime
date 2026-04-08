@@ -1,11 +1,15 @@
 "use client";
 
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { signup } from "@/actions/signup";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations("auth");
+  const tErrors = useTranslations("errors");
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isSignup, setIsSignup] = useState(false);
@@ -48,14 +52,14 @@ export default function LoginPage() {
       });
 
       if (res?.error) {
-        setError(isSignup ? "アカウント作成後のログインに失敗しました。" : "メールアドレスまたはパスワードが正しくありません。");
+        setError(isSignup ? t("signupLoginFailed") : t("invalidCredentials"));
         setLoading(false);
         return;
       }
 
       router.replace("/drops");
     } catch {
-      setError("エラーが発生しました。もう一度お試しください。");
+      setError(t("genericError"));
       setLoading(false);
     }
   }
@@ -65,10 +69,10 @@ export default function LoginPage() {
       <div className="text-center mb-8">
         <img src="/logo.png" alt="PaoPaoAnime" className="h-10 w-auto mx-auto mb-4" />
         <h1 className="text-2xl font-bold mb-2">
-          {isSignup ? "アカウント作成" : "PaoPaoAnimeにログイン"}
+          {isSignup ? t("signup") : t("loginToApp")}
         </h1>
         <p className="text-sm text-text-secondary leading-relaxed">
-          ログインすると、もっと便利にアニメを管理できます。
+          {t("loginBenefits")}
         </p>
       </div>
 
@@ -84,12 +88,12 @@ export default function LoginPage() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
-            Googleで{isSignup ? "登録" : "ログイン"}
+            {isSignup ? t("googleSignup") : t("googleLogin")}
           </button>
 
           <div className="flex items-center gap-3 text-text-muted text-xs">
             <div className="flex-1 border-t border-border" />
-            <span>または</span>
+            <span>{t("or")}</span>
             <div className="flex-1 border-t border-border" />
           </div>
 
@@ -101,7 +105,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="メールアドレス"
+              placeholder={t("emailPlaceholder")}
               autoComplete="email"
               className="w-full rounded-lg border border-border bg-bg-primary px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
             />
@@ -113,16 +117,16 @@ export default function LoginPage() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={isSignup ? "パスワード（8文字以上）" : "パスワード"}
+              placeholder={isSignup ? t("passwordSignupPlaceholder") : t("passwordPlaceholder")}
               autoComplete={isSignup ? "new-password" : "current-password"}
               className="w-full rounded-lg border border-border bg-bg-primary px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
             />
 
             {!isSignup && (
               <div className="text-right">
-                <a href="/login/forgot" className="text-xs text-text-muted hover:text-accent">
-                  パスワードをお忘れですか？
-                </a>
+                <Link href="/login/forgot" className="text-xs text-text-muted hover:text-accent">
+                  {t("forgotPassword")}
+                </Link>
               </div>
             )}
 
@@ -135,48 +139,48 @@ export default function LoginPage() {
               disabled={loading}
               className="flex w-full items-center justify-center rounded-lg bg-accent px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-accent/90 cursor-pointer disabled:opacity-50"
             >
-              {loading ? "処理中..." : isSignup ? "アカウント作成" : "ログイン"}
+              {loading ? t("processing") : isSignup ? t("signup") : t("login")}
             </button>
           </form>
 
           <p className="text-center text-xs text-text-muted pt-1">
-            {isSignup ? "既にアカウントをお持ちですか？" : "アカウントをお持ちでないですか？"}{" "}
+            {isSignup ? t("hasAccount") : t("noAccount")}{" "}
             <button
               type="button"
               onClick={() => { setIsSignup(!isSignup); setError(""); }}
               className="text-accent hover:underline cursor-pointer"
             >
-              {isSignup ? "ログイン" : "新規登録"}
+              {isSignup ? t("login") : t("goToSignup")}
             </button>
           </p>
         </div>
       </div>
 
       <div className="rounded-lg bg-bg-card border border-border p-5">
-        <h2 className="text-sm font-bold mb-3">ログインするとできること</h2>
+        <h2 className="text-sm font-bold mb-3">{t("loginFeatures")}</h2>
         <ul className="space-y-3">
           <li className="flex gap-3 text-sm text-text-secondary">
             <span className="shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-accent text-xs font-bold">1</span>
             <div>
-              <span className="font-bold text-text-primary">興味のないアニメを非表示</span>
+              <span className="font-bold text-text-primary">{t("feature1Title")}</span>
               <br />
-              <span className="text-xs text-text-muted">見ないアニメをホーム画面から隠して、自分だけのリストに。</span>
+              <span className="text-xs text-text-muted">{t("feature1Desc")}</span>
             </div>
           </li>
           <li className="flex gap-3 text-sm text-text-secondary">
             <span className="shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-accent text-xs font-bold">2</span>
             <div>
-              <span className="font-bold text-text-primary">最新エピソードをすばやく確認</span>
+              <span className="font-bold text-text-primary">{t("feature2Title")}</span>
               <br />
-              <span className="text-xs text-text-muted">非表示にした作品を除外して、見たいアニメだけチェック。</span>
+              <span className="text-xs text-text-muted">{t("feature2Desc")}</span>
             </div>
           </li>
           <li className="flex gap-3 text-sm text-text-secondary">
             <span className="shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-accent text-xs font-bold">3</span>
             <div>
-              <span className="font-bold text-text-primary">今後の新機能もいち早く</span>
+              <span className="font-bold text-text-primary">{t("feature3Title")}</span>
               <br />
-              <span className="text-xs text-text-muted">お気に入り登録や通知など、便利な機能を追加予定。</span>
+              <span className="text-xs text-text-muted">{t("feature3Desc")}</span>
             </div>
           </li>
         </ul>
