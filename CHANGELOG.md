@@ -2,6 +2,13 @@
 
 ## 2026-04-09
 
+### feat: User account management pages
+- Settings page with tab navigation (General / Danger Zone)
+- Change display name form in general settings
+- Delete account with confirmation (type "削除" to confirm)
+- Account deletion cascades all user data (drops, platform preferences)
+- Settings link added to user dropdown menu
+
 ### feat: User platform preferences
 - Logged-in users can configure their preferred streaming platforms in `/settings`
 - Home page sorts anime by platform preference (preferred platforms first)
