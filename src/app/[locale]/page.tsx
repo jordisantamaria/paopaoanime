@@ -14,7 +14,7 @@ export default async function Home() {
     getDroppedSlugs(),
     getPlatformPreferences(),
   ]);
-  const recentEpisodes = getRecentEpisodes(animeList);
+  const recentEpisodes = getRecentEpisodes(animeList, new Date(), undefined, platformPreferences);
 
   return (
     <div>

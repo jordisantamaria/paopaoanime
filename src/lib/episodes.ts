@@ -69,7 +69,8 @@ function calcEpisodeForSchedule(
 export function getRecentEpisodes(
   animeList: AnimeEntry[],
   now: Date = new Date(),
-  platformFilter?: string[]
+  platformFilter?: string[],
+  platformPreferences?: string[]
 ): RecentEpisode[] {
   const episodes: RecentEpisode[] = [];
 
@@ -98,14 +99,33 @@ export function getRecentEpisodes(
     const episodeStart = anime.episodeStart ?? 1;
     const episodeOffset = anime.episodeOffset ?? 0;
 
-    // When filtering by platform, use only that platform's schedule
-    // Otherwise use all platforms and take the lowest (most conservative)
+    // When filtering by platform, use only that platform's schedule.
+    // When user has platform preferences, use the best-preferred platform's schedule.
+    // Otherwise use all platforms and take the lowest (most conservative).
     let best: { episode: number; airedAt: Date } | null = null;
 
     const allStreams = (anime.streams ?? []).filter((s) => s.day);
-    const relevantStreams = platformFilter && platformFilter.length > 0
-      ? allStreams.filter((s) => platformFilter.includes(s.platform))
-      : allStreams;
+
+    // Determine which streams to use based on filter/preferences
+    let relevantStreams: typeof allStreams;
+    let usePreferredMode = false;
+
+    if (platformFilter && platformFilter.length > 0) {
+      relevantStreams = allStreams.filter((s) => platformFilter.includes(s.platform));
+    } else if (platformPreferences && platformPreferences.length > 0) {
+      // Find the highest-priority preferred platform this anime is on
+      const preferredStream = platformPreferences
+        .map((pref) => allStreams.find((s) => s.platform === pref))
+        .find((s) => s !== undefined);
+      if (preferredStream) {
+        relevantStreams = [preferredStream];
+        usePreferredMode = true;
+      } else {
+        relevantStreams = allStreams;
+      }
+    } else {
+      relevantStreams = allStreams;
+    }
 
     if (relevantStreams.length > 0) {
       for (const stream of relevantStreams) {
@@ -124,10 +144,28 @@ export function getRecentEpisodes(
             best = result;
           }
         } else {
-          // Without filter: take the lowest (conservative)
+          // Without filter (or with preferences): take the lowest (conservative)
           if (!best || result.episode < best.episode) {
             best = result;
           }
+        }
+      }
+    }
+
+    // If preferred platform has no episode yet, fall back to any available stream
+    if (!best && usePreferredMode && allStreams.length > 0) {
+      for (const stream of allStreams) {
+        const result = calcEpisodeForSchedule(
+          anime.startDate,
+          stream.day,
+          stream.time,
+          episodeStart,
+          episodeOffset,
+          now
+        );
+        if (!result) continue;
+        if (!best || result.episode < best.episode) {
+          best = result;
         }
       }
     }
