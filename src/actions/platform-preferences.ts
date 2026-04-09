@@ -16,17 +16,21 @@ export async function getPlatformPreferences(): Promise<PlatformId[]> {
   const userId = await getUserId();
   if (!userId) return [];
 
-  const row = await db
-    .select({ platforms: userPlatformPreferences.platforms })
-    .from(userPlatformPreferences)
-    .where(eq(userPlatformPreferences.userId, userId))
-    .limit(1);
+  try {
+    const row = await db
+      .select({ platforms: userPlatformPreferences.platforms })
+      .from(userPlatformPreferences)
+      .where(eq(userPlatformPreferences.userId, userId))
+      .limit(1);
 
-  if (row.length === 0) return [];
+    if (row.length === 0) return [];
 
-  // Filter out any invalid platform IDs that may have been stored
-  const valid = new Set<string>(PLATFORM_ORDER);
-  return row[0].platforms.filter((p): p is PlatformId => valid.has(p));
+    // Filter out any invalid platform IDs that may have been stored
+    const valid = new Set<string>(PLATFORM_ORDER);
+    return row[0].platforms.filter((p): p is PlatformId => valid.has(p));
+  } catch {
+    return [];
+  }
 }
 
 export async function savePlatformPreferences(platforms: PlatformId[]): Promise<void> {
