@@ -31,7 +31,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "metadata" });
 
   return {
-    metadataBase: new URL("https://www.paopaoanime.com"),
+    metadataBase: new URL("https://paopaoanime.com"),
     title: t("title"),
     description: t("description"),
     icons: { icon: "/logo.png" },
