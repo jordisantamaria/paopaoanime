@@ -1,43 +1,35 @@
 import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
-import { migrate } from "drizzle-orm/neon-http/migrator";
 
 const sql = neon(process.env.DATABASE_URL!);
-const db = drizzle(sql);
 
-async function ensureMigrationHistory() {
+async function main() {
+  console.log("Running migrations...");
+
+  // Create user_platform_preferences if it doesn't exist
   await sql`
-    CREATE TABLE IF NOT EXISTS "__drizzle_migrations" (
-      id SERIAL PRIMARY KEY,
-      hash text NOT NULL,
-      created_at bigint
+    CREATE TABLE IF NOT EXISTS "user_platform_preferences" (
+      "user_id" text PRIMARY KEY NOT NULL,
+      "platforms" text[] NOT NULL,
+      "updated_at" timestamp with time zone DEFAULT now()
     )
   `;
 
-  const existing = await sql`
-    SELECT count(*)::int as cnt FROM "__drizzle_migrations"
+  // Add FK constraint if it doesn't exist
+  await sql`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'user_platform_preferences_user_id_user_id_fk'
+      ) THEN
+        ALTER TABLE "user_platform_preferences"
+          ADD CONSTRAINT "user_platform_preferences_user_id_user_id_fk"
+          FOREIGN KEY ("user_id") REFERENCES "public"."user"("id")
+          ON DELETE cascade ON UPDATE no action;
+      END IF;
+    END $$
   `;
-  if (existing[0].cnt > 0) return;
 
-  const alreadyApplied = [
-    { hash: "0000_even_mandarin", created_at: 1774275194541 },
-    { hash: "0001_needy_mattie_franklin", created_at: 1774869447906 },
-  ];
-
-  for (const m of alreadyApplied) {
-    await sql`
-      INSERT INTO "__drizzle_migrations" (hash, created_at)
-      VALUES (${m.hash}, ${m.created_at})
-    `;
-  }
-
-  console.log("Seeded migration history with 2 existing migrations.");
-}
-
-async function main() {
-  await ensureMigrationHistory();
-  console.log("Running migrations...");
-  await migrate(db, { migrationsFolder: "./drizzle" });
   console.log("Migrations complete.");
 }
 
