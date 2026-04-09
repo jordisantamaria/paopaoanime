@@ -152,26 +152,14 @@ export function getRecentEpisodes(
       }
     }
 
-    // If preferred platform has no episode yet, fall back to any available stream
-    if (!best && usePreferredMode && allStreams.length > 0) {
-      for (const stream of allStreams) {
-        const result = calcEpisodeForSchedule(
-          anime.startDate,
-          stream.day,
-          stream.time,
-          episodeStart,
-          episodeOffset,
-          now
-        );
-        if (!result) continue;
-        if (!best || result.episode < best.episode) {
-          best = result;
-        }
-      }
-    }
-
-    // Fallback to anime's main day/time only when NO platform filter is active
-    if (!best && anime.day && (!platformFilter || platformFilter.length === 0)) {
+    // Fallback to anime's main day/time.
+    // Block the fallback only when the target platform(s) had their own schedule
+    // (relevantStreams was non-empty) but the episode hasn't aired there yet —
+    // falling back would show episodes before the user's platform has them.
+    // Allow the fallback when the platform has no schedule (day: null) since
+    // the generic day is the only information available.
+    const platformHadSchedule = relevantStreams.length > 0;
+    if (!best && anime.day && !platformHadSchedule) {
       best = calcEpisodeForSchedule(
         anime.startDate,
         anime.day,

@@ -6,9 +6,11 @@ const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql);
 
 async function ensureMigrationHistory() {
-  // Create the drizzle migrations tracking table if it doesn't exist
+  // Drizzle migrate uses the "drizzle" schema by default
+  await sql`CREATE SCHEMA IF NOT EXISTS "drizzle"`;
+
   await sql`
-    CREATE TABLE IF NOT EXISTS "__drizzle_migrations" (
+    CREATE TABLE IF NOT EXISTS "drizzle"."__drizzle_migrations" (
       id SERIAL PRIMARY KEY,
       hash text NOT NULL,
       created_at bigint
@@ -18,7 +20,7 @@ async function ensureMigrationHistory() {
   // If tracking table is empty, seed it with all migrations that were
   // originally applied via drizzle-kit push (before we had this script)
   const existing = await sql`
-    SELECT count(*)::int as cnt FROM "__drizzle_migrations"
+    SELECT count(*)::int as cnt FROM "drizzle"."__drizzle_migrations"
   `;
 
   if (existing[0].cnt === 0) {
@@ -30,7 +32,7 @@ async function ensureMigrationHistory() {
 
     for (const m of applied) {
       await sql`
-        INSERT INTO "__drizzle_migrations" (hash, created_at)
+        INSERT INTO "drizzle"."__drizzle_migrations" (hash, created_at)
         VALUES (${m.hash}, ${m.ts})
       `;
     }
