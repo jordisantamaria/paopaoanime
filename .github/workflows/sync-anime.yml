@@ -2,7 +2,7 @@ name: Sync Anime
 
 on:
   schedule:
-    - cron: '30 13 * * *' # 22:30 JST (13:30 UTC) - temporary for testing
+    - cron: '0 21 * * 0' # Sundays 21:00 UTC (Monday 06:00 JST)
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
 jobs:
