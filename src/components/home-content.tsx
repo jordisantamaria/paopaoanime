@@ -75,21 +75,8 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
       return true;
     });
 
-  // Sort by platform preference when no filter is active
-  const sortedEpisodes = useMemo(() => {
-    if (platformPreferences.length === 0 || selectedPlatforms.length > 0) {
-      return deduplicatedEpisodes.slice(0, 20);
-    }
-    return [...deduplicatedEpisodes]
-      .sort((a, b) => {
-        const aRank = bestPlatformRank(a.anime.platforms, platformPreferences);
-        const bRank = bestPlatformRank(b.anime.platforms, platformPreferences);
-        if (aRank !== bRank) return aRank - bRank;
-        // Same rank: keep original order (by airedAt)
-        return 0;
-      })
-      .slice(0, 20);
-  }, [deduplicatedEpisodes, platformPreferences, selectedPlatforms]);
+  // Episodes are already sorted by airedAt from the server
+  const sortedEpisodes = deduplicatedEpisodes.slice(0, 20);
 
   // Latest anime — `now` is intentionally re-created each render for freshness
   const latestAnime = useMemo(() => {
