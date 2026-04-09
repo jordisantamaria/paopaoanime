@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/sync-anime",
-      "schedule": "30 12 9 4 *"
+      "schedule": "40 12 9 4 *"
     }
   ]
 }
