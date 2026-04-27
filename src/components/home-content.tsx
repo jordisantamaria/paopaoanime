@@ -7,6 +7,7 @@ import { AnimeEntry, PlatformId } from "@/lib/types";
 import { RecentEpisode, getRecentEpisodes } from "@/lib/episodes";
 import { PlatformFilter } from "@/components/platform-filter";
 import { toggleDrop } from "@/actions/drops";
+import { toggleFavorite } from "@/actions/favorites";
 import { useTranslations, useLocale } from "next-intl";
 import { getDisplayTitle } from "@/lib/localized";
 
@@ -26,14 +27,16 @@ function bestPlatformRank(animePlatforms: string[], preferences: PlatformId[]): 
 type HomeContentProps = {
   animeList: AnimeEntry[];
   droppedSlugs?: string[];
+  favoriteSlugs?: string[];
   initialEpisodes?: RecentEpisode[];
   platformPreferences?: PlatformId[];
 };
 
-export function HomeContent({ animeList, droppedSlugs: initialDropped = [], initialEpisodes = [], platformPreferences = [] }: HomeContentProps) {
+export function HomeContent({ animeList, droppedSlugs: initialDropped = [], favoriteSlugs: initialFavorites = [], initialEpisodes = [], platformPreferences = [] }: HomeContentProps) {
   const { data: session } = useSession();
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([]);
   const [droppedSlugs, setDroppedSlugs] = useState<Set<string>>(new Set(initialDropped));
+  const [favoriteSlugs, setFavoriteSlugs] = useState<Set<string>>(new Set(initialFavorites));
   const [pending, startTransition] = useTransition();
   const t = useTranslations("home");
   const tFormats = useTranslations("formats");
@@ -60,12 +63,24 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
     });
   }
 
-  // Recent episodes - exclude theater-only anime (but include anime with no platforms yet)
-  const isTheaterOnly = (anime: AnimeEntry) =>
-    anime.platforms.length > 0 && anime.platforms.every((p) => p === "theater");
+  function handleToggleFavorite(slug: string) {
+    setFavoriteSlugs((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+    startTransition(async () => {
+      await toggleFavorite(slug);
+    });
+  }
+
+  // Recent episodes - exclude theater-only and no-platform anime
+  const isUnavailableForStreaming = (anime: AnimeEntry) =>
+    anime.platforms.length === 0 || anime.platforms.every((p) => p === "theater");
 
   const filteredEpisodes = episodes.filter(
-    (ep) => !isTheaterOnly(ep.anime) && !droppedSlugs.has(ep.anime.slug)
+    (ep) => !isUnavailableForStreaming(ep.anime) && !droppedSlugs.has(ep.anime.slug)
   );
   const seen = new Set<string>();
   const deduplicatedEpisodes = filteredEpisodes
@@ -75,8 +90,14 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
       return true;
     });
 
-  // Episodes are already sorted by airedAt from the server
-  const sortedEpisodes = deduplicatedEpisodes.slice(0, 20);
+  // Episodes are already sorted by airedAt from the server; bubble favorites to the top
+  const sortedEpisodes = [...deduplicatedEpisodes]
+    .sort((a, b) => {
+      const aFav = favoriteSlugs.has(a.anime.slug) ? 0 : 1;
+      const bFav = favoriteSlugs.has(b.anime.slug) ? 0 : 1;
+      return aFav - bFav;
+    })
+    .slice(0, 20);
 
   // Latest anime — `now` is intentionally re-created each render for freshness
   const latestAnime = useMemo(() => {
@@ -100,8 +121,15 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
       });
     }
 
+    // Always bubble favorites to the top
+    filtered.sort((a, b) => {
+      const aFav = favoriteSlugs.has(a.slug) ? 0 : 1;
+      const bFav = favoriteSlugs.has(b.slug) ? 0 : 1;
+      return aFav - bFav;
+    });
+
     return filtered.slice(0, 20);
-  }, [animeList, droppedSlugs, selectedPlatforms, platformPreferences]);
+  }, [animeList, droppedSlugs, favoriteSlugs, selectedPlatforms, platformPreferences]);
 
   function formatRelativeTime(date: Date): string {
     const now = new Date();
@@ -127,47 +155,62 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
 
       <h2 className="mb-4 text-xl font-bold">{t("latestEpisodes")}</h2>
       <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {sortedEpisodes.map((ep) => (
-          <div key={ep.anime.slug} className="relative group">
-            <Link
-              href={`/anime/${ep.anime.slug}`}
-            >
-              <div className="relative overflow-hidden rounded border border-border">
-                {ep.anime.image ? (
-                  <img
-                    src={ep.anime.image}
-                    alt={ep.anime.title}
-                    className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
-                    {t("noImage")}
-                  </div>
-                )}
-                <span className="absolute top-1.5 left-1.5 rounded-sm bg-accent px-1 py-px text-xs font-bold text-white">
-                  {ep.anime.batchRelease ? t("batchEpisode", { ep: ep.episode }) : t("episode", { ep: ep.episode })}
-                </span>
-              </div>
-              <div className="mt-1.5">
-                <h3 className="line-clamp-1 text-sm font-bold text-text-primary group-hover:text-accent">
-                  {getDisplayTitle(ep.anime, locale)}
-                </h3>
-                <p className="text-xs text-text-muted">
-                  {formatRelativeTime(ep.airedAt)}
-                </p>
-              </div>
-            </Link>
-            {session?.user && (
-              <button
-                onClick={() => handleDrop(ep.anime.slug)}
-                className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 cursor-pointer"
-                title={t("hideTitle")}
+        {sortedEpisodes.map((ep) => {
+          const isFavorite = favoriteSlugs.has(ep.anime.slug);
+          return (
+            <div key={ep.anime.slug} className="relative group">
+              <Link
+                href={`/anime/${ep.anime.slug}`}
               >
-                &times;
-              </button>
-            )}
-          </div>
-        ))}
+                <div className="relative overflow-hidden rounded border border-border">
+                  {ep.anime.image ? (
+                    <img
+                      src={ep.anime.image}
+                      alt={ep.anime.title}
+                      className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
+                      {t("noImage")}
+                    </div>
+                  )}
+                  <span className="absolute top-1.5 left-1.5 rounded-sm bg-accent px-1 py-px text-xs font-bold text-white">
+                    {ep.anime.batchRelease ? t("batchEpisode", { ep: ep.episode }) : t("episode", { ep: ep.episode })}
+                  </span>
+                </div>
+                <div className="mt-1.5">
+                  <h3 className="line-clamp-1 text-sm font-bold text-text-primary group-hover:text-accent">
+                    {getDisplayTitle(ep.anime, locale)}
+                  </h3>
+                  <p className="text-xs text-text-muted">
+                    {formatRelativeTime(ep.airedAt)}
+                  </p>
+                </div>
+              </Link>
+              {session?.user && (
+                <>
+                  <button
+                    onClick={() => handleToggleFavorite(ep.anime.slug)}
+                    className={`absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 transition-opacity cursor-pointer hover:bg-black/80 ${
+                      isFavorite ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    }`}
+                    title={isFavorite ? t("unfavoriteTitle") : t("favoriteTitle")}
+                    aria-label={isFavorite ? t("unfavoriteTitle") : t("favoriteTitle")}
+                  >
+                    <HeartIcon filled={isFavorite} />
+                  </button>
+                  <button
+                    onClick={() => handleDrop(ep.anime.slug)}
+                    className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 cursor-pointer"
+                    title={t("hideTitle")}
+                  >
+                    &times;
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-12 mb-4 border-t border-border pt-8">
@@ -179,41 +222,70 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], init
             anime.format && anime.format !== "TV" && anime.format !== "TV_SHORT"
               ? tFormats(anime.format)
               : null;
+          const isFavorite = favoriteSlugs.has(anime.slug);
 
           return (
-            <Link
-              key={anime.slug}
-              href={`/anime/${anime.slug}`}
-              className="group"
-            >
-              <div className="relative overflow-hidden rounded border border-border">
-                {anime.image ? (
-                  <img
-                    src={anime.image}
-                    alt={anime.title}
-                    className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
-                    {t("noImage")}
-                  </div>
-                )}
-                {formatLabel && (
-                  <span className="absolute top-1.5 left-1.5 rounded bg-yellow-500 px-1.5 py-0.5 text-[10px] font-bold text-black">
-                    {formatLabel}
-                  </span>
-                )}
-              </div>
-              <div className="mt-1.5">
-                <h3 className="line-clamp-1 text-sm font-bold text-text-primary group-hover:text-accent">
-                  {getDisplayTitle(anime, locale)}
-                </h3>
-                <p className="text-xs text-text-muted">{anime.startDate}</p>
-              </div>
-            </Link>
+            <div key={anime.slug} className="relative group">
+              <Link href={`/anime/${anime.slug}`}>
+                <div className="relative overflow-hidden rounded border border-border">
+                  {anime.image ? (
+                    <img
+                      src={anime.image}
+                      alt={anime.title}
+                      className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
+                      {t("noImage")}
+                    </div>
+                  )}
+                  {formatLabel && (
+                    <span className="absolute top-1.5 left-1.5 rounded bg-yellow-500 px-1.5 py-0.5 text-[10px] font-bold text-black">
+                      {formatLabel}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1.5">
+                  <h3 className="line-clamp-1 text-sm font-bold text-text-primary group-hover:text-accent">
+                    {getDisplayTitle(anime, locale)}
+                  </h3>
+                  <p className="text-xs text-text-muted">{anime.startDate}</p>
+                </div>
+              </Link>
+              {session?.user && (
+                <button
+                  onClick={() => handleToggleFavorite(anime.slug)}
+                  className={`absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 transition-opacity cursor-pointer hover:bg-black/80 ${
+                    isFavorite ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  }`}
+                  title={isFavorite ? t("unfavoriteTitle") : t("favoriteTitle")}
+                  aria-label={isFavorite ? t("unfavoriteTitle") : t("favoriteTitle")}
+                >
+                  <HeartIcon filled={isFavorite} />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={filled ? "#ef4444" : "none"}
+      stroke={filled ? "#ef4444" : "white"}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
   );
 }

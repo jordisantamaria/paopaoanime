@@ -10,6 +10,27 @@ const DAY_TO_NUMBER: Record<DayOfWeek, number> = {
   土: 6,
 };
 
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/** Returns the JST day-of-week (0=Sun … 6=Sat) for a Date. */
+function jstDayOfWeek(d: Date): number {
+  return new Date(d.getTime() + JST_OFFSET_MS).getUTCDay();
+}
+
+/** Returns a new Date with JST hours/minutes set, keeping the same JST calendar date. */
+function setJSTTime(d: Date, hours: number, minutes: number): Date {
+  const jst = new Date(d.getTime() + JST_OFFSET_MS);
+  return new Date(
+    Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth(), jst.getUTCDate(), hours, minutes, 0, 0) -
+      JST_OFFSET_MS
+  );
+}
+
+/** Returns a new Date shifted by the given number of days. */
+function addDays(d: Date, days: number): Date {
+  return new Date(d.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
 export type RecentEpisode = {
   anime: AnimeEntry;
   episode: number;
@@ -33,25 +54,22 @@ function calcEpisodeForSchedule(
   const [hours, minutes] = time ? time.split(":").map(Number) : [0, 0];
 
   // Calculate the first publication date on this platform
-  // = first occurrence of `day` on or after startDate
-  const firstPub = new Date(start);
-  const startDayNum = firstPub.getDay();
+  // = first occurrence of `day` on or after startDate (in JST)
+  const startDayNum = jstDayOfWeek(start);
   let daysUntilFirst = dayNum - startDayNum;
   if (daysUntilFirst < 0) daysUntilFirst += 7;
-  firstPub.setDate(firstPub.getDate() + daysUntilFirst);
-  firstPub.setHours(hours, minutes, 0, 0);
+  const firstPub = setJSTTime(addDays(start, daysUntilFirst), hours, minutes);
 
   if (firstPub > now) return null; // First episode not yet published on this platform
 
-  // Find the most recent publication date
-  const recent = new Date(now);
-  recent.setHours(hours, minutes, 0, 0);
+  // Find the most recent publication date (in JST)
+  let recent = setJSTTime(now, hours, minutes);
 
-  const currentDayNum = recent.getDay();
+  const currentDayNum = jstDayOfWeek(recent);
   let diff = currentDayNum - dayNum;
   if (diff < 0) diff += 7;
   if (diff === 0 && recent > now) diff = 7;
-  recent.setDate(recent.getDate() - diff);
+  recent = addDays(recent, -diff);
 
   if (recent < firstPub) return null;
 

@@ -19,7 +19,9 @@
     "daysAgo": "{count}d ago",
     "hoursAgo": "{count}h ago",
     "streaming": "Streaming",
-    "hideTitle": "Hide this anime"
+    "hideTitle": "Hide this anime",
+    "favoriteTitle": "Add to favorites",
+    "unfavoriteTitle": "Remove from favorites"
   },
   "schedule": {
     "title": "Weekly Schedule",

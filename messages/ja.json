@@ -19,7 +19,9 @@
     "daysAgo": "{count}日前",
     "hoursAgo": "{count}時間前",
     "streaming": "配信中",
-    "hideTitle": "この作品を非表示"
+    "hideTitle": "この作品を非表示",
+    "favoriteTitle": "お気に入りに追加",
+    "unfavoriteTitle": "お気に入りから削除"
   },
   "schedule": {
     "title": "週間スケジュール",

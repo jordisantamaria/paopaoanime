@@ -167,29 +167,31 @@ function AnimeInfo({ anime, tAnime, tDays, tFormats, tPlatforms, locale }: Anime
         </div>
       )}
 
-      <div className="mt-4">
-        <span className="text-xs text-text-muted">{tAnime("available")}</span>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {anime.platforms.map((pid) => {
-            const p = platforms[pid];
-            return (
-              <a
-                key={pid}
-                href={getPlatformSearchUrl(pid, anime.title)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-2.5 py-1 text-xs sm:text-sm sm:px-3 sm:py-1.5 font-bold transition-colors hover:text-accent hover:border-accent"
-              >
-                <span
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: p.color }}
-                />
-                {tPlatforms(pid as "dmmtv" | "netflix" | "abema" | "amazon" | "danime" | "disney" | "unext" | "theater")}
-              </a>
-            );
-          })}
+      {anime.platforms.length > 0 && (
+        <div className="mt-4">
+          <span className="text-xs text-text-muted">{tAnime("available")}</span>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {anime.platforms.map((pid) => {
+              const p = platforms[pid];
+              return (
+                <a
+                  key={pid}
+                  href={getPlatformSearchUrl(pid, anime.title)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-2.5 py-1 text-xs sm:text-sm sm:px-3 sm:py-1.5 font-bold transition-colors hover:text-accent hover:border-accent"
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: p.color }}
+                  />
+                  {tPlatforms(pid as "dmmtv" | "netflix" | "abema" | "amazon" | "danime" | "disney" | "unext" | "theater")}
+                </a>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

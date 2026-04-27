@@ -55,6 +55,28 @@ query ($id: Int) {
 }
 `;
 
+const EXTERNAL_LINKS_QUERY = `
+query ($id: Int) {
+  Media(id: $id, type: ANIME) {
+    externalLinks { site type }
+  }
+}
+`;
+
+/** Map AniList externalLinks site names to our platform IDs */
+const ANILIST_SITE_TO_PLATFORM: Record<string, string> = {
+  "Netflix": "netflix",
+  "Amazon": "amazon",
+  "Amazon Prime Video": "amazon",
+  "Disney Plus": "disney",
+  "ABEMA": "abema",
+  "Abema": "abema",
+  "DMM TV": "dmmtv",
+  "U-NEXT": "unext",
+  "d Anime Store": "danime",
+  "dアニメストア": "danime",
+};
+
 // --- Helpers ---
 
 function sleep(ms: number): Promise<void> {
@@ -488,6 +510,62 @@ async function matchAndUpsertPlatforms(
   return matched;
 }
 
+// --- Step 2b: AniList fallback for anime missing platforms ---
+
+async function fillMissingPlatformsFromAniList(seasonSlug: string, log: string[]): Promise<number> {
+  const seasonAnime = await db.select({ slug: anime.slug, title: anime.title, anilistId: anime.anilistId })
+    .from(anime).where(eq(anime.season, seasonSlug));
+  const allPlats = await db.select({ animeSlug: animePlatforms.animeSlug }).from(animePlatforms);
+  const slugsWithPlatforms = new Set(allPlats.map((p) => p.animeSlug));
+  const missing = seasonAnime.filter((a) => a.anilistId && !slugsWithPlatforms.has(a.slug));
+
+  if (missing.length === 0) {
+    log.push("AniList fallback: no anime missing platforms");
+    return 0;
+  }
+  log.push(`AniList fallback: ${missing.length} anime missing platforms, querying externalLinks...`);
+
+  let filled = 0;
+  for (const entry of missing) {
+    try {
+      const res = await fetch(ANILIST_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: EXTERNAL_LINKS_QUERY, variables: { id: entry.anilistId } }),
+      });
+      if (!res.ok) {
+        if (res.status === 429) await sleep(60000);
+        else await sleep(1500);
+        continue;
+      }
+      const json = await res.json();
+      const links = json.data?.Media?.externalLinks ?? [];
+      const streamingLinks = links.filter((l: { type: string }) => l.type === "STREAMING");
+      let addedForThis = 0;
+
+      for (const link of streamingLinks) {
+        const platformId = ANILIST_SITE_TO_PLATFORM[link.site];
+        if (!platformId) continue;
+        try {
+          await db.insert(animePlatforms)
+            .values({ animeSlug: entry.slug, platform: platformId, day: null, time: null })
+            .onConflictDoNothing();
+          addedForThis++;
+        } catch { /* skip duplicates */ }
+      }
+      if (addedForThis > 0) {
+        filled += addedForThis;
+        log.push(`  AniList fallback: ${entry.title} → ${addedForThis} platforms added`);
+      }
+    } catch {
+      log.push(`  AniList fallback error: ${entry.title}`);
+    }
+    await sleep(700);
+  }
+  log.push(`AniList fallback: ${filled} total platform entries added`);
+  return filled;
+}
+
 // --- Step 3: Sync episodes ---
 
 async function syncEpisodes(log: string[]): Promise<number> {
@@ -670,6 +748,10 @@ export async function GET(request: Request) {
     const platformEntries = await fetchPlatformData(seasonSlug, log);
     const platformsMatched = await matchAndUpsertPlatforms(platformEntries, log);
     results.platformsMatched = platformsMatched;
+
+    log.push(`--- Step 2b: AniList fallback for missing platforms ---`);
+    const fallbackFilled = await fillMissingPlatformsFromAniList(seasonSlug, log);
+    results.platformsFallback = fallbackFilled;
   }
 
   // Step 3: Sync episode offsets

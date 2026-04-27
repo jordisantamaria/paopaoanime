@@ -3,6 +3,7 @@ import { getAnimeData } from "@/lib/data";
 import { getRecentEpisodes } from "@/lib/episodes";
 import { HomeContent } from "@/components/home-content";
 import { getDroppedSlugs } from "@/actions/drops";
+import { getFavoriteSlugs } from "@/actions/favorites";
 import { getPlatformPreferences } from "@/actions/platform-preferences";
 
 export const dynamic = "force-dynamic";
@@ -10,8 +11,9 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const t = await getTranslations("home");
   const animeList = await getAnimeData();
-  const [droppedSlugs, platformPreferences] = await Promise.all([
+  const [droppedSlugs, favoriteSlugs, platformPreferences] = await Promise.all([
     getDroppedSlugs(),
+    getFavoriteSlugs(),
     getPlatformPreferences(),
   ]);
   const recentEpisodes = getRecentEpisodes(animeList, new Date(), undefined, platformPreferences);
@@ -24,6 +26,7 @@ export default async function Home() {
       <HomeContent
         animeList={animeList}
         droppedSlugs={droppedSlugs}
+        favoriteSlugs={favoriteSlugs}
         initialEpisodes={recentEpisodes}
         platformPreferences={platformPreferences}
       />

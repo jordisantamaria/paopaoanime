@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-04-27
+
+### feat: Favorite anime
+- New `favorite_anime` table (userId + animeSlug, cascading deletes from user/anime)
+- Server actions `getFavoriteSlugs` and `toggleFavorite` in `src/actions/favorites.ts`
+- Heart badge on home cards: filled red and always visible when favorited, hover-only outline when not
+- Favorites bubble to the top of "最新エピソード" and "最新追加アニメ" so users can spot what they're currently watching at a glance
+- Coexists with the existing drop (×) button on hover
+- i18n keys for favorite/unfavorite tooltips (ja + en)
+
+## 2026-04-16
+
+### fix: AniList fallback for anime missing platform data
+- Added Step 2b to sync pipeline: queries AniList `externalLinks` for anime that uzurea.net doesn't cover
+- Maps AniList streaming site names (Netflix, Amazon, ABEMA, etc.) to internal platform IDs
+- Runs automatically after uzurea scraping, only for anime with 0 platforms in current season
+- Applied to both `scripts/sync-anime.ts` and `src/app/api/cron/sync-anime/route.ts`
+- Hide "視聴可能" section on anime detail page when no platforms exist
+
 ## 2026-04-09
 
 ### feat: i18n support (English + Japanese)

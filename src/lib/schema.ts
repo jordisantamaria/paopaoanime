@@ -92,3 +92,13 @@ export const droppedAnime = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.animeSlug] })],
 );
+
+export const favoriteAnime = pgTable(
+  "favorite_anime",
+  {
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    animeSlug: text("anime_slug").notNull().references(() => anime.slug, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.animeSlug] })],
+);
