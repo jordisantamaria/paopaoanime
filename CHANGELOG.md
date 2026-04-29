@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-04-29
+
+### feat: Always-include long-running anime in seasonal sync
+- New `ALWAYS_INCLUDE_ANIME` allowlist in both `src/app/api/cron/sync-anime/route.ts` and `scripts/sync-anime.ts`
+- Added One Piece (AniList ID 21, 日 09:30 JST) to the allowlist
+- New `BY_ID_QUERY` + `fetchAnimeByIds` to pull these by AniList ID alongside the seasonal fetch
+- Existing rows from the allowlist get re-tagged with the current season slug each sync, so long-runners always appear in the current-season views
+- First-time inserts respect optional `day`/`time` overrides so episode math is correct from the start
+
 ## 2026-04-27
 
 ### feat: Favorite anime

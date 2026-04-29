@@ -82,6 +82,34 @@ query ($season: MediaSeason, $seasonYear: Int, $page: Int) {
 }
 `;
 
+const BY_ID_QUERY = `
+query ($ids: [Int]) {
+  Page(page: 1, perPage: 50) {
+    media(id_in: $ids, type: ANIME) {
+      id
+      format
+      title { native romaji english }
+      coverImage { large extraLarge }
+      bannerImage
+      description(asHtml: false)
+      genres
+      episodes
+      studios(isMain: true) { nodes { name } }
+      startDate { year month day }
+      nextAiringEpisode { episode airingAt }
+      trailer { id site }
+      status
+    }
+  }
+}
+`;
+
+// Long-running anime that AniList's seasonal query never returns (started in past seasons).
+// Re-tagged with the current season slug each sync. Day/time overrides apply only on first insert.
+const ALWAYS_INCLUDE_ANIME: { id: number; day?: string; time?: string }[] = [
+  { id: 21, day: "日", time: "09:30" }, // ONE PIECE — Fuji TV, Sunday 09:30 JST
+];
+
 const AIRING_QUERY = `
 query ($id: Int) {
   Media(id: $id, type: ANIME) {
@@ -244,8 +272,26 @@ async function fetchSeasonalAnime(season: string, year: number): Promise<AniList
   return allMedia.filter((m) => !m.genres?.includes("Hentai"));
 }
 
-async function upsertAnimeFromAniList(media: AniListMedia[], seasonSlug: string, log: string[]): Promise<{ added: number; updated: number }> {
-  const existing = await db.select({ anilistId: anime.anilistId, slug: anime.slug, episodes: anime.episodes })
+async function fetchAnimeByIds(ids: number[]): Promise<AniListMedia[]> {
+  if (ids.length === 0) return [];
+  const res = await fetch(ANILIST_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: BY_ID_QUERY, variables: { ids } }),
+  });
+  if (!res.ok) throw new Error(`AniList error: ${res.status}`);
+  const json = await res.json();
+  const media: AniListMedia[] = json.data?.Page?.media ?? [];
+  return media.filter((m) => !m.genres?.includes("Hentai"));
+}
+
+async function upsertAnimeFromAniList(
+  media: AniListMedia[],
+  seasonSlug: string,
+  log: string[],
+  overrides: Map<number, { day?: string; time?: string }> = new Map()
+): Promise<{ added: number; updated: number }> {
+  const existing = await db.select({ anilistId: anime.anilistId, slug: anime.slug, episodes: anime.episodes, season: anime.season })
     .from(anime).where(isNotNull(anime.anilistId));
   const existingMap = new Map(existing.map((e) => [e.anilistId, e]));
   let added = 0;
@@ -256,6 +302,7 @@ async function upsertAnimeFromAniList(media: AniListMedia[], seasonSlug: string,
     if (ex) {
       const updates: Record<string, unknown> = {};
       if (m.episodes && m.episodes !== ex.episodes) updates.episodes = m.episodes;
+      if (overrides.has(m.id) && ex.season !== seasonSlug) updates.season = seasonSlug;
       if (Object.keys(updates).length > 0) {
         updates.updatedAt = new Date();
         await db.update(anime).set(updates).where(eq(anime.anilistId, m.id));
@@ -266,13 +313,15 @@ async function upsertAnimeFromAniList(media: AniListMedia[], seasonSlug: string,
     }
     const title = m.title.native || m.title.romaji || "Unknown";
     const startDateStr = formatStartDate(m.startDate);
-    const day = startDateStr ? getDayOfWeek(startDateStr) : null;
+    const override = overrides.get(m.id);
+    const day = override?.day ?? (startDateStr ? getDayOfWeek(startDateStr) : null);
+    const time = override?.time ?? null;
     const slug = toSlug({ titleRomaji: m.title.romaji, title, anilistId: m.id });
     const trailer = m.trailer?.site === "youtube" ? m.trailer.id : null;
     try {
       await db.insert(anime).values({
         slug, title, titleRomaji: m.title.romaji, titleEnglish: m.title.english,
-        day, time: null, startDate: startDateStr, format: m.format, batchRelease: false,
+        day, time, startDate: startDateStr, format: m.format, batchRelease: false,
         anilistId: m.id, image: m.coverImage?.extraLarge ?? m.coverImage?.large ?? null,
         banner: m.bannerImage, synopsis: cleanDescription(m.description), synopsisJa: null,
         genres: m.genres, episodes: m.episodes, studio: m.studios?.nodes?.[0]?.name ?? null,
@@ -620,9 +669,17 @@ async function main() {
 
   if (steps.includes(1)) {
     log.push(`--- Step 1: Fetch ${season} ${year} from AniList ---`);
-    const media = await fetchSeasonalAnime(season, year);
-    log.push(`AniList returned ${media.length} anime`);
-    const { added, updated } = await upsertAnimeFromAniList(media, seasonSlug, log);
+    const seasonalMedia = await fetchSeasonalAnime(season, year);
+    log.push(`AniList seasonal returned ${seasonalMedia.length} anime`);
+
+    const extraIds = ALWAYS_INCLUDE_ANIME.map((e) => e.id)
+      .filter((id) => !seasonalMedia.some((m) => m.id === id));
+    const extraMedia = await fetchAnimeByIds(extraIds);
+    log.push(`AniList always-include returned ${extraMedia.length} anime`);
+
+    const overrides = new Map(ALWAYS_INCLUDE_ANIME.map((e) => [e.id, { day: e.day, time: e.time }]));
+    const media = [...seasonalMedia, ...extraMedia];
+    const { added, updated } = await upsertAnimeFromAniList(media, seasonSlug, log, overrides);
     results.newAnime = added;
     results.metadataUpdated = updated;
   }

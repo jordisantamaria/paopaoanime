@@ -21,6 +21,13 @@ const DAY_TO_NUMBER: Record<string, number> = {
 
 const PLATFORM_IDS = ["dmmtv", "danime", "abema", "amazon", "unext", "netflix", "disney"] as const;
 
+// Long-running anime that AniList's seasonal query never returns (started in past seasons).
+// They get re-tagged with the current season slug each sync so they appear alongside seasonal anime.
+// Overrides apply only on first insert; existing rows keep whatever day/time was set previously.
+const ALWAYS_INCLUDE_ANIME: { id: number; day?: string; time?: string }[] = [
+  { id: 21, day: "日", time: "09:30" }, // ONE PIECE — Fuji TV, Sunday 09:30 JST
+];
+
 // --- AniList Queries ---
 
 const SEASONAL_QUERY = `
@@ -28,6 +35,28 @@ query ($season: MediaSeason, $seasonYear: Int, $page: Int) {
   Page(page: $page, perPage: 50) {
     pageInfo { hasNextPage currentPage }
     media(season: $season, seasonYear: $seasonYear, type: ANIME, sort: POPULARITY_DESC, countryOfOrigin: "JP") {
+      id
+      format
+      title { native romaji english }
+      coverImage { large extraLarge }
+      bannerImage
+      description(asHtml: false)
+      genres
+      episodes
+      studios(isMain: true) { nodes { name } }
+      startDate { year month day }
+      nextAiringEpisode { episode airingAt }
+      trailer { id site }
+      status
+    }
+  }
+}
+`;
+
+const BY_ID_QUERY = `
+query ($ids: [Int]) {
+  Page(page: 1, perPage: 50) {
+    media(id_in: $ids, type: ANIME) {
       id
       format
       title { native romaji english }
@@ -189,12 +218,26 @@ async function fetchSeasonalAnime(season: string, year: number): Promise<AniList
   return allMedia.filter((m) => !m.genres?.includes("Hentai"));
 }
 
+async function fetchAnimeByIds(ids: number[]): Promise<AniListMedia[]> {
+  if (ids.length === 0) return [];
+  const res = await fetch(ANILIST_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: BY_ID_QUERY, variables: { ids } }),
+  });
+  if (!res.ok) throw new Error(`AniList error: ${res.status}`);
+  const json = await res.json();
+  const media: AniListMedia[] = json.data?.Page?.media ?? [];
+  return media.filter((m) => !m.genres?.includes("Hentai"));
+}
+
 async function upsertAnimeFromAniList(
   media: AniListMedia[],
   seasonSlug: string,
-  log: string[]
+  log: string[],
+  overrides: Map<number, { day?: string; time?: string }> = new Map()
 ): Promise<{ added: number; updated: number }> {
-  const existing = await db.select({ anilistId: anime.anilistId, slug: anime.slug, episodes: anime.episodes })
+  const existing = await db.select({ anilistId: anime.anilistId, slug: anime.slug, episodes: anime.episodes, season: anime.season })
     .from(anime)
     .where(isNotNull(anime.anilistId));
   const existingMap = new Map(existing.map((e) => [e.anilistId, e]));
@@ -211,6 +254,10 @@ async function upsertAnimeFromAniList(
       if (m.episodes && m.episodes !== ex.episodes) {
         updates.episodes = m.episodes;
       }
+      // Always-include long-runners get re-tagged to the current season
+      if (overrides.has(m.id) && ex.season !== seasonSlug) {
+        updates.season = seasonSlug;
+      }
       if (Object.keys(updates).length > 0) {
         updates.updatedAt = new Date();
         await db.update(anime).set(updates).where(eq(anime.anilistId, m.id));
@@ -222,7 +269,9 @@ async function upsertAnimeFromAniList(
 
     const title = m.title.native || m.title.romaji || "Unknown";
     const startDateStr = formatStartDate(m.startDate);
-    const day = startDateStr ? getDayOfWeek(startDateStr) : null;
+    const override = overrides.get(m.id);
+    const day = override?.day ?? (startDateStr ? getDayOfWeek(startDateStr) : null);
+    const time = override?.time ?? null;
     const slug = toSlug({ titleRomaji: m.title.romaji, title, anilistId: m.id });
     const trailer = m.trailer?.site === "youtube" ? m.trailer.id : null;
 
@@ -233,7 +282,7 @@ async function upsertAnimeFromAniList(
         titleRomaji: m.title.romaji,
         titleEnglish: m.title.english,
         day,
-        time: null,
+        time,
         startDate: startDateStr,
         format: m.format,
         batchRelease: false,
@@ -735,9 +784,17 @@ export async function GET(request: Request) {
   // Step 1: Fetch and upsert new anime from AniList
   if (steps.includes(1)) {
     log.push(`--- Step 1: Fetch ${season} ${year} from AniList ---`);
-    const media = await fetchSeasonalAnime(season, year);
-    log.push(`AniList returned ${media.length} anime`);
-    const { added, updated: metaUpdated } = await upsertAnimeFromAniList(media, seasonSlug, log);
+    const seasonalMedia = await fetchSeasonalAnime(season, year);
+    log.push(`AniList seasonal returned ${seasonalMedia.length} anime`);
+
+    const extraIds = ALWAYS_INCLUDE_ANIME.map((e) => e.id)
+      .filter((id) => !seasonalMedia.some((m) => m.id === id));
+    const extraMedia = await fetchAnimeByIds(extraIds);
+    log.push(`AniList always-include returned ${extraMedia.length} anime`);
+
+    const overrides = new Map(ALWAYS_INCLUDE_ANIME.map((e) => [e.id, { day: e.day, time: e.time }]));
+    const media = [...seasonalMedia, ...extraMedia];
+    const { added, updated: metaUpdated } = await upsertAnimeFromAniList(media, seasonSlug, log, overrides);
     results.newAnime = added;
     results.metadataUpdated = metaUpdated;
   }
