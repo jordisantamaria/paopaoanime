@@ -7,6 +7,7 @@ import { AnimeEntry } from "@/lib/types";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
 import { CurrentEpisode } from "@/components/current-episode";
 import { AnimeTrailer } from "@/components/trailer-player";
+import { EpisodeList } from "@/components/episode-list";
 
 
 export async function generateStaticParams() {
@@ -40,7 +41,7 @@ export default async function AnimeDetail({
     <div>
       <BackButton />
 
-      <div className="mt-3 rounded bg-bg-card border border-border overflow-hidden">
+      <div id="anime-detail" className="mt-3 rounded bg-bg-card border border-border overflow-hidden">
         {anime.trailer && anime.image ? (
           <AnimeTrailer
             trailerId={anime.trailer}
@@ -77,6 +78,8 @@ export default async function AnimeDetail({
           </>
         )}
       </div>
+
+      <EpisodeList anime={anime} />
     </div>
   );
 }

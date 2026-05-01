@@ -55,6 +55,13 @@
     "rental": "Rental",
     "subscription": "Subscription"
   },
+  "episodes": {
+    "title": "Episodes",
+    "episode": "Ep {ep}",
+    "latest": "Latest",
+    "markWatched": "Mark episode {ep} as watched",
+    "markUnwatched": "Mark episode {ep} as unwatched"
+  },
   "auth": {
     "login": "Log in",
     "logout": "Log out",

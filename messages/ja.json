@@ -55,6 +55,13 @@
     "rental": "レンタル",
     "subscription": "見放題"
   },
+  "episodes": {
+    "title": "エピソード一覧",
+    "episode": "第{ep}話",
+    "latest": "最新",
+    "markWatched": "第{ep}話を視聴済みにする",
+    "markUnwatched": "第{ep}話を未視聴にする"
+  },
   "auth": {
     "login": "ログイン",
     "logout": "ログアウト",

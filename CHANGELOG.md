@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-05-02
+
+### feat: Episode list with watched tracking
+- New `watched_episodes` table (userId + animeSlug + episode, cascading deletes from user/anime)
+- Server actions `getWatchedEpisodes`, `setWatchedEpisode`, `toggleWatchedEpisode` in `src/actions/watched.ts`
+- New `useWatchedEpisodes` hook (`src/lib/use-watched-episodes.ts`):
+  - Logged-in users: persists to DB via server actions
+  - Anonymous users: persists to `localStorage` under `pao:watched:{slug}`
+- New `EpisodeList` component shown at the bottom of the anime detail page
+  - Renders all episodes (1..N adjusted by `episodeStart`)
+  - Future episodes are visually dimmed; the latest aired episode is highlighted
+  - Per-episode toggle checkbox + per-episode platform search links
+  - Clicking a per-episode platform link auto-marks that episode as watched and opens the platform in a new tab
+- Updated `CurrentEpisode` so the existing "current episode" row is now a clickable toggle that auto-marks watched/unwatched
+- Added `episodes.*` i18n keys in both `messages/ja.json` and `messages/en.json`
+
 ## 2026-04-29
 
 ### feat: Always-include long-running anime in seasonal sync

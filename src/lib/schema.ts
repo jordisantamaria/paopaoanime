@@ -102,3 +102,14 @@ export const favoriteAnime = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.animeSlug] })],
 );
+
+export const watchedEpisodes = pgTable(
+  "watched_episodes",
+  {
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    animeSlug: text("anime_slug").notNull().references(() => anime.slug, { onDelete: "cascade" }),
+    episode: integer("episode").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.animeSlug, table.episode] })],
+);
