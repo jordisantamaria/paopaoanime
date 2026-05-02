@@ -17,21 +17,26 @@ export function EpisodeList({ anime }: EpisodeListProps) {
   const { watched, loaded, setWatched, toggle } = useWatchedEpisodes(anime.slug);
 
   const { episodes, latestAired } = useMemo(() => {
-    const total = anime.episodes;
     const start = anime.episodeStart ?? 1;
-    if (!total || total < 1) {
-      return { episodes: [] as number[], latestAired: null as number | null };
-    }
-    const list: number[] = [];
-    for (let i = 0; i < total; i++) list.push(start + i);
+    const total = anime.episodes ?? 0;
 
     let latest: number | null = null;
-    if (anime.batchRelease) {
-      latest = list[list.length - 1] ?? null;
+    if (anime.batchRelease && total > 0) {
+      latest = start + total - 1;
     } else {
       const recent = getRecentEpisodes([anime]);
       if (recent.length > 0) latest = recent[0].episode;
     }
+
+    // Use the known total when available; otherwise fall back to the latest aired
+    // episode so users still see the episodes that have already been released.
+    const lastEpisodeNum = total > 0 ? start + total - 1 : latest;
+    if (!lastEpisodeNum || lastEpisodeNum < start) {
+      return { episodes: [] as number[], latestAired: latest };
+    }
+
+    const list: number[] = [];
+    for (let n = start; n <= lastEpisodeNum; n++) list.push(n);
     return { episodes: list, latestAired: latest };
   }, [anime]);
 
