@@ -118,14 +118,7 @@ openssl rand -base64 32
 
 Add to `.env.local` as `CRON_SECRET`. Also add it in Vercel (Production + Preview).
 
-### 6. Anthropic API Key
-
-The cron uses Claude to extract platform data from anime schedule pages.
-
-1. Get an API key from [console.anthropic.com](https://console.anthropic.com)
-2. Add to `.env.local` as `ANTHROPIC_API_KEY`
-
-### 7. Verify
+### 6. Verify
 
 ```bash
 pnpm build    # Should complete with 0 errors
@@ -141,7 +134,6 @@ pnpm dev      # Open http://localhost:3000, click login
 | `AUTH_GOOGLE_ID` | Google OAuth Client ID | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) |
 | `AUTH_GOOGLE_SECRET` | Google OAuth Client Secret | Same as above |
 | `CRON_SECRET` | Secret for cron job auth | `openssl rand -base64 32` |
-| `ANTHROPIC_API_KEY` | Claude API key for platform extraction | [Anthropic Console](https://console.anthropic.com) |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | R2 S3 API endpoint URL |
 | `CLOUDFLARE_R2_ACCESS_KEY_ID` | R2 API access key | R2 → Manage API Tokens |
 | `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | R2 API secret key | Same as above |
