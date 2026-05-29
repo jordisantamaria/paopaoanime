@@ -118,7 +118,21 @@ openssl rand -base64 32
 
 Add to `.env.local` as `CRON_SECRET`. Also add it in Vercel (Production + Preview).
 
-### 6. Verify
+### 6. DeepL (Japanese Synopsis Translation)
+
+Synopses come from AniList in English only. The sync pipeline (Step 5) translates
+them to Japanese with DeepL and caches the result in `synopsis_ja`. The DeepL **Free**
+tier (500,000 chars/month) is more than enough — translation runs once per anime.
+
+1. Sign up at [DeepL API Free](https://www.deepl.com/pro-api) (Free plan)
+2. Copy your **Authentication Key** (Free keys end in `:fx`)
+3. Add to `.env.local` as `DEEPL_API_KEY`. Also add it as a **GitHub Actions secret**
+   (`Settings → Secrets and variables → Actions`) so the scheduled sync can use it.
+
+> Optional. If `DEEPL_API_KEY` is unset, Step 5 is skipped and the Japanese page
+> falls back to the English synopsis.
+
+### 7. Verify
 
 ```bash
 pnpm build    # Should complete with 0 errors
@@ -134,6 +148,7 @@ pnpm dev      # Open http://localhost:3000, click login
 | `AUTH_GOOGLE_ID` | Google OAuth Client ID | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) |
 | `AUTH_GOOGLE_SECRET` | Google OAuth Client Secret | Same as above |
 | `CRON_SECRET` | Secret for cron job auth | `openssl rand -base64 32` |
+| `DEEPL_API_KEY` | DeepL API key for EN→JA synopsis translation (optional) | [DeepL API Free](https://www.deepl.com/pro-api) |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID | R2 S3 API endpoint URL |
 | `CLOUDFLARE_R2_ACCESS_KEY_ID` | R2 API access key | R2 → Manage API Tokens |
 | `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | R2 API secret key | Same as above |
@@ -148,6 +163,28 @@ pnpm build        # Production build
 pnpm start        # Start production server
 pnpm lint         # Run ESLint
 ```
+
+### Data Sync
+
+The anime data pipeline runs weekly via GitHub Actions (`.github/workflows/sync-anime.yml`),
+but can be run manually. Steps are independent and selectable with `--step`:
+
+```bash
+npx tsx scripts/sync-anime.ts                 # All steps (1,2,3,4,5)
+npx tsx scripts/sync-anime.ts --step=5        # Only translate synopses (EN→JA)
+npx tsx scripts/sync-anime.ts --step=1,3      # Fetch new anime + sync episodes
+```
+
+| Step | Description |
+|---|---|
+| 1 | Fetch seasonal anime from AniList, insert new entries |
+| 2 | Extract & match streaming platform schedules |
+| 3 | Sync episode offsets / pauses from AniList airing data |
+| 4 | Upload cover/banner images to Cloudflare R2 |
+| 5 | Translate English synopses to Japanese (DeepL) — requires `DEEPL_API_KEY` |
+
+> Step 5 is idempotent: it only translates rows where `synopsis_ja` is empty, so it
+> safely backfills existing anime and picks up newly added ones on each run.
 
 ## Project Structure
 

@@ -166,11 +166,13 @@ Unified weekly cron that replaces all manual scripts. Runs every Sunday at 21:00
 | 2. Extract platforms | Crawls animebb.jp, uses Claude Haiku to extract platform data, matches to DB | animebb.jp + Anthropic API |
 | 3. Sync episodes | Updates `episodeOffset` and `pausedUntil` from AniList airing data | AniList GraphQL API |
 | 4. Upload images | Downloads covers/banners from AniList CDN, uploads to Cloudflare R2 | AniList CDN → Cloudflare R2 |
+| 5. Translate synopses | Translates English synopses to Japanese, fills `synopsis_ja` | DeepL API |
 
 - **Auth:** `CRON_SECRET` Bearer token
 - **Config:** `vercel.json` → `crons` array
-- **Env vars:** `DATABASE_URL`, `CRON_SECRET`, `ANTHROPIC_API_KEY`, `CLOUDFLARE_*` (R2)
-- **Response:** JSON with counts of new anime, matched platforms, updated episodes, uploaded images
+- **Env vars:** `DATABASE_URL`, `CRON_SECRET`, `DEEPL_API_KEY`, `CLOUDFLARE_*` (R2)
+- **Response:** JSON with counts of new anime, matched platforms, updated episodes, uploaded images, translated synopses
+- **Step 5 detail:** Idempotent — translates every row where `synopsis` is present and `synopsis_ja` is NULL (new anime + backfill of existing). Stops gracefully on DeepL quota/rate-limit (HTTP 456/429) and resumes next run. Skipped entirely if `DEEPL_API_KEY` is unset. DeepL Free auto-detected by the `:fx` key suffix.
 
 ---
 

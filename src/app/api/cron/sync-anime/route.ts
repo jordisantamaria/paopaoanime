@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { anime, animePlatforms } from "@/lib/schema";
-import { eq, and, isNotNull, sql } from "drizzle-orm";
+import { eq, and, isNotNull, isNull, sql } from "drizzle-orm";
 import { uploadImageToR2 } from "@/lib/r2";
+import { translateToJapanese, DeepLError } from "@/lib/translate";
 
 // --- Constants ---
 
@@ -761,6 +762,48 @@ async function uploadImages(log: string[]): Promise<number> {
   return uploaded;
 }
 
+// --- Step 5: Translate synopses to Japanese (DeepL) ---
+
+// Idempotent: translates every anime with an English synopsis but no Japanese one.
+// Covers both newly inserted anime and the backfill of pre-existing rows.
+async function translateSynopses(log: string[]): Promise<number> {
+  if (!process.env.DEEPL_API_KEY) {
+    log.push("Step 5: DEEPL_API_KEY not set, skipping synopsis translation");
+    return 0;
+  }
+
+  const pending = await db
+    .select({ id: anime.id, title: anime.title, synopsis: anime.synopsis })
+    .from(anime)
+    .where(and(isNotNull(anime.synopsis), isNull(anime.synopsisJa)));
+
+  log.push(`Step 5: ${pending.length} synopses pending translation`);
+
+  let translated = 0;
+  for (const entry of pending) {
+    if (!entry.synopsis) continue;
+    try {
+      const ja = await translateToJapanese(entry.synopsis);
+      await db.update(anime)
+        .set({ synopsisJa: ja, updatedAt: new Date() })
+        .where(eq(anime.id, entry.id));
+      translated++;
+      log.push(`TRANSLATED: ${entry.title}`);
+    } catch (err) {
+      // 456 = quota exceeded, 429 = rate limited: stop, retry next run.
+      if (err instanceof DeepLError && (err.status === 456 || err.status === 429)) {
+        log.push(`DeepL limit hit (${err.status}), stopping translation step`);
+        break;
+      }
+      log.push(`TRANSLATE ERROR: ${entry.title}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    await sleep(500);
+  }
+
+  log.push(`Step 5: ${translated} synopses translated`);
+  return translated;
+}
+
 // --- Main handler ---
 
 export async function GET(request: Request) {
@@ -774,7 +817,7 @@ export async function GET(request: Request) {
   const stepParam = url.searchParams.get("step");
   const steps = stepParam
     ? stepParam.split(",").map(Number)
-    : [1, 2, 3, 4];
+    : [1, 2, 3, 4, 5];
 
   const now = new Date();
   const { season, year, slug: seasonSlug } = getCurrentSeason(now);
@@ -823,6 +866,13 @@ export async function GET(request: Request) {
     log.push(`--- Step 4: Upload images to R2 ---`);
     const imagesUploaded = await uploadImages(log);
     results.imagesUploaded = imagesUploaded;
+  }
+
+  // Step 5: Translate synopses to Japanese
+  if (steps.includes(5)) {
+    log.push(`--- Step 5: Translate synopses (DeepL) ---`);
+    const synopsesTranslated = await translateSynopses(log);
+    results.synopsesTranslated = synopsesTranslated;
   }
 
   results.log = log;

@@ -3,13 +3,14 @@
  * Mirrors the logic from src/app/api/cron/sync-anime/route.ts
  * but runs as a Node script without Vercel Function timeout limits.
  *
- * Usage: npx tsx scripts/sync-anime.ts [--step=1,2,3,4]
+ * Usage: npx tsx scripts/sync-anime.ts [--step=1,2,3,4,5]
  */
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { eq, and, isNotNull, inArray } from "drizzle-orm";
+import { eq, and, isNotNull, isNull, inArray } from "drizzle-orm";
 import { anime, animePlatforms } from "../src/lib/schema";
 import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { translateToJapanese, DeepLError } from "../src/lib/translate";
 
 // --- DB setup ---
 
@@ -656,11 +657,53 @@ async function uploadImages(log: string[]): Promise<number> {
   return uploaded;
 }
 
+// --- Step 5: Translate synopses to Japanese (DeepL) ---
+
+// Idempotent: translates every anime with an English synopsis but no Japanese one.
+// Covers both newly inserted anime and the backfill of pre-existing rows.
+async function translateSynopses(log: string[]): Promise<number> {
+  if (!process.env.DEEPL_API_KEY) {
+    log.push("Step 5: DEEPL_API_KEY not set, skipping synopsis translation");
+    return 0;
+  }
+
+  const pending = await db
+    .select({ id: anime.id, title: anime.title, synopsis: anime.synopsis })
+    .from(anime)
+    .where(and(isNotNull(anime.synopsis), isNull(anime.synopsisJa)));
+
+  log.push(`Step 5: ${pending.length} synopses pending translation`);
+
+  let translated = 0;
+  for (const entry of pending) {
+    if (!entry.synopsis) continue;
+    try {
+      const ja = await translateToJapanese(entry.synopsis);
+      await db.update(anime)
+        .set({ synopsisJa: ja, updatedAt: new Date() })
+        .where(eq(anime.id, entry.id));
+      translated++;
+      log.push(`TRANSLATED: ${entry.title}`);
+    } catch (err) {
+      // 456 = quota exceeded, 429 = rate limited: stop, retry next run.
+      if (err instanceof DeepLError && (err.status === 456 || err.status === 429)) {
+        log.push(`DeepL limit hit (${err.status}), stopping translation step`);
+        break;
+      }
+      log.push(`TRANSLATE ERROR: ${entry.title}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    await sleep(500);
+  }
+
+  log.push(`Step 5: ${translated} synopses translated`);
+  return translated;
+}
+
 // --- Main ---
 
 async function main() {
   const stepArg = process.argv.find((a) => a.startsWith("--step="));
-  const steps = stepArg ? stepArg.replace("--step=", "").split(",").map(Number) : [1, 2, 3, 4];
+  const steps = stepArg ? stepArg.replace("--step=", "").split(",").map(Number) : [1, 2, 3, 4, 5];
 
   const now = new Date();
   const { season, year, slug: seasonSlug } = getCurrentSeason(now);
@@ -705,6 +748,12 @@ async function main() {
     log.push(`--- Step 4: Upload images to R2 ---`);
     const imagesUploaded = await uploadImages(log);
     results.imagesUploaded = imagesUploaded;
+  }
+
+  if (steps.includes(5)) {
+    log.push(`--- Step 5: Translate synopses (DeepL) ---`);
+    const synopsesTranslated = await translateSynopses(log);
+    results.synopsesTranslated = synopsesTranslated;
   }
 
   console.log(JSON.stringify({ success: true, ...results, log }, null, 2));

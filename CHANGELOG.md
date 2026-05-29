@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-30
+
+### feat: Japanese synopsis via DeepL translation
+- Fixes the synopsis always showing in English on the Japanese site: `synopsis_ja` was always NULL (AniList only provides English descriptions), so the JA page fell back to English
+- New DeepL client `src/lib/translate.ts` (`translateToJapanese`), auto-detecting Free (`:fx` key suffix) vs Pro endpoints
+- New idempotent Step 5 in both `src/app/api/cron/sync-anime/route.ts` and `scripts/sync-anime.ts`: translates every row where `synopsis` is present and `synopsis_ja` is NULL — covers new anime and backfills existing ones
+- Stops gracefully on DeepL quota/rate-limit (HTTP 456/429) and resumes on the next run; skipped entirely when `DEEPL_API_KEY` is unset
+- Added `DEEPL_API_KEY` to `.env.example` and the GitHub Actions workflow secrets
+- Updated `docs/data-pipeline.md` with the translation step and corrected stale env var list
+- Documented DeepL setup, the `DEEPL_API_KEY` env var, and the `sync-anime.ts --step` commands in `README.md`
+
 ## 2026-04-29
 
 ### feat: Always-include long-running anime in seasonal sync
