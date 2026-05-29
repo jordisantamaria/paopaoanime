@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getAnimeData } from "@/lib/data";
 import { NavLinks } from "@/components/nav-links";
 import { SearchBar } from "@/components/search-bar";
@@ -13,7 +14,7 @@ export async function Header() {
     <header className="bg-nav text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-1.5 text-lg font-bold tracking-tight shrink-0">
-          <img src="/logo.png" alt="PaoPaoAnime" className="h-5 w-auto" />
+          <Image src="/logo.png" alt="PaoPaoAnime" width={26} height={20} priority className="h-5 w-auto" />
           <span className="text-sm sm:text-lg">PaoPaoAnime</span>
         </Link>
         <div className="hidden sm:flex items-center gap-5">

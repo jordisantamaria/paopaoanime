@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { AnimeEntry } from "@/lib/types";
@@ -42,15 +43,17 @@ export function SearchResults({ animeList }: { animeList: AnimeEntry[] }) {
         <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {results.map((a) => (
             <Link key={a.slug} href={`/anime/${a.slug}`} className="group">
-              <div className="overflow-hidden rounded border border-border">
+              <div className="relative aspect-[3/4] overflow-hidden rounded border border-border">
                 {a.image ? (
-                  <img
+                  <Image
                     src={a.image}
                     alt={a.title}
-                    className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 200px"
+                    className="object-cover transition-transform group-hover:scale-105"
                   />
                 ) : (
-                  <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
+                  <div className="flex h-full w-full items-center justify-center bg-bg-card text-xs text-text-muted">
                     {t("noImage")}
                   </div>
                 )}

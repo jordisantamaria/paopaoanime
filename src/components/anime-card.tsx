@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { AnimeEntry } from "@/lib/types";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -14,9 +15,11 @@ export async function AnimeCard({ anime }: { anime: AnimeEntry }) {
       className="group flex items-center gap-3 rounded bg-bg-card border border-border p-2.5 transition-colors hover:bg-bg-card-hover hover:border-border-hover"
     >
       {anime.image ? (
-        <img
+        <Image
           src={anime.image}
           alt={anime.title}
+          width={40}
+          height={56}
           className="h-14 w-10 rounded-sm object-cover"
         />
       ) : (

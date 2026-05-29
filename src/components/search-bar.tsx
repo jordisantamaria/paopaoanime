@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { AnimeEntry } from "@/lib/types";
@@ -126,9 +127,11 @@ export function SearchBar({ animeList }: { animeList: AnimeEntry[] }) {
               }`}
             >
               {a.image && (
-                <img
+                <Image
                   src={a.image}
                   alt={a.title}
+                  width={24}
+                  height={32}
                   className="h-8 w-6 rounded-sm object-cover"
                 />
               )}

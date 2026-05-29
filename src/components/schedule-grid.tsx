@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { AnimeEntry, DayOfWeek, PlatformId } from "@/lib/types";
 import { DAYS, PLATFORM_ORDER } from "@/lib/constants";
@@ -199,17 +200,19 @@ function ScheduleCard({ anime, tSchedule, tFormats, locale }: ScheduleCardProps)
       href={`/anime/${anime.slug}`}
       className="group"
     >
-      <div className="relative overflow-hidden rounded border border-border bg-bg-card">
+      <div className="relative aspect-video overflow-hidden rounded border border-border bg-bg-card">
         {thumbnail ? (
-          <img
+          <Image
             src={thumbnail}
             alt={anime.title}
-            className={`w-full object-cover transition-transform group-hover:scale-105 ${
-              anime.banner ? "aspect-video" : "aspect-video object-top"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+            className={`object-cover transition-transform group-hover:scale-105 ${
+              anime.banner ? "" : "object-top"
             }`}
           />
         ) : (
-          <div className="flex aspect-video w-full items-center justify-center bg-bg-card text-xs text-text-muted">
+          <div className="flex h-full w-full items-center justify-center bg-bg-card text-xs text-text-muted">
             {tSchedule("noImage")}
           </div>
         )}

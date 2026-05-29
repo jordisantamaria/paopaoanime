@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/navigation";
 import { AnimeEntry, PlatformId } from "@/lib/types";
@@ -162,15 +163,17 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], favo
               <Link
                 href={`/anime/${ep.anime.slug}`}
               >
-                <div className="relative overflow-hidden rounded border border-border">
+                <div className="relative aspect-[3/4] overflow-hidden rounded border border-border">
                   {ep.anime.image ? (
-                    <img
+                    <Image
                       src={ep.anime.image}
                       alt={ep.anime.title}
-                      className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 200px"
+                      className="object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
+                    <div className="flex h-full w-full items-center justify-center bg-bg-card text-xs text-text-muted">
                       {t("noImage")}
                     </div>
                   )}
@@ -227,15 +230,17 @@ export function HomeContent({ animeList, droppedSlugs: initialDropped = [], favo
           return (
             <div key={anime.slug} className="relative group">
               <Link href={`/anime/${anime.slug}`}>
-                <div className="relative overflow-hidden rounded border border-border">
+                <div className="relative aspect-[3/4] overflow-hidden rounded border border-border">
                   {anime.image ? (
-                    <img
+                    <Image
                       src={anime.image}
                       alt={anime.title}
-                      className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 200px"
+                      className="object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
+                    <div className="flex h-full w-full items-center justify-center bg-bg-card text-xs text-text-muted">
                       {t("noImage")}
                     </div>
                   )}

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDisplayTitle, getDisplaySynopsis } from "@/lib/localized";
@@ -55,11 +56,13 @@ export default async function AnimeDetail({
           <>
             {/* Mobile: banner */}
             {bannerSrc && (
-              <div className="sm:hidden">
-                <img
+              <div className="sm:hidden relative aspect-video">
+                <Image
                   src={bannerSrc}
                   alt={anime.title}
-                  className={`w-full object-cover ${anime.banner ? "aspect-video" : "aspect-video object-top"}`}
+                  fill
+                  sizes="100vw"
+                  className={`object-cover ${anime.banner ? "" : "object-top"}`}
                 />
               </div>
             )}
@@ -67,7 +70,7 @@ export default async function AnimeDetail({
               <div className="flex gap-4 sm:gap-5">
                 {anime.image && (
                   <div className="hidden sm:block shrink-0">
-                    <img src={anime.image} alt={anime.title} className="h-72 w-48 rounded object-cover" />
+                    <Image src={anime.image} alt={anime.title} width={192} height={288} className="h-72 w-48 rounded object-cover" />
                   </div>
                 )}
                 <AnimeInfo anime={anime} tAnime={tAnime} tDays={tDays} tFormats={tFormats} tPlatforms={tPlatforms} locale={locale} />

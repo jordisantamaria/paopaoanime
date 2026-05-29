@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
+import Image from "next/image";
 
 function TrailerModal({ trailerId, title, onClose }: { trailerId: string; title: string; onClose: () => void }) {
   return (
@@ -54,11 +55,13 @@ export function AnimeTrailer({ trailerId, title, posterSrc, bannerSrc, children,
   return (
     <>
       {/* Mobile: full-width banner - outside padding */}
-      <button onClick={play} className="sm:hidden relative w-full cursor-pointer">
-        <img
+      <button onClick={play} className="sm:hidden relative aspect-video w-full cursor-pointer">
+        <Image
           src={bannerSrc || posterSrc || `https://img.youtube.com/vi/${trailerId}/hqdefault.jpg`}
           alt={title}
-          className="w-full aspect-video object-cover"
+          fill
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50">
@@ -78,9 +81,11 @@ export function AnimeTrailer({ trailerId, title, posterSrc, bannerSrc, children,
           {/* Desktop: poster column */}
           <div className="hidden sm:flex sm:flex-col shrink-0">
             <button onClick={play} className="relative group cursor-pointer">
-              <img
-                src={posterSrc}
+              <Image
+                src={posterSrc ?? `https://img.youtube.com/vi/${trailerId}/hqdefault.jpg`}
                 alt={title}
+                width={192}
+                height={288}
                 className="h-72 w-48 rounded object-cover"
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors rounded">

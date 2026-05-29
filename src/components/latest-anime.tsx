@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AnimeEntry } from "@/lib/types";
 import { FORMAT_LABELS } from "@/lib/constants";
@@ -34,15 +35,17 @@ export function LatestAnime({ animeList }: { animeList: AnimeEntry[] }) {
             href={`/anime/${anime.slug}`}
             className="group"
           >
-            <div className="relative overflow-hidden rounded border border-border">
+            <div className="relative aspect-[3/4] overflow-hidden rounded border border-border">
               {anime.image ? (
-                <img
+                <Image
                   src={anime.image}
                   alt={anime.title}
-                  className="aspect-[3/4] w-full object-cover transition-transform group-hover:scale-105"
+                  fill
+                  sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 200px"
+                  className="object-cover transition-transform group-hover:scale-105"
                 />
               ) : (
-                <div className="flex aspect-[3/4] w-full items-center justify-center bg-bg-card text-xs text-text-muted">
+                <div className="flex h-full w-full items-center justify-center bg-bg-card text-xs text-text-muted">
                   画像なし
                 </div>
               )}

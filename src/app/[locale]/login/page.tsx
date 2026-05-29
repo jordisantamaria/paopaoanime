@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
@@ -67,7 +68,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md py-10 sm:py-16">
       <div className="text-center mb-8">
-        <img src="/logo.png" alt="PaoPaoAnime" className="h-10 w-auto mx-auto mb-4" />
+        <Image src="/logo.png" alt="PaoPaoAnime" width={51} height={40} priority className="h-10 w-auto mx-auto mb-4" />
         <h1 className="text-2xl font-bold mb-2">
           {isSignup ? t("signup") : t("loginToApp")}
         </h1>
