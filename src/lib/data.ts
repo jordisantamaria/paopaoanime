@@ -1,9 +1,17 @@
 import "server-only";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { anime, animePlatforms } from "./schema";
 import { AnimeEntry, DayOfWeek, PlatformId } from "./types";
 import { DAYS, NON_TV_FORMATS, PLATFORM_ORDER } from "./constants";
+
+/** Cache tag for all anime data. Revalidate with revalidateTag(ANIME_CACHE_TAG). */
+export const ANIME_CACHE_TAG = "anime-data";
+
+/** How long cached anime data stays fresh (seconds). Data changes ~weekly via cron. */
+const ANIME_CACHE_TTL = 3600;
 
 export { DAYS } from "./constants";
 export { DAY_LABELS } from "./constants";
@@ -54,9 +62,13 @@ function rowToAnimeEntry(
   };
 }
 
-export async function getAnimeData(): Promise<AnimeEntry[]> {
-  const allAnime = await db.select().from(anime);
-  const allPlatforms = await db.select().from(animePlatforms);
+/** Loads all anime + platforms from the DB and builds entries. Hits the DB on every call. */
+async function loadAnimeData(): Promise<AnimeEntry[]> {
+  // Two independent selects — run them in parallel to halve cache-miss latency.
+  const [allAnime, allPlatforms] = await Promise.all([
+    db.select().from(anime),
+    db.select().from(animePlatforms),
+  ]);
 
   const platformsBySlug = new Map<string, (typeof animePlatforms.$inferSelect)[]>();
   for (const p of allPlatforms) {
@@ -69,6 +81,19 @@ export async function getAnimeData(): Promise<AnimeEntry[]> {
     rowToAnimeEntry(row, platformsBySlug.get(row.slug) ?? [])
   );
 }
+
+// Persistent cross-request cache: revalidated by time and on-demand via ANIME_CACHE_TAG.
+const cachedAnimeData = unstable_cache(loadAnimeData, ["anime-data"], {
+  revalidate: ANIME_CACHE_TTL,
+  tags: [ANIME_CACHE_TAG],
+});
+
+/**
+ * All anime data. Deduplicated per-request via React cache() (Header + page share
+ * one call) and cached across requests via unstable_cache (most navigations hit
+ * zero DB queries; refreshed hourly or on-demand after the sync cron).
+ */
+export const getAnimeData = cache((): Promise<AnimeEntry[]> => cachedAnimeData());
 
 function isNonWeekly(anime: AnimeEntry): boolean {
   if (anime.batchRelease) return true;
@@ -103,7 +128,7 @@ export async function getNonWeeklyAnime(): Promise<AnimeEntry[]> {
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
 }
 
-export async function getAnimeBySlug(slug: string): Promise<AnimeEntry | undefined> {
+async function loadAnimeBySlug(slug: string): Promise<AnimeEntry | undefined> {
   const [row] = await db.select().from(anime).where(eq(anime.slug, slug));
   if (!row) return undefined;
 
@@ -114,3 +139,13 @@ export async function getAnimeBySlug(slug: string): Promise<AnimeEntry | undefin
 
   return rowToAnimeEntry(row, platforms);
 }
+
+// Cached per slug (the slug arg is part of the cache key), shared tag for invalidation.
+const cachedAnimeBySlug = unstable_cache(loadAnimeBySlug, ["anime-by-slug"], {
+  revalidate: ANIME_CACHE_TTL,
+  tags: [ANIME_CACHE_TAG],
+});
+
+export const getAnimeBySlug = cache(
+  (slug: string): Promise<AnimeEntry | undefined> => cachedAnimeBySlug(slug)
+);

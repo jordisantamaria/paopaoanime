@@ -2,6 +2,13 @@
 
 ## 2026-05-30
 
+### perf: Cache anime data and pin function region to reduce navigation latency
+- Fixes slow navigation introduced by the JSON→DB migration (logo→home, language switch): every navigation re-ran DB queries server-side
+- `getAnimeData` was executed ~4× per request (Header in the layout + the page), each a separate `neon-http` round-trip to Neon in Singapore
+- Wrap `getAnimeData`/`getAnimeBySlug` in React `cache()` (per-request dedup so Header and page share one call) + `unstable_cache` (cross-request Data Cache, hourly revalidate, `anime-data` tag for on-demand invalidation) — most navigations now hit zero DB queries
+- Parallelize the anime + platforms selects in the cache-miss loader
+- Pin Vercel functions to `sin1` (Singapore, next to Neon) via `vercel.json` so cache-miss and logged-in user queries no longer cross the planet
+
 ### feat: Japanese synopsis via DeepL translation
 - Fixes the synopsis always showing in English on the Japanese site: `synopsis_ja` was always NULL (AniList only provides English descriptions), so the JA page fell back to English
 - New DeepL client `src/lib/translate.ts` (`translateToJapanese`), auto-detecting Free (`:fx` key suffix) vs Pro endpoints
