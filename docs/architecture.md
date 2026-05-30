@@ -92,9 +92,9 @@ one-off scripts. That manual pipeline is gone — data is now refreshed automati
 weekly cron that writes straight to PostgreSQL.
 
 **Runner:** GitHub Actions (`.github/workflows/sync-anime.yml`, Sundays 21:00 UTC) runs
-`scripts/sync-anime.ts`. It runs as a plain Node script (not a Vercel Function) so it isn't
-bound by the function execution timeout. `src/app/api/cron/sync-anime/route.ts` mirrors the
-same logic as a Vercel Function variant.
+`scripts/sync-anime.ts` as a plain Node script with a 30-min timeout, enough for the full
+sync (image uploads + translation). `src/app/api/cron/sync-anime/route.ts` mirrors the same
+logic as a Vercel Function variant.
 
 **Steps (each idempotent):**
 1. Fetch current-season anime from AniList; insert new rows

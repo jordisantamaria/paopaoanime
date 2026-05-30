@@ -29,7 +29,7 @@ The pipeline runs as a **GitHub Actions** workflow, not a Vercel Cron:
 - **Workflow:** `.github/workflows/sync-anime.yml`
 - **Schedule:** `0 21 * * 0` — Sundays 21:00 UTC (Monday 06:00 JST). Also `workflow_dispatch` for manual runs.
 - **Command:** `npx tsx scripts/sync-anime.ts`
-- **Why GitHub Actions:** it runs as a plain Node script with a 30-min timeout, free of the Vercel Function execution limit. The full sync (image uploads + translation) can exceed a function's budget.
+- **Why GitHub Actions:** it runs as a plain Node script with a 30-min timeout, enough to cover the full sync (image uploads + translation) in one run.
 - **Secrets (GitHub Actions):** `DATABASE_URL`, `DEEPL_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_R2_ACCESS_KEY_ID`, `CLOUDFLARE_R2_SECRET_ACCESS_KEY`, `CLOUDFLARE_R2_BUCKET_NAME`, `CLOUDFLARE_R2_PUBLIC_URL`
 
 > `src/app/api/cron/sync-anime/route.ts` mirrors the same logic as a Vercel Function
