@@ -121,8 +121,8 @@ Add to `.env.local` as `CRON_SECRET`. Also add it in Vercel (Production + Previe
 ### 6. DeepL (Japanese Synopsis Translation)
 
 Synopses come from AniList in English only. The sync pipeline (Step 5) translates
-them to Japanese with DeepL and caches the result in `synopsis_ja`. The DeepL **Free**
-tier (500,000 chars/month) is more than enough — translation runs once per anime.
+them to Japanese with DeepL and caches the result in `synopsis_ja`. Translation runs
+once per anime, so the DeepL **Free** tier is comfortably enough for this catalog.
 
 1. Sign up at [DeepL API Free](https://www.deepl.com/pro-api) (Free plan)
 2. Copy your **Authentication Key** (Free keys end in `:fx`)
