@@ -149,6 +149,5 @@ src/
 scripts/                        # Maintenance scripts
 ├── sync-anime.ts               # Weekly pipeline entrypoint (run by GitHub Actions)
 ├── migrate.ts                  # Apply Drizzle migrations (runs in build)
-├── recover-synopsis.ts         # One-off: restore DeepL-corrupted synopses
 └── seed-genkai.ts              # Seed manual (non-AniList) anime entries
 ```

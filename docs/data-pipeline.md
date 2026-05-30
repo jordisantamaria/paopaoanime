@@ -93,8 +93,7 @@ The full set of scripts in `/scripts/`:
 |--------|---------|--------|
 | `sync-anime.ts` | The weekly pipeline (Steps 1–5 above) | GitHub Actions (weekly) / manual |
 | `migrate.ts` | Applies Drizzle SQL migrations and seeds migration history | The Vercel build (`pnpm build`) / manual |
-| `recover-synopsis.ts` | One-off repair: restores synopses corrupted by an early DeepL run (re-fetches English from AniList, clears `synopsis_ja`). Dry-run by default, `--apply` to write | Manual, as needed |
-| `seed-genkai.ts` | Seeds manual (non-AniList) anime — see below | Manual, one-off |
+| `seed-genkai.ts` | Seeds manual (non-AniList) anime — see below | Manual, re-runnable (idempotent) |
 
 ### `migrate.ts`
 

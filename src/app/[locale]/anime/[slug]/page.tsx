@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
-import { getDisplayTitle, getDisplaySynopsis } from "@/lib/localized";
+import { getDisplaySynopsis } from "@/lib/localized";
 import { BackButton } from "@/components/back-button";
 import { getAnimeBySlug, getAnimeData } from "@/lib/data";
 import { AnimeEntry } from "@/lib/types";
@@ -192,6 +192,23 @@ function AnimeInfo({ anime, tAnime, tDays, tFormats, tPlatforms, locale }: Anime
                 </a>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {anime.season === "youtube" && anime.trailer && (
+        <div className="mt-4">
+          <span className="text-xs text-text-muted">{tAnime("available")}</span>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <a
+              href={`https://www.youtube.com/watch?v=${anime.trailer}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-2.5 py-1 text-xs sm:text-sm sm:px-3 sm:py-1.5 font-bold transition-colors hover:text-accent hover:border-accent"
+            >
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#FF0000" }} />
+              {tAnime("youtube")}
+            </a>
           </div>
         </div>
       )}

@@ -2,6 +2,15 @@
 
 ## 2026-05-31
 
+### feat: Add "Watch on YouTube" link on YouTube-only anime detail pages
+- Genkai anime (`season = "youtube"`) have no platform rows, so the "Available on" block never rendered — the synopsis said "available on YouTube" with no link
+- The detail page now shows a "YouTube" link under "Available on" (same pattern as platform links) when `season === "youtube"` and a `trailer` (ep1 video ID) is present, pointing to `https://www.youtube.com/watch?v=<trailer>`
+- Added `anime.youtube` i18n key (en + ja)
+
+### chore: Remove one-off recover-synopsis script
+- `scripts/recover-synopsis.ts` was a one-time repair for synopses corrupted by an early DeepL run. It has been applied, and the active pipeline's `isJapanese` guard prevents recurrence, so the script is dead code (still recoverable from git history in `a8f965e`)
+- Removed its rows from `docs/architecture.md` and `docs/data-pipeline.md`; clarified `seed-genkai.ts` is re-runnable (idempotent), not one-off
+
 ### docs: Remove deprecated pipeline references from docs
 - The `docs/` described an old JSON-file ETL pipeline that no longer exists. Audit confirmed code, README, ROADMAP, `package.json` and `.env.example` were already clean — only the docs were stale
 - `data-pipeline.md`: rewritten around the real flow — a weekly **GitHub Actions** job (`scripts/sync-anime.ts`, Sun 21:00 UTC) running 5 idempotent steps (AniList → uzurea.net schedules → AniList fallback → episode sync → R2 images → DeepL synopses). Dropped ~10 nonexistent scripts (`enrich.ts`, `migrate-to-db.ts`, `translate-synopsis.ts`, …), the "Legacy Scripts" list, the legacy data-flow diagram, and the `data/*.json` structure section
