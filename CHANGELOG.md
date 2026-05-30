@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-31
+
+### docs: Remove deprecated pipeline references from docs
+- The `docs/` described an old JSON-file ETL pipeline that no longer exists. Audit confirmed code, README, ROADMAP, `package.json` and `.env.example` were already clean — only the docs were stale
+- `data-pipeline.md`: rewritten around the real flow — a weekly **GitHub Actions** job (`scripts/sync-anime.ts`, Sun 21:00 UTC) running 5 idempotent steps (AniList → uzurea.net schedules → AniList fallback → episode sync → R2 images → DeepL synopses). Dropped ~10 nonexistent scripts (`enrich.ts`, `migrate-to-db.ts`, `translate-synopsis.ts`, …), the "Legacy Scripts" list, the legacy data-flow diagram, and the `data/*.json` structure section
+- `architecture.md`: fixed the overview diagram and tech-stack table (translation engine **Anthropic → DeepL**; added R2 + GitHub Actions rows), rewrote the data-pipeline section, and corrected Project Structure to the real `scripts/` (4 files) and `src/` tree
+- `database.md`: `synopsis_ja` now correctly states translation via **DeepL** (was Anthropic)
+- Corrected the platform-schedule source to **uzurea.net** (the docs said animebb.jp / Claude Haiku; the code parses uzurea.net HTML with no LLM) and the runner to **GitHub Actions** (was "Vercel Cron")
+
+### chore: Add MIT LICENSE file and license field in package.json
+- Added a top-level `LICENSE` (MIT) and `"license": "MIT"` in `package.json` to match the README, which already declared MIT
+
+### docs: Drop specific DeepL Free tier quota from README
+- Removed the hardcoded "500,000 chars/month" figure (provider quotas change); kept the functional note that translation runs once per anime
+
 ## 2026-05-30
 
 ### fix: Resolve set-state-in-effect lint errors in CurrentEpisode and SearchBar

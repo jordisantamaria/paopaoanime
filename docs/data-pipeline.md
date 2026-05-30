@@ -1,297 +1,139 @@
-# Data Pipeline (ETL) — PaoPaoAnime
+# Data Pipeline — PaoPaoAnime
 
 ## Overview
 
-Anime data goes through a multi-stage pipeline: manual JSON entry, enrichment via external APIs, and migration to PostgreSQL. Each script adds a specific layer of data and can be run independently.
+Anime data is refreshed by a single automated job that writes directly to PostgreSQL.
+There is no manual JSON-entry step and no per-script data files: a weekly cron fetches
+everything from external sources and upserts it into the database.
 
 ```
-Manual JSON → Enrich (AniList) → Add Platforms → Download Images → Translate → Migrate to DB
+GitHub Actions (weekly)
+  → scripts/sync-anime.ts
+      Step 1  AniList        → seasonal anime + metadata
+      Step 2  uzurea.net     → per-platform schedules
+      Step 2b AniList        → fallback for anime still missing platforms
+      Step 3  AniList        → episode offsets / pauses
+      Step 4  AniList CDN     → Cloudflare R2 (covers, banners)
+      Step 5  DeepL          → Japanese synopses
+  → Neon PostgreSQL
 ```
 
-All scripts live in `/scripts/` and are run with `npx tsx scripts/<name>.ts`.
+All scripts live in `/scripts/` and run with `npx tsx scripts/<name>.ts`.
 
 ---
 
-## Pipeline Stages
+## How it runs
 
-### Stage 1 — Base Data
+The pipeline runs as a **GitHub Actions** workflow, not a Vercel Cron:
 
-Data starts as a manually created JSON file in `/data/`, one per season (e.g., `winter-2026.json`). Each entry contains the minimum: title, day, time, startDate, and platforms.
+- **Workflow:** `.github/workflows/sync-anime.yml`
+- **Schedule:** `0 21 * * 0` — Sundays 21:00 UTC (Monday 06:00 JST). Also `workflow_dispatch` for manual runs.
+- **Command:** `npx tsx scripts/sync-anime.ts`
+- **Why GitHub Actions:** it runs as a plain Node script with a 30-min timeout, free of the Vercel Function execution limit. The full sync (image uploads + translation) can exceed a function's budget.
+- **Secrets (GitHub Actions):** `DATABASE_URL`, `DEEPL_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_R2_ACCESS_KEY_ID`, `CLOUDFLARE_R2_SECRET_ACCESS_KEY`, `CLOUDFLARE_R2_BUCKET_NAME`, `CLOUDFLARE_R2_PUBLIC_URL`
 
-```json
-{
-  "title": "葬送のフリーレン 2nd Season",
-  "day": "土",
-  "time": "00:00",
-  "startDate": "2025-04-05",
-  "type": "見放題",
-  "platforms": ["dmmtv", "abema", "danime"]
-}
-```
-
-**Why manual?** Per-platform schedule data (day + time per streaming service) is not available in any public API. It's collected from each platform's official website.
-
-For movies/OVAs, `fetch-seasonal-movies.ts` can bootstrap entries from AniList instead of manual entry.
+> `src/app/api/cron/sync-anime/route.ts` mirrors the same logic as a Vercel Function
+> (protected by `CRON_SECRET`). It exists as an HTTP-triggerable variant; the scheduled
+> runner of record is the GitHub Actions script above.
 
 ---
 
-### Stage 2 — Enrichment
+## Pipeline Steps
 
-#### `enrich.ts`
-Queries AniList GraphQL API to add metadata.
+Each step is idempotent — a run can be repeated safely, and partial failures resume on the
+next run. Steps can be run selectively: `npx tsx scripts/sync-anime.ts --step=1,2,5`.
 
-| Field Added | Source |
-|-------------|--------|
-| `anilistId` | AniList media ID |
-| `titleRomaji` | Romanized title |
-| `titleEnglish` | English title |
-| `synopsis` | English synopsis (HTML cleaned) |
-| `genres` | Genre array |
-| `episodes` | Total episode count |
-| `studio` | Animation studio name |
-| `image` | Cover image URL |
-| `format` | TV, MOVIE, OVA, ONA, SPECIAL, TV_SHORT |
+### Step 1 — Seasonal anime (AniList)
 
-- **Input:** `data/<season>.json`
-- **Output:** Same file, updated in-place
-- **API:** AniList GraphQL (`https://graphql.anilist.co`)
-- **Rate limit:** 1.5s delay between requests
-- **Matching:** Searches by full title, falls back to simplified title (removes season suffixes like 第2期)
-- **Usage:** `npx tsx scripts/enrich.ts [filename]`
+Queries the AniList GraphQL API (`https://graphql.anilist.co`) for the current season and
+upserts new rows. Populates: `anilistId`, titles (`titleRomaji`, `titleEnglish`),
+`synopsis` (English, HTML-cleaned), `genres`, `episodes`, `studio`, `format`, `image`,
+`banner`, `trailer`.
 
-#### `add-format.ts`
-Fills in missing `format` fields from AniList for entries that have `anilistId` but no format.
+### Step 2 — Platform schedules (uzurea.net)
 
-- **Usage:** `npx tsx scripts/add-format.ts [filename]`
+Per-platform day/time is not in any public API, so it is scraped from **uzurea.net**'s
+seasonal listing pages (one per platform: DMM TV, dAnime, ABEMA, Amazon, U-NEXT, Netflix,
+Disney+) plus the season tag page. HTML is parsed with regex (`parseSchedulePage`) — no LLM.
+Extracted `{title, day, time}` entries are fuzzy-matched to DB rows by normalized title and
+written to the `anime_platform` join table.
 
-#### `fetch-banners.ts`
-Fetches banner image URLs from AniList for entries missing them.
+### Step 2b — Platform fallback (AniList)
 
-- **Usage:** `npx tsx scripts/fetch-banners.ts`
+For anime still missing platform rows after Step 2, AniList's streaming-links data is used
+as a fallback so the entry still shows where to watch.
 
----
+### Step 3 — Episode sync (AniList)
 
-### Stage 3 — Platform Schedules
+Compares the expected episode number (start date + weekly cadence) against AniList's
+`nextAiringEpisode` and sets `episodeOffset` on drift (recaps, delays) and `pausedUntil`
+when the next episode is far out. Clears those fields when an anime finishes airing.
 
-Platform data is added via scripts with hardcoded arrays (collected manually from each platform's website).
+### Step 4 — Images (AniList CDN → Cloudflare R2)
 
-#### `add-platforms.ts`
-Adds dAnime Store, ABEMA, and Netflix schedules.
+Downloads covers and banners from AniList's CDN and uploads them to Cloudflare R2
+(S3-compatible). Rewrites the DB `image` / `banner` URLs to the R2 public URLs. Skips
+images already uploaded.
 
-#### `add-unext.ts`
-Adds U-NEXT schedules.
+### Step 5 — Synopsis translation (DeepL)
 
-Both scripts:
-- **Match by title** using normalized fuzzy matching (removes whitespace, punctuation, season info)
-- **Add to `streams` array** with per-platform day/time
-- **Update `platforms` array** for backward compatibility
-- **Report** matched/unmatched entries for verification
-
-```json
-{
-  "streams": [
-    { "platform": "abema", "day": "土", "time": "00:00" },
-    { "platform": "netflix", "day": "金", "time": "00:00" },
-    { "platform": "dmmtv", "day": "土", "time": "00:00" }
-  ]
-}
-```
-
-> DMM TV, Amazon Prime Video, and Disney+ schedules are added directly in the base JSON.
+Translates English `synopsis` to Japanese and stores it in `synopsis_ja`. Idempotent:
+processes every row where `synopsis` is present and `synopsis_ja` is NULL (new anime +
+backfill). Already-Japanese synopses are skipped (never re-fed to DeepL EN→JA). Stops
+gracefully on DeepL quota / rate-limit (HTTP 456/429) and resumes next run. Skipped
+entirely if `DEEPL_API_KEY` is unset. DeepL Free is auto-detected by the `:fx` key suffix.
 
 ---
 
-### Stage 4 — Assets
+## Scripts
 
-#### `download-images.ts`
-Downloads cover and banner images from external CDNs to `public/img/` and rewrites URLs in JSON to local paths.
+The full set of scripts in `/scripts/`:
 
-- **Output paths:** `public/img/cover/<anilistId>.jpg`, `public/img/banner/<anilistId>.jpg`
-- **Skips** already-downloaded images
-- **Usage:** `npx tsx scripts/download-images.ts [filename]`
+| Script | Purpose | Run by |
+|--------|---------|--------|
+| `sync-anime.ts` | The weekly pipeline (Steps 1–5 above) | GitHub Actions (weekly) / manual |
+| `migrate.ts` | Applies Drizzle SQL migrations and seeds migration history | The Vercel build (`pnpm build`) / manual |
+| `recover-synopsis.ts` | One-off repair: restores synopses corrupted by an early DeepL run (re-fetches English from AniList, clears `synopsis_ja`). Dry-run by default, `--apply` to write | Manual, as needed |
+| `seed-genkai.ts` | Seeds manual (non-AniList) anime — see below | Manual, one-off |
 
----
+### `migrate.ts`
 
-### Stage 5 — Translation
-
-#### `translate-synopsis.ts`
-Translates English synopses to Japanese using OpenAI API.
-
-- **Detection:** Identifies English text by ASCII character ratio (>70%)
-- **Batching:** Processes 10 entries per API call for efficiency
-- **Model:** `gpt-4o-mini`
-- **Output:** Populates `synopsisJa` field
-- **Usage:** `OPENAI_API_KEY=... npx tsx scripts/translate-synopsis.ts [filename]`
-
----
-
-### Stage 6 — Episode Sync (Maintenance)
-
-#### `sync-episodes.ts` (legacy — JSON files)
-Keeps episode calculations accurate by comparing with AniList's actual airing data.
-
-- **Calculates** expected episode number from start date + weekly schedule
-- **Compares** with AniList's `nextAiringEpisode`
-- **Sets `episodeOffset`** when there's drift (e.g., recap episodes, delays)
-- **Detects pauses:** Sets `pausedUntil` when next episode is >9 days away
-- **Cleans up:** Removes offset/pause fields when anime finishes airing
-- **Rate limit:** 1.5s delay + 60s backoff on 429 errors
-- **Usage:** `npx tsx scripts/sync-episodes.ts [filename]`
-
-#### `API: /api/cron/sync-episodes` (fallback — episode sync only)
-Vercel Cron that syncs only episode offsets. Replaced by the unified pipeline below.
-
-- **Auth:** Protected by `CRON_SECRET` Bearer token
-
----
-
-### Stage 7 — Database Migration
-
-#### `migrate-to-db.ts` (legacy — initial load)
-One-time migration from JSON files to PostgreSQL. Replaced by the automated pipeline for ongoing updates.
-
-- **Usage:** `npx tsx scripts/migrate-to-db.ts`
-
----
-
-## Automated Pipeline (Weekly Cron)
-
-### `API: /api/cron/sync-anime`
-
-Unified weekly cron that replaces all manual scripts. Runs every Sunday at 21:00 UTC (Monday 06:00 JST).
-
-| Step | What it does | Source |
-|------|-------------|--------|
-| 1. Fetch seasonal anime | Queries AniList for current season, inserts new anime to DB | AniList GraphQL API |
-| 2. Extract platforms | Crawls animebb.jp, uses Claude Haiku to extract platform data, matches to DB | animebb.jp + Anthropic API |
-| 3. Sync episodes | Updates `episodeOffset` and `pausedUntil` from AniList airing data | AniList GraphQL API |
-| 4. Upload images | Downloads covers/banners from AniList CDN, uploads to Cloudflare R2 | AniList CDN → Cloudflare R2 |
-| 5. Translate synopses | Translates English synopses to Japanese, fills `synopsis_ja` | DeepL API |
-
-- **Auth:** `CRON_SECRET` Bearer token
-- **Config:** `vercel.json` → `crons` array
-- **Env vars:** `DATABASE_URL`, `CRON_SECRET`, `DEEPL_API_KEY`, `CLOUDFLARE_*` (R2)
-- **Response:** JSON with counts of new anime, matched platforms, updated episodes, uploaded images, translated synopses
-- **Step 5 detail:** Idempotent — translates every row where `synopsis` is present and `synopsis_ja` is NULL (new anime + backfill of existing). Stops gracefully on DeepL quota/rate-limit (HTTP 456/429) and resumes next run. Skipped entirely if `DEEPL_API_KEY` is unset. DeepL Free auto-detected by the `:fx` key suffix.
-
-> **Note:** The cron only reads/writes rows that have an `anilist_id` and only iterates AniList results. Rows with `anilist_id = NULL` (manually seeded entries) are never touched, updated, or deleted by it.
+Runs in the build (`"build": "tsx scripts/migrate.ts && next build"`), so schema changes
+apply automatically on every deploy. Uses Drizzle's migrator against the `drizzle/` folder
+and tracks applied migrations in `drizzle.__drizzle_migrations`. Can also be run locally:
+`npx tsx --env-file=.env.local scripts/migrate.ts`.
 
 ---
 
 ## Manual Entries (outside AniList)
 
-Some anime are not on AniList and cannot be enriched by the cron — e.g. indie / YouTube-only works. These are seeded directly with a standalone script and have `anilist_id = NULL`, so the weekly cron ignores them entirely (it only touches rows with an `anilist_id`).
+Some anime are not on AniList and cannot be enriched by the cron — e.g. indie / YouTube-only
+works. These are seeded directly and carry `anilist_id = NULL`, so the weekly cron ignores
+them entirely (it only reads/iterates rows that have an `anilist_id`).
 
 ### `seed-genkai.ts`
 
-Seeds the Genkai Anime (限界アニメ「松山あおい物語」) seasons — an indie YouTube-only anime by Matsuyama Aoi, one entry per season (S1–S5).
+Seeds the Genkai Anime (限界アニメ「松山あおい物語」) seasons — an indie YouTube-only anime by
+Matsuyama Aoi, one entry per season (S1–S5).
 
 - **Usage:** `npx tsx --env-file=.env.local scripts/seed-genkai.ts` (idempotent — upserts by `slug`)
-- **Prerequisite:** the `hidden` column migration must be applied first (`npx tsx --env-file=.env.local scripts/migrate.ts`, or any deploy build)
-- Each entry: `hidden = true` (searchable + reachable by URL, but excluded from home/schedule listings), `season = "youtube"`, `batchRelease = true`, **no `anime_platform` rows** (so it never appears as a YouTube streaming filter), and `trailer` = the YouTube video ID of that season's first episode.
+- **Prerequisite:** the `hidden` column migration must be applied first (`migrate.ts`, or any deploy build)
+- Each entry: `hidden = true` (searchable + reachable by URL, but excluded from home/schedule
+  listings), `season = "youtube"`, `batchRelease = true`, **no `anime_platform` rows** (so it
+  never appears as a YouTube streaming filter), and `trailer` = the YouTube video ID of that
+  season's first episode.
 
 ---
 
-## Legacy Scripts
+## Environment Variables
 
-The scripts in `/scripts/` were used for the initial data pipeline. They still work against JSON files but are no longer needed for ongoing maintenance — the cron handles everything.
-
-```
-enrich.ts               Add AniList metadata
-add-platforms.ts        Add dAnime, ABEMA, Netflix schedules (hardcoded arrays)
-add-unext.ts            Add U-NEXT schedules (hardcoded arrays)
-add-format.ts           Fill missing format fields
-fetch-banners.ts        Fetch banner images
-download-images.ts      Download images to local filesystem
-translate-synopsis.ts   Translate synopses to Japanese
-sync-episodes.ts        Sync episode offsets from AniList
-migrate-to-db.ts        Insert JSON data into PostgreSQL
-fetch-seasonal-movies.ts  Fetch movies/OVAs from AniList
-```
-
----
-
-## Data Flow Diagram
-
-```
-                    ┌─────────────┐
-                    │  Manual JSON │
-                    │  (base data) │
-                    └──────┬──────┘
-                           │
-                    ┌──────▼──────┐
-                    │  enrich.ts   │◄──── AniList GraphQL API
-                    │  (metadata)  │
-                    └──────┬──────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-       ┌──────▼──────┐ ┌──▼────────┐ ┌─▼──────────────┐
-       │add-platforms │ │ add-unext │ │ fetch-banners   │
-       │  (schedules) │ │(schedule) │ │ add-format      │
-       └──────┬──────┘ └──┬────────┘ └─┬──────────────┘
-              │            │            │
-              └────────────┼────────────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-       ┌──────▼──────┐ ┌──▼──────────┐
-       │download-imgs │ │ translate   │◄──── OpenAI API
-       │  (localize)  │ │ (synopsis)  │
-       └──────┬──────┘ └──┬──────────┘
-              │            │
-              └─────┬──────┘
-                    │
-             ┌──────▼──────┐
-             │migrate-to-db │───► Neon PostgreSQL
-             │  (final load)│
-             └──────────────┘
-
-                    ⟳
-             ┌──────────────┐
-             │sync-episodes  │◄──── AniList API (periodic)
-             │  (maintenance)│
-             └──────────────┘
-```
-
----
-
-## JSON File Structure
-
-Each `data/<season>.json` contains an array of anime entries:
-
-```typescript
-interface AnimeEntry {
-  title: string              // Japanese title (required)
-  day: string                // Broadcast day: 月火水木金土日
-  time: string | null        // Broadcast time (HH:MM)
-  startDate: string          // Start date (YYYY-MM-DD)
-  type: string               // "見放題" (subscription) or "レンタル" (rental)
-  platforms: string[]        // Platform IDs (legacy format)
-  streams: Stream[]          // Per-platform schedule (preferred format)
-  // — Added by enrich.ts —
-  anilistId?: number
-  titleRomaji?: string
-  titleEnglish?: string
-  synopsis?: string
-  synopsisJa?: string
-  genres?: string[]
-  episodes?: number
-  studio?: string
-  image?: string
-  banner?: string
-  format?: string            // TV, MOVIE, OVA, ONA, SPECIAL, TV_SHORT
-  trailer?: string           // YouTube video ID
-  // — Added by sync-episodes.ts —
-  episodeOffset?: number
-  episodeStart?: number
-  pausedUntil?: string
-  batchRelease?: boolean
-}
-
-interface Stream {
-  platform: string           // dmmtv, netflix, abema, amazon, danime, disney, unext, theater
-  day: string | null         // May differ from main anime day
-  time: string | null        // May differ from main anime time
-}
-```
+| Variable | Used by | Purpose |
+|----------|---------|---------|
+| `DATABASE_URL` | all scripts | Neon PostgreSQL connection |
+| `DEEPL_API_KEY` | Step 5 | DeepL translation (optional — Step 5 skipped if unset) |
+| `CLOUDFLARE_ACCOUNT_ID` | Step 4 | R2 endpoint |
+| `CLOUDFLARE_R2_ACCESS_KEY_ID` | Step 4 | R2 credentials |
+| `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | Step 4 | R2 credentials |
+| `CLOUDFLARE_R2_BUCKET_NAME` | Step 4 | R2 bucket |
+| `CLOUDFLARE_R2_PUBLIC_URL` | Step 4 | Public base URL for stored images |
+| `CRON_SECRET` | API route variant | Bearer token auth for `/api/cron/sync-anime` |

@@ -5,9 +5,12 @@
 PaoPaoAnime is a streaming schedule aggregator for anime in Japan. It answers: "Which platform streams this anime and when does it air?"
 
 ```
-JSON (manual data entry)
-  → Enrichment scripts (AniList API + Anthropic)
-    → Migration to PostgreSQL (Neon)
+Weekly cron (GitHub Actions → scripts/sync-anime.ts)
+  → AniList API (seasonal anime, metadata, episodes)
+  + uzurea.net (per-platform schedules)
+  + DeepL (Japanese synopsis translation)
+  + Cloudflare R2 (cover/banner images)
+    → Neon PostgreSQL
       → Next.js App Router (Server Components + Server Actions)
         → UI with React + Tailwind CSS
 ```
@@ -25,7 +28,9 @@ JSON (manual data entry)
 | Auth | Auth.js v5 (NextAuth) | Google OAuth + email/password credentials |
 | Deployment | Vercel | Native Next.js integration, preview deployments |
 | Email | Resend | Password reset and email verification |
-| LLM | Anthropic SDK | Japanese synopsis translation |
+| Translation | DeepL API | Japanese synopsis translation |
+| Image storage | Cloudflare R2 | Cover/banner hosting (S3-compatible) |
+| Scheduled sync | GitHub Actions | Weekly data pipeline (no Vercel Function timeout) |
 
 ---
 
@@ -80,21 +85,27 @@ JSON (manual data entry)
 
 ---
 
-### Why JSON + Manual Migration for Data
+### Data Pipeline (automated weekly sync)
 
-**Context:** Seasonal anime data is manually collected at the start of each season and enriched via scripts.
+**Context:** Anime data was originally hand-entered as seasonal JSON files and loaded via
+one-off scripts. That manual pipeline is gone — data is now refreshed automatically by a
+weekly cron that writes straight to PostgreSQL.
 
-**Data pipeline:**
-1. Create JSON with basic data (title, platforms, schedules)
-2. `scripts/enrich.ts` — enrich with AniList API (synopsis, genres, cover image, studio)
-3. `scripts/translate-synopsis.ts` — translate synopsis to Japanese via Anthropic
-4. `scripts/migrate-to-db.ts` — migrate everything to PostgreSQL
+**Runner:** GitHub Actions (`.github/workflows/sync-anime.yml`, Sundays 21:00 UTC) runs
+`scripts/sync-anime.ts`. It runs as a plain Node script (not a Vercel Function) so it isn't
+bound by the function execution timeout. `src/app/api/cron/sync-anime/route.ts` mirrors the
+same logic as a Vercel Function variant.
 
-**Why not fully automate:**
-- Per-platform schedule data is not available in any public API
-- Data is manually collected from each platform's official website
-- Human verification is required to ensure accuracy
-- **Future goal**: automate with LLM scraping at the start of each season
+**Steps (each idempotent):**
+1. Fetch current-season anime from AniList; insert new rows
+2. Extract per-platform schedules by crawling uzurea.net; match to DB rows
+3. Sync episode offsets / pauses from AniList airing data
+4. Upload covers and banners from AniList's CDN to Cloudflare R2
+5. Translate English synopses to Japanese via DeepL (`synopsis_ja`)
+
+**What stays manual:** anime not on AniList (e.g. indie / YouTube-only works) are seeded
+once via a standalone script with `anilist_id = NULL`, so the cron never touches them.
+See [data-pipeline.md](data-pipeline.md) for the full step-by-step and script reference.
 
 ---
 
@@ -102,33 +113,42 @@ JSON (manual data entry)
 
 ```
 src/
-├── app/                    # Pages (App Router)
-│   ├── page.tsx            # Home — recent episodes
-│   ├── anime/[slug]/       # Anime detail page
-│   ├── schedule/           # Weekly schedule grid
-│   ├── search/             # Search
-│   ├── drops/              # Dropped anime (requires auth)
-│   ├── login/              # Login + forgot/reset password
-│   └── api/auth/           # Auth.js API routes
-├── components/             # React components (~29 files)
-├── lib/                    # Business logic
-│   ├── schema.ts           # DB schema (Drizzle)
-│   ├── db.ts               # Neon connection
-│   ├── auth.ts             # Auth.js configuration
-│   ├── data.ts             # Data loaders
-│   ├── types.ts            # TypeScript types
-│   ├── episodes.ts         # Episode calculation
-│   ├── constants.ts        # Constants (platforms, days)
-│   └── platforms.ts        # Platform metadata
-├── actions/                # Server Actions
-│   ├── drops.ts            # Toggle drop anime
-│   └── signup.ts           # User registration
-scripts/                    # Data scripts
-├── migrate-to-db.ts        # JSON → PostgreSQL
-├── enrich.ts               # Enrich with AniList
-├── translate-synopsis.ts   # Translate with Anthropic
-└── ...
-data/                       # Seasonal JSON files
-├── winter-2026.json
-└── spring-2026.json
+├── app/
+│   └── [locale]/               # Localized pages (App Router, next-intl)
+│       ├── page.tsx            # Home — recent episodes
+│       ├── anime/[slug]/       # Anime detail page
+│       ├── schedule/           # Weekly schedule grid
+│       ├── search/             # Search
+│       ├── drops/              # Dropped anime (requires auth)
+│       ├── settings/           # User settings + danger-zone
+│       ├── login/              # Login + forgot/reset password
+│       ├── about/ privacy/ terms/  # Static pages
+│   └── api/
+│       ├── auth/[...nextauth]/ # Auth.js API routes
+│       └── cron/sync-anime/    # Weekly sync (Vercel Function variant)
+├── components/                 # React components
+├── lib/                        # Business logic
+│   ├── schema.ts               # DB schema (Drizzle)
+│   ├── db.ts                   # Neon connection
+│   ├── auth.ts                 # Auth.js configuration
+│   ├── data.ts                 # Data loaders
+│   ├── types.ts                # TypeScript types
+│   ├── episodes.ts             # Episode calculation
+│   ├── constants.ts            # Constants (platforms, days)
+│   ├── platforms.ts            # Platform metadata
+│   ├── localized.ts            # Locale-aware title/synopsis helpers
+│   ├── translate.ts            # DeepL translation client
+│   └── r2.ts                   # Cloudflare R2 upload helper
+├── actions/                    # Server Actions
+│   ├── drops.ts                # Toggle dropped anime
+│   ├── favorites.ts            # Toggle favorite anime
+│   ├── platform-preferences.ts # Per-user platform filter
+│   ├── signup.ts               # User registration
+│   ├── reset-password.ts       # Password reset flow
+│   └── user.ts                 # Account management
+scripts/                        # Maintenance scripts
+├── sync-anime.ts               # Weekly pipeline entrypoint (run by GitHub Actions)
+├── migrate.ts                  # Apply Drizzle migrations (runs in build)
+├── recover-synopsis.ts         # One-off: restore DeepL-corrupted synopses
+└── seed-genkai.ts              # Seed manual (non-AniList) anime entries
 ```

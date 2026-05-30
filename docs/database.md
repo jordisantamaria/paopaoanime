@@ -107,7 +107,7 @@ Each row represents one anime in a season.
 | `image` | text | Cover image URL |
 | `banner` | text | Banner image URL |
 | `synopsis` | text | Synopsis in English (from AniList) |
-| `synopsisJa` | text | Synopsis in Japanese (translated via Anthropic) |
+| `synopsisJa` | text | Synopsis in Japanese (translated via DeepL) |
 | `genres` | text[] | Genre array (Action, Romance, etc.) |
 | `episodes` | integer | Total episode count |
 | `studio` | text | Animation studio |
