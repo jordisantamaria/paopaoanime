@@ -26,6 +26,14 @@ export function SearchBar({ animeList }: { animeList: SearchItem[] }) {
   const router = useRouter();
   const t = useTranslations("search");
 
+  // Reset the keyboard selection whenever the query changes. Done during render
+  // (React's recommended pattern) instead of an effect, to avoid an extra commit.
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
+    setActiveIndex(-1);
+  }
+
   const results =
     query.length >= 1
       ? animeList
@@ -49,10 +57,6 @@ export function SearchBar({ animeList }: { animeList: SearchItem[] }) {
           })
           .slice(0, 8)
       : [];
-
-  useEffect(() => {
-    setActiveIndex(-1);
-  }, [query]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

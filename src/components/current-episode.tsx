@@ -1,25 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { AnimeEntry } from "@/lib/types";
 import { getRecentEpisodes } from "@/lib/episodes";
 import { useTranslations } from "next-intl";
 
+// No-op store: we never re-subscribe, we only need a different snapshot on
+// server vs client.
+const subscribe = () => () => {};
+
 export function CurrentEpisode({ anime }: { anime: AnimeEntry }) {
-  const [episode, setEpisode] = useState<number | null>(null);
   const t = useTranslations("anime");
 
-  useEffect(() => {
-    // Movies/OVAs/Specials don't have weekly episodes
-    if (anime.format && !["TV", "TV_SHORT", "ONA"].includes(anime.format)) return;
-
-    if (anime.batchRelease) return; // all episodes available from start
-
-    const episodes = getRecentEpisodes([anime]);
-    if (episodes.length > 0) {
-      setEpisode(episodes[0].episode);
-    }
-  }, [anime]);
+  // The current episode depends on `new Date()`, which only makes sense on the
+  // client (this page is statically generated, so a server value would be frozen
+  // at build time). useSyncExternalStore renders null on the server and computes
+  // the real value on the client — no hydration mismatch, no setState-in-effect.
+  const episode = useSyncExternalStore(
+    subscribe,
+    () => {
+      // Movies/OVAs/Specials and batch releases don't have a weekly "current" episode
+      if (anime.format && !["TV", "TV_SHORT", "ONA"].includes(anime.format)) return null;
+      if (anime.batchRelease) return null;
+      const episodes = getRecentEpisodes([anime]);
+      return episodes.length > 0 ? episodes[0].episode : null;
+    },
+    () => null
+  );
 
   if (anime.batchRelease) {
     return (
