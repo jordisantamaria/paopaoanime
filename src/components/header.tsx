@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { getAnimeData } from "@/lib/data";
 import { NavLinks } from "@/components/nav-links";
-import { SearchBar } from "@/components/search-bar";
+import { SearchBar, type SearchItem } from "@/components/search-bar";
 import { AuthButton } from "@/components/auth-button";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
@@ -9,6 +9,16 @@ import { getTranslations } from "next-intl/server";
 export async function Header() {
   const animeList = await getAnimeData();
   const t = await getTranslations("nav");
+
+  // Only the fields the search needs — keeps the client payload small (this runs
+  // in the layout, so it ships on every page). No synopsis/genres/streams sent.
+  const searchItems: SearchItem[] = animeList.map((a) => ({
+    slug: a.slug,
+    title: a.title,
+    titleRomaji: a.titleRomaji,
+    titleEnglish: a.titleEnglish,
+    image: a.image,
+  }));
 
   return (
     <header className="bg-nav text-white">
@@ -19,11 +29,11 @@ export async function Header() {
         </Link>
         <div className="hidden sm:flex items-center gap-5">
           <NavLinks />
-          <SearchBar animeList={animeList} />
+          <SearchBar animeList={searchItems} />
           <AuthButton />
         </div>
         <div className="flex sm:hidden items-center gap-3">
-          <SearchBar animeList={animeList} />
+          <SearchBar animeList={searchItems} />
           <Link href="/schedule" className="text-white/80 hover:text-white" title={t("weeklySchedule")}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
               <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />

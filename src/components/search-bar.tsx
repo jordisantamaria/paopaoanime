@@ -4,11 +4,19 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
-import { AnimeEntry } from "@/lib/types";
 import { useTranslations, useLocale } from "next-intl";
 import { getDisplayTitle } from "@/lib/localized";
 
-export function SearchBar({ animeList }: { animeList: AnimeEntry[] }) {
+/** Minimal fields the search needs — keeps the client payload small (no synopsis, genres, etc.). */
+export interface SearchItem {
+  slug: string;
+  title: string;
+  titleRomaji?: string;
+  titleEnglish?: string;
+  image?: string;
+}
+
+export function SearchBar({ animeList }: { animeList: SearchItem[] }) {
   const locale = useLocale();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -135,7 +143,7 @@ export function SearchBar({ animeList }: { animeList: AnimeEntry[] }) {
                   className="h-8 w-6 rounded-sm object-cover"
                 />
               )}
-              <span className="truncate">{getDisplayTitle(a, locale)}</span>
+              <span className="line-clamp-2">{getDisplayTitle(a, locale)}</span>
             </Link>
           ))}
         </div>

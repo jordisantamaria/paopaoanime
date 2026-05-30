@@ -2,8 +2,12 @@ import { AnimeEntry } from "./types";
 
 /** Returns the best display title for the given locale.
  *  EN: titleRomaji → title (Japanese fallback)
- *  JA: title (original Japanese) */
-export function getDisplayTitle(anime: AnimeEntry, locale: string): string {
+ *  JA: title (original Japanese)
+ *  Accepts any object with title/titleRomaji (AnimeEntry or the lighter SearchItem). */
+export function getDisplayTitle(
+  anime: { title: string; titleRomaji?: string },
+  locale: string
+): string {
   if (locale === "en") {
     return anime.titleRomaji || anime.title;
   }
