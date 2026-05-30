@@ -19,6 +19,12 @@
 - Configured `next.config` `images.remotePatterns` for the R2 bucket (`*.r2.dev`), Google avatars (`lh3.googleusercontent.com`), and the YouTube thumbnail host (`img.youtube.com`)
 - Header/login logo gets explicit dimensions + `priority`
 
+### fix: Recover synopses corrupted by an early DeepL run + guard against recurrence
+- 112/190 anime had Japanese in both `synopsis` (meant to be English) and `synopsis_ja`: an early, uncommitted version of the DeepL step translated EN→JA and wrote the result back into `synopsis`, overwriting AniList's English; the committed step then re-translated that Japanese into a degraded `synopsis_ja`
+- New `scripts/recover-synopsis.ts` (dry-run by default, `--apply` to write): re-fetches the English `description` from AniList by `anilist_id`, restores `synopsis`, and clears `synopsis_ja` so Step 5 regenerates it cleanly. For the 1 title whose AniList description is itself Japanese (Frieren special), restores the authentic Japanese into both columns
+- Restored 111 English synopses + 1 authentic Japanese; re-translated all 111 via DeepL
+- Hardened Step 5 (`translateSynopses` in the cron route and the script): skip synopses that are already Japanese instead of feeding them to DeepL EN→JA, which would corrupt them — prevents recurrence for AniList JP-source titles
+
 ### perf: Cache anime data and pin function region to reduce navigation latency
 - Fixes slow navigation introduced by the JSON→DB migration (logo→home, language switch): every navigation re-ran DB queries server-side
 - `getAnimeData` was executed ~4× per request (Header in the layout + the page), each a separate `neon-http` round-trip to Neon in Singapore
