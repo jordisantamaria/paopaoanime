@@ -2,11 +2,22 @@
 
 ## 2026-05-30
 
-### fix: Recover synopses corrupted by an early DeepL run + guard against recurrence
-- 112/190 anime had Japanese in both `synopsis` (meant to be English) and `synopsis_ja`: an early, uncommitted version of the DeepL step translated EN→JA and wrote the result back into `synopsis`, overwriting AniList's English; the committed step then re-translated that Japanese into a degraded `synopsis_ja`
-- New `scripts/recover-synopsis.ts` (dry-run by default, `--apply` to write): re-fetches the English `description` from AniList by `anilist_id`, restores `synopsis`, and clears `synopsis_ja` so Step 5 regenerates it cleanly. For the 1 title whose AniList description is itself Japanese (Frieren special), restores the authentic Japanese into both columns
-- Restored 111 English synopses + 1 authentic Japanese; re-translated all 111 via DeepL
-- Hardened Step 5 (`translateSynopses` in the cron route and the script): skip synopses that are already Japanese instead of feeding them to DeepL EN→JA, which would corrupt them — prevents recurrence for AniList JP-source titles
+### fix: Resolve set-state-in-effect lint errors in CurrentEpisode and SearchBar
+- `CurrentEpisode`: the current episode depends on `new Date()` and the detail page is statically generated, so it must be computed client-side. Replaced the `useEffect` + `setState` with `useSyncExternalStore` (server snapshot `null`, client snapshot computes the value) — no hydration mismatch, no setState-in-effect
+- `SearchBar`: reset the keyboard selection (`activeIndex`) during render via the prev-value pattern instead of a `useEffect`, avoiding an extra commit
+- Both were pre-existing `react-hooks/set-state-in-effect` errors unrelated to the image/search changes
+
+### perf: Slim down the search payload sent to the client
+- The `Header` (in the layout, so on every page) passed the full `AnimeEntry[]` to the client `SearchBar`, serializing all 190 anime with every field — synopsis EN+JA, genres, streams, etc. — into the payload of every page
+- The search only needs 5 fields: new `SearchItem` type (`slug`, `title`, `titleRomaji`, `titleEnglish`, `image`); the Header maps to it before passing it down
+- `getDisplayTitle` now accepts the lighter shape, so it works for both `AnimeEntry` and `SearchItem`
+- Cuts the per-page search payload from ~150KB to ~25KB (uncompressed). Client-side instant search kept — correct for this catalog size; revisit toward a debounced server endpoint only past ~1-2k anime
+
+### perf: Migrate all images to next/image
+- Fixes Lighthouse's ~5.7MB image savings and the missing width/height (CLS) warnings: no component used `next/image` — every image was a raw `<img>` served full-size with no resize, WebP/AVIF, or lazy loading
+- Migrated all 13 `<img>` usages (anime covers, banners, posters, search thumbnails, Google avatar, YouTube fallback, logo) to `next/image` — grid covers/banners use `fill` + `sizes`, fixed thumbnails/posters use explicit `width`/`height`
+- Configured `next.config` `images.remotePatterns` for the R2 bucket (`*.r2.dev`), Google avatars (`lh3.googleusercontent.com`), and the YouTube thumbnail host (`img.youtube.com`)
+- Header/login logo gets explicit dimensions + `priority`
 
 ### perf: Cache anime data and pin function region to reduce navigation latency
 - Fixes slow navigation introduced by the JSON→DB migration (logo→home, language switch): every navigation re-ran DB queries server-side
