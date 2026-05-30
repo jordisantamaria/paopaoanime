@@ -164,6 +164,13 @@ function cleanDescription(desc: string | null): string | undefined {
     .trim();
 }
 
+// AniList usually returns English descriptions, but some titles only have a
+// Japanese one. Feeding Japanese into DeepL's EN→JA translation degrades it, so
+// the translate step skips synopses that are already Japanese.
+function isJapanese(text: string): boolean {
+  return /[぀-ヿ㐀-䶿一-鿿]/.test(text);
+}
+
 function toSlug(entry: { titleRomaji?: string | null; title: string; anilistId?: number | null }): string {
   const base = entry.titleRomaji || entry.title;
   const slug = base
@@ -677,6 +684,16 @@ async function translateSynopses(log: string[]): Promise<number> {
   let translated = 0;
   for (const entry of pending) {
     if (!entry.synopsis) continue;
+    // Synopsis is already Japanese (AniList had no English): use it verbatim
+    // instead of running EN→JA, which would corrupt it.
+    if (isJapanese(entry.synopsis)) {
+      await db.update(anime)
+        .set({ synopsisJa: entry.synopsis, updatedAt: new Date() })
+        .where(eq(anime.id, entry.id));
+      translated++;
+      log.push(`KEPT JA: ${entry.title}`);
+      continue;
+    }
     try {
       const ja = await translateToJapanese(entry.synopsis);
       await db.update(anime)
