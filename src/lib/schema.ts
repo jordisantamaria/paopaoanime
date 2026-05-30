@@ -57,6 +57,9 @@ export const anime = pgTable("anime", {
   pausedUntil: text("paused_until"),
   type: text("type").default("見放題").notNull(),
   season: text("season").notNull(),
+  // Hidden from listings (home/schedule) but still searchable and reachable by URL.
+  // Used for special entries like the YouTube-only Genkai Anime seasons.
+  hidden: boolean("hidden").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });

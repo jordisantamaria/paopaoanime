@@ -18,14 +18,18 @@ export function SearchResults({ animeList }: { animeList: AnimeEntry[] }) {
   }
 
   const results = q.length >= 1
-    ? animeList.filter((a) => {
-        const query = normalize(q);
-        return (
-          normalize(a.title).includes(query) ||
-          (a.titleRomaji ? normalize(a.titleRomaji).includes(query) : false) ||
-          (a.titleEnglish ? normalize(a.titleEnglish).includes(query) : false)
-        );
-      })
+    ? animeList
+        .filter((a) => {
+          const query = normalize(q);
+          return (
+            normalize(a.title).includes(query) ||
+            (a.titleRomaji ? normalize(a.titleRomaji).includes(query) : false) ||
+            (a.titleEnglish ? normalize(a.titleEnglish).includes(query) : false)
+          );
+        })
+        .sort((a, b) =>
+          getDisplayTitle(a, locale).localeCompare(getDisplayTitle(b, locale), locale, { numeric: true })
+        )
     : [];
 
   return (

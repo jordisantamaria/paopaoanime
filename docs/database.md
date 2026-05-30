@@ -117,6 +117,7 @@ Each row represents one anime in a season.
 | `pausedUntil` | text | Date until which the show is paused |
 | `type` | text NOT NULL (default "見放題") | Model: 見放題 (subscription) or レンタル (rental) |
 | `season` | text NOT NULL | Season identifier: winter-2026, spring-2026, etc. |
+| `hidden` | boolean NOT NULL (default false) | Hidden from home/schedule listings but still searchable and reachable by URL. Used for special entries like the YouTube-only Genkai Anime seasons (`season = "youtube"`, no platform rows). |
 | `createdAt` | timestamp with tz | Creation timestamp |
 | `updatedAt` | timestamp with tz | Last update timestamp |
 

@@ -30,6 +30,7 @@ export type AnimeEntry = {
   episodeOffset?: number; // adjust episode count (e.g. -2 for skipped weeks)
   episodeStart?: number; // starting episode number for continuations (e.g. 25 for S3)
   pausedUntil?: string; // ISO date when anime resumes (e.g. "2026-04-03")
+  hidden?: boolean; // hidden from listings (home/schedule) but searchable and reachable by URL
 };
 
 export type Platform = {

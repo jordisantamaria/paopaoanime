@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { getAnimeData } from "@/lib/data";
+import { getListableAnimeData } from "@/lib/data";
 import { getRecentEpisodes } from "@/lib/episodes";
 import { HomeContent } from "@/components/home-content";
 import { getDroppedSlugs } from "@/actions/drops";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const t = await getTranslations("home");
-  const animeList = await getAnimeData();
+  const animeList = await getListableAnimeData();
   const [droppedSlugs, favoriteSlugs, platformPreferences] = await Promise.all([
     getDroppedSlugs(),
     getFavoriteSlugs(),

@@ -25,6 +25,13 @@
 - Restored 111 English synopses + 1 authentic Japanese; re-translated all 111 via DeepL
 - Hardened Step 5 (`translateSynopses` in the cron route and the script): skip synopses that are already Japanese instead of feeding them to DeepL EN→JA, which would corrupt them — prevents recurrence for AniList JP-source titles
 
+### feat: Add Genkai Anime (限界アニメ「松山あおい物語」) — YouTube-only, search-only
+- Adds the indie YouTube anime by Matsuyama Aoi (the origin of the "paopao" name), one entry per season (S1–S5)
+- Not on AniList: seeded manually with `anilist_id = NULL`, so the weekly sync cron never touches it (the cron only reads/iterates rows with an `anilist_id`)
+- New `hidden` boolean column on `anime` (migration `0004`): entries are searchable and reachable by URL but excluded from the home and schedule listings — `getListableAnimeData()` and the schedule getters filter `hidden`, while search/detail/static-params keep showing it
+- No `anime_platform` rows, so YouTube never appears as a streaming filter; `trailer` holds each season's first-episode YouTube video ID and the cover image is that video's thumbnail
+- New idempotent `scripts/seed-genkai.ts` (upsert by slug); documented in `docs/data-pipeline.md` and `docs/database.md`
+
 ### perf: Cache anime data and pin function region to reduce navigation latency
 - Fixes slow navigation introduced by the JSON→DB migration (logo→home, language switch): every navigation re-ran DB queries server-side
 - `getAnimeData` was executed ~4× per request (Header in the layout + the page), each a separate `neon-http` round-trip to Neon in Singapore

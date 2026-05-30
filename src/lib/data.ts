@@ -55,6 +55,7 @@ function rowToAnimeEntry(
     })),
     season: row.season,
     trailer: row.trailer ?? undefined,
+    hidden: row.hidden ?? undefined,
     batchRelease: row.batchRelease ?? undefined,
     episodeOffset: row.episodeOffset ?? undefined,
     episodeStart: row.episodeStart ?? undefined,
@@ -95,13 +96,21 @@ const cachedAnimeData = unstable_cache(loadAnimeData, ["anime-data"], {
  */
 export const getAnimeData = cache((): Promise<AnimeEntry[]> => cachedAnimeData());
 
+/**
+ * Anime that should appear in listings (home, schedule). Excludes `hidden` entries,
+ * which stay reachable only via search and direct URL (e.g. the Genkai Anime seasons).
+ */
+export async function getListableAnimeData(): Promise<AnimeEntry[]> {
+  return (await getAnimeData()).filter((a) => !a.hidden);
+}
+
 function isNonWeekly(anime: AnimeEntry): boolean {
   if (anime.batchRelease) return true;
   return !!anime.format && NON_TV_FORMATS.includes(anime.format);
 }
 
 export async function getAnimeByDay(): Promise<Record<DayOfWeek, AnimeEntry[]>> {
-  const data = (await getAnimeData()).filter((a) => !isNonWeekly(a));
+  const data = (await getAnimeData()).filter((a) => !isNonWeekly(a) && !a.hidden);
   const byDay = Object.fromEntries(
     DAYS.map((day) => [day, [] as AnimeEntry[]])
   ) as Record<DayOfWeek, AnimeEntry[]>;
@@ -124,7 +133,7 @@ export async function getAnimeByDay(): Promise<Record<DayOfWeek, AnimeEntry[]>> 
 export async function getNonWeeklyAnime(): Promise<AnimeEntry[]> {
   const data = await getAnimeData();
   return data
-    .filter(isNonWeekly)
+    .filter((a) => isNonWeekly(a) && !a.hidden)
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
 }
 

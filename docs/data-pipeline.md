@@ -174,6 +174,22 @@ Unified weekly cron that replaces all manual scripts. Runs every Sunday at 21:00
 - **Response:** JSON with counts of new anime, matched platforms, updated episodes, uploaded images, translated synopses
 - **Step 5 detail:** Idempotent — translates every row where `synopsis` is present and `synopsis_ja` is NULL (new anime + backfill of existing). Stops gracefully on DeepL quota/rate-limit (HTTP 456/429) and resumes next run. Skipped entirely if `DEEPL_API_KEY` is unset. DeepL Free auto-detected by the `:fx` key suffix.
 
+> **Note:** The cron only reads/writes rows that have an `anilist_id` and only iterates AniList results. Rows with `anilist_id = NULL` (manually seeded entries) are never touched, updated, or deleted by it.
+
+---
+
+## Manual Entries (outside AniList)
+
+Some anime are not on AniList and cannot be enriched by the cron — e.g. indie / YouTube-only works. These are seeded directly with a standalone script and have `anilist_id = NULL`, so the weekly cron ignores them entirely (it only touches rows with an `anilist_id`).
+
+### `seed-genkai.ts`
+
+Seeds the Genkai Anime (限界アニメ「松山あおい物語」) seasons — an indie YouTube-only anime by Matsuyama Aoi, one entry per season (S1–S5).
+
+- **Usage:** `npx tsx --env-file=.env.local scripts/seed-genkai.ts` (idempotent — upserts by `slug`)
+- **Prerequisite:** the `hidden` column migration must be applied first (`npx tsx --env-file=.env.local scripts/migrate.ts`, or any deploy build)
+- Each entry: `hidden = true` (searchable + reachable by URL, but excluded from home/schedule listings), `season = "youtube"`, `batchRelease = true`, **no `anime_platform` rows** (so it never appears as a YouTube streaming filter), and `trailer` = the YouTube video ID of that season's first episode.
+
 ---
 
 ## Legacy Scripts
