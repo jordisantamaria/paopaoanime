@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-06-01
+
+### fix: Diamond no Ace act II not showing platforms or recent episodes
+- `Diamond no Ace act II -Second Season-` (anilist 177634) had 0 `anime_platform` rows, so `isUnavailableForStreaming` hid it from both the "where it airs" block and the recent-episodes list, even though it has been airing since 2026-04-05
+- Root cause: `normalize()` in `scripts/sync-anime.ts` couldn't match uzurea.net's title `ダイヤのA actⅡ Second Season` (Unicode roman numeral `Ⅱ` U+2161, no dashes) against our `ダイヤのA actII -Second Season-` (ASCII `II`, dashes), so the platform-matching step silently skipped it
+- Fixed `normalize()` to fold Unicode roman numerals (`Ⅰ`–`Ⅻ` / `ⅰ`–`ⅻ`) to ASCII and strip dashes (`-‐‑‒–—―−`); the chōonpu `ー` is deliberately preserved. Both titles now normalize to `ダイヤのaactiisecondseason`. This also fixes any other anime affected by the same title patterns going forward
+- Backfilled the 6 supported platforms uzurea lists for this title (amazon, danime, disney, dmmtv, netflix, unext) in both staging and production so it appears immediately instead of waiting for the Sunday sync. The next sync will fill per-platform schedules
+
+### fix: Scope anime Data Cache to the current deployment
+- `loadAnimeData` / `loadAnimeBySlug` are wrapped in `unstable_cache` (1h TTL, tag `anime-data`), but nothing ever calls `revalidateTag`, and Vercel's Data Cache persists across deployments. So out-of-band DB changes (and even the weekly cron's updates) could take up to an extra hour to surface, and a redeploy did not reliably refresh them
+- Added `VERCEL_DEPLOYMENT_ID` (unique per deploy/redeploy, `"dev"` locally) to both cache keys. Each deployment now starts with a fresh cache, so a code deploy reflects current data immediately and a redeploy becomes a reliable way to pick up manual DB edits
+- Trade-off: the first request after each deploy hits the DB (2 small queries) instead of inheriting the cross-deployment cache — negligible for this dataset
+
 ## 2026-05-31
 
 ### feat: Add "Watch on YouTube" link on YouTube-only anime detail pages

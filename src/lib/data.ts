@@ -13,6 +13,13 @@ export const ANIME_CACHE_TAG = "anime-data";
 /** How long cached anime data stays fresh (seconds). Data changes ~weekly via cron. */
 const ANIME_CACHE_TTL = 3600;
 
+// Unique per deployment (and per redeploy) on Vercel; falls back to "dev" locally.
+// Adding it to each cache key scopes the Data Cache to the current deployment, so
+// every deploy/redeploy starts with a fresh cache instead of inheriting Vercel's
+// cross-deployment Data Cache. This makes a redeploy a reliable way to pick up
+// out-of-band DB edits, and ensures a code deploy reflects current data immediately.
+const DEPLOYMENT_ID = process.env.VERCEL_DEPLOYMENT_ID ?? "dev";
+
 export { DAYS } from "./constants";
 export { DAY_LABELS } from "./constants";
 
@@ -84,7 +91,7 @@ async function loadAnimeData(): Promise<AnimeEntry[]> {
 }
 
 // Persistent cross-request cache: revalidated by time and on-demand via ANIME_CACHE_TAG.
-const cachedAnimeData = unstable_cache(loadAnimeData, ["anime-data"], {
+const cachedAnimeData = unstable_cache(loadAnimeData, ["anime-data", DEPLOYMENT_ID], {
   revalidate: ANIME_CACHE_TTL,
   tags: [ANIME_CACHE_TAG],
 });
@@ -150,7 +157,7 @@ async function loadAnimeBySlug(slug: string): Promise<AnimeEntry | undefined> {
 }
 
 // Cached per slug (the slug arg is part of the cache key), shared tag for invalidation.
-const cachedAnimeBySlug = unstable_cache(loadAnimeBySlug, ["anime-by-slug"], {
+const cachedAnimeBySlug = unstable_cache(loadAnimeBySlug, ["anime-by-slug", DEPLOYMENT_ID], {
   revalidate: ANIME_CACHE_TTL,
   tags: [ANIME_CACHE_TAG],
 });

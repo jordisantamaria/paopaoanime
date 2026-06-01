@@ -215,12 +215,24 @@ function calcRawEpisode(startDate: string, day: string, time: string | null, now
   return Math.floor((recent.getTime() - start.getTime()) / msPerWeek) + 1;
 }
 
+// Unicode roman numerals (U+2160–U+216B / U+2170–U+217B) so that, e.g.,
+// uzurea's "actⅡ" matches AniList's ASCII "actII". The chōonpu "ー" is left
+// untouched — it is a real katakana long-vowel mark, not a dash.
+const ROMAN_NUMERAL_MAP: Record<string, string> = {
+  "Ⅰ": "i", "Ⅱ": "ii", "Ⅲ": "iii", "Ⅳ": "iv", "Ⅴ": "v", "Ⅵ": "vi",
+  "Ⅶ": "vii", "Ⅷ": "viii", "Ⅸ": "ix", "Ⅹ": "x", "Ⅺ": "xi", "Ⅻ": "xii",
+  "ⅰ": "i", "ⅱ": "ii", "ⅲ": "iii", "ⅳ": "iv", "ⅴ": "v", "ⅵ": "vi",
+  "ⅶ": "vii", "ⅷ": "viii", "ⅸ": "ix", "ⅹ": "x", "ⅺ": "xi", "ⅻ": "xii",
+};
+
 function normalize(t: string): string {
   return t
     .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
     .replace(/[Ａ-Ｚａ-ｚ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[Ⅰ-Ⅻⅰ-ⅻ]/g, (c) => ROMAN_NUMERAL_MAP[c] ?? c)
     .replace(/\s+/g, "")
     .replace(/[～〜~]/g, "")
+    .replace(/[-‐‑‒–—―−]/g, "")
     .replace(/[！!？?。、・「」『』【】（）()：:]/g, "")
     .replace(/TVアニメ/g, "")
     .replace(/第\d+期/g, "")
