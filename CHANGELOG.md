@@ -15,6 +15,12 @@
 
 ## 2026-05-31
 
+### chore: Migrate remaining local images to R2 and delete `public/img`
+- `public/img/banner` (50) and `public/img/cover` (114) were leftovers from the original "self-host images" seed. Their bytes were still in use: 50 banner + 111 cover rows in production (and equivalents in staging) had `image`/`banner` pointing at `/img/...`, so Next/Image served them from the static folder
+- Migrated every remaining local row to Cloudflare R2 in **both** environments (staging + production), uploading the on-disk files directly and rewriting the DB to the `*.r2.dev` URL. Verified `0` local refs in each DB afterward (161 prod, 161 staging)
+- Deleted `public/img/banner` and `public/img/cover` (164 files); `public/img` no longer exists
+- Note: cron Step 4 `uploadImages()` could never have migrated these legacy rows — for `/img/...` paths it re-fetches from a *deterministic* AniList URL (`s3.anilist.co/.../{id}.jpg`) which 404s (real AniList URLs carry a hash). This is harmless going forward since new anime are inserted with real AniList image URLs (which Step 4 fetches fine), but the dead `/img/` branch in `route.ts` could be pruned later
+
 ### feat: Add "Watch on YouTube" link on YouTube-only anime detail pages
 - Genkai anime (`season = "youtube"`) have no platform rows, so the "Available on" block never rendered — the synopsis said "available on YouTube" with no link
 - The detail page now shows a "YouTube" link under "Available on" (same pattern as platform links) when `season === "youtube"` and a `trailer` (ep1 video ID) is present, pointing to `https://www.youtube.com/watch?v=<trailer>`
