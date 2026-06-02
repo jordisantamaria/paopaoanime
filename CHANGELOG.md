@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-06-02
+
+### chore: Remove favorites feature
+- Removed the favorite-anime functionality to simplify the site
+- Deleted `src/actions/favorites.ts` (`getFavoriteSlugs` / `toggleFavorite` server actions)
+- Removed the heart toggle buttons, favorite state, and favorite-bubbling sort from the home page (`home-content.tsx`); `page.tsx` no longer fetches favorite slugs
+- Dropped the `favorite_anime` table from the schema and added migration `0005_drop_favorite_anime.sql` (`DROP TABLE favorite_anime CASCADE`)
+- Removed `favoriteTitle` / `unfavoriteTitle` i18n keys and dropped "favorites" from the login `feature3Desc` copy (en + ja)
+
 ## 2026-06-01
 
 ### fix: Diamond no Ace act II not showing platforms or recent episodes

@@ -141,7 +141,6 @@ src/
 │   └── r2.ts                   # Cloudflare R2 upload helper
 ├── actions/                    # Server Actions
 │   ├── drops.ts                # Toggle dropped anime
-│   ├── favorites.ts            # Toggle favorite anime
 │   ├── platform-preferences.ts # Per-user platform filter
 │   ├── signup.ts               # User registration
 │   ├── reset-password.ts       # Password reset flow

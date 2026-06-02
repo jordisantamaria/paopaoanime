@@ -19,9 +19,7 @@
     "daysAgo": "{count}日前",
     "hoursAgo": "{count}時間前",
     "streaming": "配信中",
-    "hideTitle": "この作品を非表示",
-    "favoriteTitle": "お気に入りに追加",
-    "unfavoriteTitle": "お気に入りから削除"
+    "hideTitle": "この作品を非表示"
   },
   "schedule": {
     "title": "週間スケジュール",
@@ -82,7 +80,7 @@
     "feature2Title": "最新エピソードをすばやく確認",
     "feature2Desc": "非表示にした作品を除外して、見たいアニメだけチェック。",
     "feature3Title": "今後の新機能もいち早く",
-    "feature3Desc": "お気に入り登録や通知など、便利な機能を追加予定。",
+    "feature3Desc": "通知など、便利な機能を追加予定。",
     "droppedList": "切り捨てリスト",
     "settings": "設定"
   },

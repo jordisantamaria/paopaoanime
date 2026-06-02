@@ -19,9 +19,7 @@
     "daysAgo": "{count}d ago",
     "hoursAgo": "{count}h ago",
     "streaming": "Streaming",
-    "hideTitle": "Hide this anime",
-    "favoriteTitle": "Add to favorites",
-    "unfavoriteTitle": "Remove from favorites"
+    "hideTitle": "Hide this anime"
   },
   "schedule": {
     "title": "Weekly Schedule",
@@ -82,7 +80,7 @@
     "feature2Title": "Quickly check the latest episodes",
     "feature2Desc": "Filter out hidden anime and only see what you want to watch.",
     "feature3Title": "Early access to new features",
-    "feature3Desc": "Favorites, notifications, and more features coming soon.",
+    "feature3Desc": "Notifications and more features coming soon.",
     "droppedList": "Dropped list",
     "settings": "Settings"
   },
