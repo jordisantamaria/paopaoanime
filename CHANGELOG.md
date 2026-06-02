@@ -2,6 +2,11 @@
 
 ## 2026-06-02
 
+### chore: Clean up and document the migration runner
+- Removed the legacy `ensureMigrationHistory()` seed from `scripts/migrate.ts`; it backfilled the pre-history `drizzle-kit push` migrations (`0000`–`0002`) into `__drizzle_migrations` and was a one-off that has long since run in every environment
+- Added a header comment to `scripts/migrate.ts` explaining when it runs and what `migrate()` does
+- Documented the migration strategy in `docs/database.md` (build-time auto-apply, programmatic `migrate()` over the CLI, how to add a migration) and brought the migrations table up to date (`0003`–`0005`)
+
 ### chore: Remove favorites feature
 - Removed the favorite-anime functionality to simplify the site
 - Deleted `src/actions/favorites.ts` (`getFavoriteSlugs` / `toggleFavorite` server actions)

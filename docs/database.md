@@ -234,7 +234,33 @@ Migrations are stored in `/drizzle/`:
 | `0000_even_mandarin.sql` | Auth tables: user, account, verificationToken |
 | `0001_needy_mattie_franklin.sql` | Anime tables: anime, anime_platform + password field on user |
 | `0002_even_sunset_bain.sql` | User platform preferences table |
+| `0003_lethal_rage.sql` | favorite_anime table (later dropped in `0005`) |
+| `0004_thankful_joshua_kane.sql` | `hidden` column on anime |
+| `0005_drop_favorite_anime.sql` | Drop favorite_anime table |
 
-Run migrations: `npx drizzle-kit push`
+### How migrations are applied
 
-Generate new migration: `npx drizzle-kit generate`
+Migrations run automatically on every deploy. The build script is
+`tsx scripts/migrate.ts && next build`, so `scripts/migrate.ts` applies any
+pending migrations before Next.js compiles. If a migration fails the build
+aborts, so a deploy can never ship against an out-of-sync schema. When the DB
+is already up to date the script is a no-op.
+
+`scripts/migrate.ts` uses Drizzle's programmatic `migrate()` (via the Neon
+`neon-http` driver) rather than the `drizzle-kit migrate` CLI, which fits the
+serverless build environment better. It scans `/drizzle/` at runtime and
+applies whatever is not yet recorded in the `drizzle.__drizzle_migrations`
+history table.
+
+### Adding a migration
+
+1. Edit the schema in `src/lib/schema.ts`.
+2. Generate the SQL: `npx drizzle-kit generate`.
+3. Commit the generated file in `/drizzle/`.
+
+The next deploy applies it automatically — no manual step against the database.
+
+> **Note:** the first three migrations (`0000`–`0002`) were originally applied
+> with `npx drizzle-kit push`, which does not record history. A one-off seed in
+> `migrate.ts` backfilled those entries into `__drizzle_migrations`; that seed
+> has since been removed as it is no longer needed.
