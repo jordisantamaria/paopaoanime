@@ -2,6 +2,10 @@
 
 ## 2026-06-02
 
+### feat: Add Vercel Web Analytics
+- Added `@vercel/analytics` and mounted `<Analytics />` in the locale layout body to track anonymous, cookieless traffic (visitors, page views, referrers, country/device)
+- Needs Web Analytics enabled in the Vercel project dashboard to start collecting
+
 ### chore: Clean up and document the migration runner
 - Removed the legacy `ensureMigrationHistory()` seed from `scripts/migrate.ts`; it backfilled the pre-history `drizzle-kit push` migrations (`0000`–`0002`) into `__drizzle_migrations` and was a one-off that has long since run in every environment
 - Added a header comment to `scripts/migrate.ts` explaining when it runs and what `migrate()` does

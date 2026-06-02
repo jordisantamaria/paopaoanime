@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
+import { Analytics } from "@vercel/analytics/next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -112,6 +113,7 @@ export default async function LocaleLayout({
             </div>
           </NextIntlClientProvider>
         </SessionProvider>
+        <Analytics />
       </body>
     </html>
   );
