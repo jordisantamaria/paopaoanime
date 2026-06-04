@@ -4,6 +4,10 @@
 
 Check which platforms stream this season's anime in Japan, with schedule times for DMM TV, U-NEXT, dアニメストア, ABEMA, Netflix, Disney+, and Amazon Prime Video.
 
+**🔗 Live at [paopaoanime.com](https://paopaoanime.com)**
+
+[![PaoPaoAnime — 今期アニメの配信スケジュール](./assets/preview.png)](https://paopaoanime.com)
+
 ## Tech Stack
 
 - **Framework** — Next.js 16 (App Router)
@@ -16,7 +20,7 @@ Check which platforms stream this season's anime in Japan, with schedule times f
 
 ```bash
 # Clone
-git clone https://github.com/user/paopaoanime.git
+git clone https://github.com/jordisantamaria/paopaoanime.git
 cd paopaoanime
 
 # Install dependencies
