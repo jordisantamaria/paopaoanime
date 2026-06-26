@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -13,6 +14,39 @@ import { AnimeTrailer } from "@/components/trailer-player";
 export async function generateStaticParams() {
   const data = await getAnimeData();
   return data.map((anime) => ({ slug: anime.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const anime = await getAnimeBySlug(slug);
+  if (!anime) return {};
+
+  const locale = await getLocale();
+  const title = anime.title;
+  const description = getDisplaySynopsis(anime, locale) || undefined;
+  const image = anime.banner || anime.image;
+  const images = image ? [image] : undefined;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "video.other",
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images,
+    },
+  };
 }
 
 export default async function AnimeDetail({
