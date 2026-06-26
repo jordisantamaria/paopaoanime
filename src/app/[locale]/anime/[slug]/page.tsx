@@ -28,7 +28,12 @@ export async function generateMetadata({
   const locale = await getLocale();
   const title = anime.title;
   const description = getDisplaySynopsis(anime, locale) || undefined;
-  const image = anime.banner || anime.image;
+  // X/Twitter's crawler does not render images hosted on img.youtube.com, so
+  // serve a self-hosted copy (public/og/<slug>.jpg) for YouTube-sourced art.
+  const rawImage = anime.banner || anime.image;
+  const image = rawImage?.includes("img.youtube.com")
+    ? `/og/${anime.slug}.jpg`
+    : rawImage;
   const images = image ? [image] : undefined;
 
   return {
