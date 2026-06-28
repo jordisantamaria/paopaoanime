@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-06-28
+
+### feat: Track outbound clicks as Vercel Analytics custom events
+- Added `src/components/outbound-link.tsx`, a client wrapper that fires `track("outbound_click", { destination, anime })` on click while keeping the existing `target="_blank"` / `rel="noopener noreferrer"` markup
+- Used it for the YouTube CTA (`destination: "youtube"`) and the streaming-platform links (`destination: <platform id>`) on the anime detail page, tagging each event with the anime slug
+- Measures the directory's real conversion (clicks out to YouTube/platforms) instead of relying on visits/bounce rate; enables per-title and per-destination ranking in the Vercel Analytics dashboard
+
 ## 2026-06-02
 
 ### feat: Add Vercel Web Analytics

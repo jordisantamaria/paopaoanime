@@ -9,6 +9,7 @@ import { AnimeEntry } from "@/lib/types";
 import { platforms, getPlatformSearchUrl } from "@/lib/platforms";
 import { CurrentEpisode } from "@/components/current-episode";
 import { AnimeTrailer } from "@/components/trailer-player";
+import { OutboundLink } from "@/components/outbound-link";
 
 
 export async function generateStaticParams() {
@@ -216,11 +217,11 @@ function AnimeInfo({ anime, tAnime, tDays, tFormats, tPlatforms, locale }: Anime
             {anime.platforms.map((pid) => {
               const p = platforms[pid];
               return (
-                <a
+                <OutboundLink
                   key={pid}
                   href={getPlatformSearchUrl(pid, anime.title)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  destination={pid}
+                  anime={anime.slug}
                   className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-2.5 py-1 text-xs sm:text-sm sm:px-3 sm:py-1.5 font-bold transition-colors hover:text-accent hover:border-accent"
                 >
                   <span
@@ -228,7 +229,7 @@ function AnimeInfo({ anime, tAnime, tDays, tFormats, tPlatforms, locale }: Anime
                     style={{ backgroundColor: p.color }}
                   />
                   {tPlatforms(pid as "dmmtv" | "netflix" | "abema" | "amazon" | "danime" | "disney" | "unext" | "theater")}
-                </a>
+                </OutboundLink>
               );
             })}
           </div>
@@ -239,15 +240,15 @@ function AnimeInfo({ anime, tAnime, tDays, tFormats, tPlatforms, locale }: Anime
         <div className="mt-4">
           <span className="text-xs text-text-muted">{tAnime("available")}</span>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
-            <a
+            <OutboundLink
               href={`https://www.youtube.com/watch?v=${anime.trailer}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              destination="youtube"
+              anime={anime.slug}
               className="inline-flex items-center gap-1.5 rounded border border-border bg-bg-card px-2.5 py-1 text-xs sm:text-sm sm:px-3 sm:py-1.5 font-bold transition-colors hover:text-accent hover:border-accent"
             >
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#FF0000" }} />
               {tAnime("youtube")}
-            </a>
+            </OutboundLink>
           </div>
         </div>
       )}
