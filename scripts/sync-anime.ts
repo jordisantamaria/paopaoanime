@@ -148,6 +148,36 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// AniList sits behind Cloudflare and rejects requests without a proper
+// User-Agent with a 403 (this hits CI runner IPs hardest). Centralize the
+// GraphQL calls so every request carries a User-Agent and retries transient
+// failures (403 Cloudflare block, 429 rate limit, 5xx) with backoff.
+const ANILIST_HEADERS = {
+  "Content-Type": "application/json",
+  Accept: "application/json",
+  "User-Agent": "Mozilla/5.0 (compatible; PaoPaoAnime/1.0; +https://paopaoanime.com)",
+} as const;
+
+async function anilistFetch(
+  query: string,
+  variables: Record<string, unknown>,
+  maxRetries = 4,
+): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(ANILIST_URL, {
+      method: "POST",
+      headers: ANILIST_HEADERS,
+      body: JSON.stringify({ query, variables }),
+    });
+    if (res.ok) return res;
+    // 403 (Cloudflare), 429 (rate limit) and 5xx are transient — back off and retry.
+    const retryable = res.status === 403 || res.status === 429 || res.status >= 500;
+    if (!retryable || attempt >= maxRetries) return res;
+    const waitMs = res.status === 429 ? 60000 : 2000 * (attempt + 1);
+    await sleep(waitMs);
+  }
+}
+
 function getCurrentSeason(now: Date): { season: string; year: number; slug: string } {
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
@@ -275,11 +305,7 @@ async function fetchSeasonalAnime(season: string, year: number): Promise<AniList
   let page = 1;
   let hasNext = true;
   while (hasNext) {
-    const res = await fetch(ANILIST_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: SEASONAL_QUERY, variables: { season, seasonYear: year, page } }),
-    });
+    const res = await anilistFetch(SEASONAL_QUERY, { season, seasonYear: year, page });
     if (!res.ok) throw new Error(`AniList error: ${res.status}`);
     const json = await res.json();
     const pageData = json.data?.Page;
@@ -294,11 +320,7 @@ async function fetchSeasonalAnime(season: string, year: number): Promise<AniList
 
 async function fetchAnimeByIds(ids: number[]): Promise<AniListMedia[]> {
   if (ids.length === 0) return [];
-  const res = await fetch(ANILIST_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: BY_ID_QUERY, variables: { ids } }),
-  });
+  const res = await anilistFetch(BY_ID_QUERY, { ids });
   if (!res.ok) throw new Error(`AniList error: ${res.status}`);
   const json = await res.json();
   const media: AniListMedia[] = json.data?.Page?.media ?? [];
@@ -529,14 +551,9 @@ async function fillMissingPlatformsFromAniList(seasonSlug: string, log: string[]
   let filled = 0;
   for (const entry of missing) {
     try {
-      const res = await fetch(ANILIST_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: EXTERNAL_LINKS_QUERY, variables: { id: entry.anilistId } }),
-      });
+      const res = await anilistFetch(EXTERNAL_LINKS_QUERY, { id: entry.anilistId });
       if (!res.ok) {
-        if (res.status === 429) await sleep(60000);
-        else await sleep(1500);
+        await sleep(1500);
         continue;
       }
       const json = await res.json();
@@ -587,13 +604,8 @@ async function syncEpisodes(log: string[]): Promise<number> {
     const rawEpisode = calcRawEpisode(entry.startDate, entry.day, entry.time, now);
     if (rawEpisode === null) continue;
 
-    const res = await fetch(ANILIST_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: AIRING_QUERY, variables: { id: entry.anilistId } }),
-    });
+    const res = await anilistFetch(AIRING_QUERY, { id: entry.anilistId });
     if (!res.ok) {
-      if (res.status === 429) { await sleep(60000); i--; continue; }
       await sleep(1500);
       continue;
     }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-06
+
+### fix: Harden AniList requests against Cloudflare 403 in the sync cron
+- The seasonal sync started failing in CI with `AniList error: 403`. AniList sits behind Cloudflare, which challenges requests that carry no `User-Agent` (a bot signal) — hitting datacenter/CI runner IPs hardest. The four GraphQL calls in `scripts/sync-anime.ts` sent no `User-Agent`, unlike the script's Annict calls
+- Added an `anilistFetch(query, variables)` helper that sends a proper `User-Agent`/`Accept` header and retries transient failures (403, 429, 5xx) with backoff (60s on 429, linear on others), then routed all four AniList GraphQL calls through it
+- Replaces the previous ad-hoc, inconsistent 429-only handling that had no 403 retry at all
+
 ## 2026-06-28
 
 ### feat: Track outbound clicks as Vercel Analytics custom events
