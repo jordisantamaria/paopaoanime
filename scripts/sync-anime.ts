@@ -9,41 +9,13 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq, and, isNotNull, isNull, inArray } from "drizzle-orm";
 import { anime, animePlatforms } from "../src/lib/schema";
-import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { uploadImageWithVariants } from "../src/lib/r2";
 import { translateToJapanese, DeepLError } from "../src/lib/translate";
 
 // --- DB setup ---
 
 const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql);
-
-// --- R2 setup ---
-
-const s3 = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
-  },
-});
-const R2_BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!;
-const R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL!;
-
-async function uploadImageToR2(key: string, imageUrl: string): Promise<string> {
-  try {
-    await s3.send(new HeadObjectCommand({ Bucket: R2_BUCKET, Key: key }));
-    return `${R2_PUBLIC_URL}/${key}`;
-  } catch {
-    // Not found — proceed to upload
-  }
-  const res = await fetch(imageUrl);
-  if (!res.ok) throw new Error(`Failed to fetch image: ${imageUrl} (${res.status})`);
-  const buffer = Buffer.from(await res.arrayBuffer());
-  const contentType = res.headers.get("content-type") ?? "image/jpeg";
-  await s3.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: buffer, ContentType: contentType }));
-  return `${R2_PUBLIC_URL}/${key}`;
-}
 
 // --- Constants ---
 
@@ -656,32 +628,36 @@ async function uploadImages(log: string[]): Promise<number> {
 
   for (const entry of entries) {
     if (!entry.anilistId) continue;
-    const isOnR2 = (url: string) => url.startsWith(R2_PUBLIC_URL);
+    const anilistId = entry.anilistId;
 
-    if (entry.image && !isOnR2(entry.image)) {
+    // Runs even for images already on R2: the call is a no-op once every variant
+    // exists, and backfills the ones mirrored before variants were introduced.
+    if (entry.image) {
       try {
-        const key = `cover/${entry.anilistId}.jpg`;
         const sourceUrl = entry.image.startsWith("/")
-          ? `https://s3.anilist.co/media/anime/cover/large/b${entry.anilistId}.jpg`
+          ? `https://s3.anilist.co/media/anime/cover/large/b${anilistId}.jpg`
           : entry.image;
-        const newUrl = await uploadImageToR2(key, sourceUrl);
-        await db.update(anime).set({ image: newUrl, updatedAt: new Date() }).where(eq(anime.id, entry.id));
-        uploaded++;
+        const { url, uploadedObjects } = await uploadImageWithVariants("cover", String(anilistId), sourceUrl);
+        if (url !== entry.image) {
+          await db.update(anime).set({ image: url, updatedAt: new Date() }).where(eq(anime.id, entry.id));
+        }
+        uploaded += uploadedObjects;
       } catch (err) {
-        log.push(`IMG ERROR: cover for ${entry.anilistId}: ${err instanceof Error ? err.message : String(err)}`);
+        log.push(`IMG ERROR: cover for ${anilistId}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
-    if (entry.banner && !isOnR2(entry.banner)) {
+    if (entry.banner) {
       try {
-        const key = `banner/${entry.anilistId}.jpg`;
         const sourceUrl = entry.banner.startsWith("/")
-          ? `https://s3.anilist.co/media/anime/banner/${entry.anilistId}.jpg`
+          ? `https://s3.anilist.co/media/anime/banner/${anilistId}.jpg`
           : entry.banner;
-        const newUrl = await uploadImageToR2(key, sourceUrl);
-        await db.update(anime).set({ banner: newUrl, updatedAt: new Date() }).where(eq(anime.id, entry.id));
-        uploaded++;
+        const { url, uploadedObjects } = await uploadImageWithVariants("banner", String(anilistId), sourceUrl);
+        if (url !== entry.banner) {
+          await db.update(anime).set({ banner: url, updatedAt: new Date() }).where(eq(anime.id, entry.id));
+        }
+        uploaded += uploadedObjects;
       } catch (err) {
-        log.push(`IMG ERROR: banner for ${entry.anilistId}: ${err instanceof Error ? err.message : String(err)}`);
+        log.push(`IMG ERROR: banner for ${anilistId}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
   }

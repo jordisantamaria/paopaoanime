@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { anime, animePlatforms } from "@/lib/schema";
 import { eq, and, isNotNull, isNull, sql } from "drizzle-orm";
-import { uploadImageToR2 } from "@/lib/r2";
+import { uploadImageWithVariants } from "@/lib/r2";
 import { translateToJapanese, DeepLError } from "@/lib/translate";
 
 // --- Constants ---
@@ -727,41 +727,42 @@ async function uploadImages(log: string[]): Promise<number> {
     banner: anime.banner,
   }).from(anime).where(isNotNull(anime.anilistId));
 
-  const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
   let uploaded = 0;
 
   for (const entry of entries) {
     if (!entry.anilistId) continue;
-    const isOnR2 = (url: string) => url.startsWith(r2PublicUrl!);
+    const anilistId = entry.anilistId;
 
-    // Upload cover if not already on R2
-    if (entry.image && !isOnR2(entry.image)) {
+    // Runs even for images already on R2: the call is a no-op once every variant
+    // exists, and backfills the ones mirrored before variants were introduced.
+    if (entry.image) {
       try {
-        const key = `cover/${entry.anilistId}.jpg`;
         // Local paths (/img/...) need to be re-fetched from AniList
         const sourceUrl = entry.image.startsWith("/")
-          ? `https://s3.anilist.co/media/anime/cover/large/b${entry.anilistId}.jpg`
+          ? `https://s3.anilist.co/media/anime/cover/large/b${anilistId}.jpg`
           : entry.image;
-        const newUrl = await uploadImageToR2(key, sourceUrl);
-        await db.update(anime).set({ image: newUrl, updatedAt: new Date() }).where(eq(anime.id, entry.id));
-        uploaded++;
+        const { url, uploadedObjects } = await uploadImageWithVariants("cover", String(anilistId), sourceUrl);
+        if (url !== entry.image) {
+          await db.update(anime).set({ image: url, updatedAt: new Date() }).where(eq(anime.id, entry.id));
+        }
+        uploaded += uploadedObjects;
       } catch (err) {
-        log.push(`IMG ERROR: cover for ${entry.anilistId}: ${err instanceof Error ? err.message : String(err)}`);
+        log.push(`IMG ERROR: cover for ${anilistId}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
-    // Upload banner if not already on R2
-    if (entry.banner && !isOnR2(entry.banner)) {
+    if (entry.banner) {
       try {
-        const key = `banner/${entry.anilistId}.jpg`;
         const sourceUrl = entry.banner.startsWith("/")
-          ? `https://s3.anilist.co/media/anime/banner/${entry.anilistId}.jpg`
+          ? `https://s3.anilist.co/media/anime/banner/${anilistId}.jpg`
           : entry.banner;
-        const newUrl = await uploadImageToR2(key, sourceUrl);
-        await db.update(anime).set({ banner: newUrl, updatedAt: new Date() }).where(eq(anime.id, entry.id));
-        uploaded++;
+        const { url, uploadedObjects } = await uploadImageWithVariants("banner", String(anilistId), sourceUrl);
+        if (url !== entry.banner) {
+          await db.update(anime).set({ banner: url, updatedAt: new Date() }).where(eq(anime.id, entry.id));
+        }
+        uploaded += uploadedObjects;
       } catch (err) {
-        log.push(`IMG ERROR: banner for ${entry.anilistId}: ${err instanceof Error ? err.message : String(err)}`);
+        log.push(`IMG ERROR: banner for ${anilistId}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
   }
