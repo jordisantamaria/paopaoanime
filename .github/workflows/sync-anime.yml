@@ -33,3 +33,13 @@ jobs:
           CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: npx tsx scripts/sync-anime.ts
+
+      # Las páginas de anime son estáticas puras y no caducan solas (ver
+      # ANIME_CACHE_TTL en src/lib/data.ts), así que sin esta llamada la web se
+      # quedaría con los datos del último build por mucho que la DB cambie.
+      # Es el único momento en que el sitio genera ISR writes.
+      - name: Revalidate site cache
+        run: |
+          curl --fail --silent --show-error -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.SITE_URL }}/api/revalidate"

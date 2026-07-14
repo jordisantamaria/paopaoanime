@@ -10,8 +10,18 @@ import { DAYS, NON_TV_FORMATS, PLATFORM_ORDER } from "./constants";
 /** Cache tag for all anime data. Revalidate with revalidateTag(ANIME_CACHE_TAG). */
 export const ANIME_CACHE_TAG = "anime-data";
 
-/** How long cached anime data stays fresh (seconds). Data changes ~weekly via cron. */
-const ANIME_CACHE_TTL = 3600;
+/**
+ * Sin caducidad por tiempo: los datos solo cambian cuando corre el sync semanal,
+ * así que la invalidación va por `ANIME_CACHE_TAG` (ver /api/revalidate) y no por reloj.
+ *
+ * Esto no es solo un ajuste del Data Cache. `unstable_cache` propaga su `revalidate`
+ * al segmento de ruta que lo consume, así que un TTL de 1h convertía las ~628 páginas
+ * prerenderizadas (310 anime × 2 locales, más search y login) en ISR horario: hasta
+ * ~15.000 ISR writes al día, que se comieron 154k de los 200k del free tier de Vercel
+ * y estuvieron a punto de pausar TODOS los proyectos del team. Con `false` vuelven a
+ * ser estáticas puras y solo se reescriben cuando alguien invalida el tag a propósito.
+ */
+const ANIME_CACHE_TTL = false;
 
 // Unique per deployment (and per redeploy) on Vercel; falls back to "dev" locally.
 // Adding it to each cache key scopes the Data Cache to the current deployment, so
@@ -90,7 +100,7 @@ async function loadAnimeData(): Promise<AnimeEntry[]> {
   );
 }
 
-// Persistent cross-request cache: revalidated by time and on-demand via ANIME_CACHE_TAG.
+// Persistent cross-request cache: invalidated only via ANIME_CACHE_TAG.
 const cachedAnimeData = unstable_cache(loadAnimeData, ["anime-data", DEPLOYMENT_ID], {
   revalidate: ANIME_CACHE_TTL,
   tags: [ANIME_CACHE_TAG],
@@ -99,7 +109,7 @@ const cachedAnimeData = unstable_cache(loadAnimeData, ["anime-data", DEPLOYMENT_
 /**
  * All anime data. Deduplicated per-request via React cache() (Header + page share
  * one call) and cached across requests via unstable_cache (most navigations hit
- * zero DB queries; refreshed hourly or on-demand after the sync cron).
+ * zero DB queries; refreshed after the weekly sync invalidates ANIME_CACHE_TAG).
  */
 export const getAnimeData = cache((): Promise<AnimeEntry[]> => cachedAnimeData());
 
