@@ -51,9 +51,9 @@ ORM: **Drizzle ORM** — schema in `src/lib/schema.ts`, migrations in `/drizzle/
 │ title             │       │ platform            │
 │ titleRomaji       │       │ day                 │
 │ titleEnglish      │       │ time                │
-│ day               │       └────────────────────┘
-│ time              │        UQ: (animeSlug, platform)
-│ startDate         │
+│ day               │       │ episodeOffset       │
+│ time              │       └────────────────────┘
+│ startDate         │        UQ: (animeSlug, platform)
 │ format            │
 │ batchRelease      │
 │ anilistId (UQ)    │
@@ -134,8 +134,16 @@ Each row represents one anime in a season.
 | `platform` | text NOT NULL | Platform ID (dmmtv, netflix, abema, etc.) |
 | `day` | text | Broadcast day on this platform (may differ from main schedule) |
 | `time` | text | Broadcast time on this platform |
+| `episodeOffset` | integer NOT NULL, default 0 | Episode adjustment relative to `anime.episodeOffset`, for platforms that lag behind the broadcast |
 
 **Unique constraint:** `(animeSlug, platform)` — each anime appears at most once per platform.
+
+**Why `episodeOffset` is per-platform:** some platforms publish an episode days
+after it airs, so on their own release day they are still one episode behind.
+Example: Netflix publishes One Piece on the Thursday after the Sunday broadcast,
+so its row is `day: 木, episodeOffset: -1`. This cannot live on `anime` because
+`syncEpisodes` recomputes `anime.episodeOffset` from AniList on every sync, and
+because the delay is specific to one platform.
 
 **Why a separate table instead of an array on `anime`:**
 - Each platform can have a **different day and time** for the same anime

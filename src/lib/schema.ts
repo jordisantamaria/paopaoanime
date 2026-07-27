@@ -72,6 +72,10 @@ export const animePlatforms = pgTable(
     platform: text("platform").notNull(),
     day: text("day"),
     time: text("time"),
+    // Adjusts the episode number for platforms that lag behind the TV broadcast.
+    // Example: Netflix publishes One Piece on the Thursday after the Sunday
+    // broadcast, so its Thursday slot still carries the previous episode (-1).
+    episodeOffset: integer("episode_offset").notNull().default(0),
   },
   (table) => [
     unique("anime_platform_unique").on(table.animeSlug, table.platform),

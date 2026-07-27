@@ -1,0 +1,1 @@
+ALTER TABLE "anime_platform" ADD COLUMN "episode_offset" integer DEFAULT 0 NOT NULL;

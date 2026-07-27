@@ -43,6 +43,13 @@
       "when": 1780404556649,
       "tag": "0005_drop_favorite_anime",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785124748419,
+      "tag": "0006_motionless_norman_osborn",
+      "breakpoints": true
     }
   ]
 }

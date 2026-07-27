@@ -69,6 +69,7 @@ function rowToAnimeEntry(
       platform: p.platform as PlatformId,
       day: p.day as DayOfWeek,
       time: p.time,
+      episodeOffset: p.episodeOffset,
     })),
     season: row.season,
     trailer: row.trailer ?? undefined,

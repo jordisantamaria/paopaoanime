@@ -23,7 +23,14 @@ export type AnimeEntry = {
   titleEnglish?: string;
   titleRomaji?: string;
   banner?: string;
-  streams?: { platform: PlatformId; day: DayOfWeek; time: string | null }[];
+  streams?: {
+    platform: PlatformId;
+    day: DayOfWeek;
+    time: string | null;
+    // Extra offset on top of the anime-level `episodeOffset`, for platforms that
+    // publish an episode later than the broadcast (e.g. -1 = one episode behind)
+    episodeOffset?: number;
+  }[];
   season?: string;
   trailer?: string;
   batchRelease?: boolean;

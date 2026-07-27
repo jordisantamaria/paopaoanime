@@ -152,7 +152,7 @@ export function getRecentEpisodes(
           stream.day,
           stream.time,
           episodeStart,
-          episodeOffset,
+          episodeOffset + (stream.episodeOffset ?? 0),
           now
         );
         if (!result) continue;

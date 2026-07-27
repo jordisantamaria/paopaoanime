@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-27
+
+### fix: Model per-platform release delays, fixing One Piece on Netflix
+- `one-piece` had a single `anime_platform` row (`netflix`) with no `day`, because uzurea's Netflix page — the crawler's only source for per-platform schedules — does not list the show. With no per-platform day, `getRecentEpisodes` fell back to the Fuji TV schedule (Sunday 09:30) and presented the freshly broadcast episode as if it were already on Netflix, which publishes it the following Thursday
+- Setting `day: 木` alone was not enough: the episode number derives from `anime.episodeOffset`, shared with the TV schedule, which would have yielded the not-yet-broadcast episode. Netflix's Thursday slot still carries the previous episode
+- Added `anime_platform.episodeOffset` (integer, default 0), applied on top of `anime.episodeOffset` in `calcEpisodeForSchedule`. It lives on the platform row because `syncEpisodes` recomputes `anime.episodeOffset` from AniList on every sync, so a manual value there would be overwritten — and because the lag is specific to one platform
+- Set One Piece's Netflix row to `day: 木, episodeOffset: -1`. The weekly sync only writes `day`/`time` when the existing `day` is null, so the manual value is preserved
+- The uzurea crawler is unchanged: it still cannot see this schedule, and the value is a manual override
+
 ## 2026-07-06
 
 ### fix: Harden AniList requests against Cloudflare 403 in the sync cron
