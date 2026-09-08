@@ -2,6 +2,19 @@
 
 ## 2026-09-08
 
+### chore: Remove the unused sync-anime API route
+- `src/app/api/cron/sync-anime/route.ts` (899 lines) was a hand-maintained copy of
+  `scripts/sync-anime.ts`. Nothing triggered it: `vercel.json` declares no `crons` and no
+  code referenced the path — the GitHub Actions workflow has always been the scheduled
+  runner, and it is untouched
+- Keeping two copies in sync by hand had already failed twice: the route never received
+  the AniList `User-Agent`/retry hardening (`b106074`) nor the Unicode roman-numeral fix in
+  `normalize()` (`0da3a53`), so a manual call would have hit bugs fixed months ago
+- Updated the references that described it as a mirror: the `scripts/sync-anime.ts` header,
+  the "How it runs" note and the `CRON_SECRET` row in `docs/data-pipeline.md` (that secret
+  is still needed — it authenticates the workflow's call to `/api/revalidate`), and the
+  pipeline note plus directory tree in `docs/architecture.md`
+
 ### fix: Crawl the upcoming season before it starts, and survive AniList outages
 - The sync only ever asked AniList for the *current* calendar season, so a season's
   titles could not enter the DB until the first Sunday run after it had already begun.

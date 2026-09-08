@@ -31,10 +31,9 @@ The pipeline runs as a **GitHub Actions** workflow, not a Vercel Cron:
 - **Command:** `npx tsx scripts/sync-anime.ts`
 - **Why GitHub Actions:** it runs as a plain Node script with a 30-min timeout, enough to cover the full sync (image uploads + translation) in one run.
 - **Secrets (GitHub Actions):** `DATABASE_URL`, `DEEPL_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_R2_ACCESS_KEY_ID`, `CLOUDFLARE_R2_SECRET_ACCESS_KEY`, `CLOUDFLARE_R2_BUCKET_NAME`, `CLOUDFLARE_R2_PUBLIC_URL`
-
-> `src/app/api/cron/sync-anime/route.ts` mirrors the same logic as a Vercel Function
-> (protected by `CRON_SECRET`). It exists as an HTTP-triggerable variant; the scheduled
-> runner of record is the GitHub Actions script above.
+> There is no second implementation. An HTTP variant of this pipeline lived at
+> `src/app/api/cron/sync-anime/route.ts`, but nothing ever triggered it (`vercel.json`
+> declares no `crons`) and it drifted two fixes behind the script, so it was removed.
 
 ---
 
@@ -202,4 +201,4 @@ Matsuyama Aoi, one entry per season (S1–S5).
 | `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | Step 4 | R2 credentials |
 | `CLOUDFLARE_R2_BUCKET_NAME` | Step 4 | R2 bucket |
 | `CLOUDFLARE_R2_PUBLIC_URL` | Step 4 | Public base URL for stored images |
-| `CRON_SECRET` | API route variant | Bearer token auth for `/api/cron/sync-anime` |
+| `CRON_SECRET` | GitHub Actions + Vercel | Bearer token the workflow sends to `/api/revalidate` |

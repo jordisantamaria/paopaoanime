@@ -1,9 +1,10 @@
 /**
- * Standalone sync-anime script for GitHub Actions.
- * Mirrors the logic from src/app/api/cron/sync-anime/route.ts
- * but runs as a Node script without Vercel Function timeout limits.
+ * The anime data pipeline. Runs on GitHub Actions (.github/workflows/sync-anime.yml,
+ * Sundays 21:00 UTC) as a plain Node script, with no Vercel Function timeout to fit in.
+ * This is the only implementation — a duplicate lived at
+ * src/app/api/cron/sync-anime/route.ts until it drifted two fixes behind and was removed.
  *
- * Usage: npx tsx scripts/sync-anime.ts [--step=1,2,3,4,5]
+ * Usage: npx tsx scripts/sync-anime.ts [--step=1,2,3,4,5] [--season=fall-2026]
  */
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
