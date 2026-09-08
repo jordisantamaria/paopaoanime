@@ -38,15 +38,82 @@ The pipeline runs as a **GitHub Actions** workflow, not a Vercel Cron:
 
 ---
 
+## Which seasons a run covers
+
+Steps 1 and 2 are per-season. A run covers:
+
+- the **current** season, derived from the month **in JST** (the cron fires at 21:00 UTC,
+  which is already the next day in Japan — using the runner's UTC month would ask for the
+  previous season on the last Sunday of a quarter), and
+- the **upcoming** season, once it starts within `LOOKAHEAD_DAYS` (30). September runs
+  therefore already pull `fall-<year>`.
+
+The lookahead exists because a season's titles must be in the DB *before* its premieres.
+Without it the sync only ever asked for the current calendar season, so the first fall run
+was the first Sunday of October — days after the season had begun, with the premieres
+missing from the site until then.
+
+Entries pulled ahead have a `startDate` in the future. They are filtered out of the weekly
+schedule grid (client-side, in `schedule-grid.tsx`) and of the home page's recent-episodes
+and latest-anime lists until they premiere.
+
+Two source-specific notes:
+
+- **AniList** publishes a complete seasonal listing weeks ahead, so Step 1 gets everything
+  on the first lookahead run.
+- **uzurea** fills its season tag page in progressively: in early September the 2026 fall
+  page already had 85 anime but only 15 with a platform list, and the per-month schedule
+  pages (`.../amazon-primevideo-2026-10/`) 404 until close to the month. This is why the
+  lookahead must run *every* week rather than once — each run picks up what uzurea has
+  added, and `matchAndUpsertPlatforms` only writes a `day` when the stored one is null.
+
+`ALWAYS_INCLUDE_ANIME` (One Piece and friends) is re-tagged with the **current** season
+only — a lookahead season has not started and must not claim those long-running entries.
+
+Override the resolution for a manual catch-up run:
+
+```bash
+npx tsx scripts/sync-anime.ts --season=fall-2026
+npx tsx scripts/sync-anime.ts --season=fall-2026 --step=1,2
+```
+
+---
+
+## AniList outage handling
+
+AniList is the single point of failure of the pipeline and goes down for real: runs on
+2026-08-02, 08-23 and 09-06 all died on `AniList error: 403`, whose body reads
+*"The AniList API has been temporarily disabled due to severe stability issues."* — an
+AniList-side outage, not the Cloudflare bot challenge the `User-Agent` header addresses.
+
+`anilistFetch` handles both:
+
+- Retries 403 / 429 / 5xx with a 15s / 45s / 90s / 180s backoff (429 waits 60s), long
+  enough to ride out a short outage instead of giving up after 20 seconds.
+- **Circuit breaker.** Steps 2b and 3 call AniList once per anime. Once a call has
+  exhausted its retries against a server-side failure, `anilistDown` is set and every
+  later call short-circuits, so the run does not burn its 30-minute budget replaying a
+  known outage. 429 does not trip the breaker — that is our own request rate.
+- The failure is logged with AniList's own error message, not just the status code.
+
+With the breaker plus step isolation, an AniList outage still leaves Step 2 (uzurea),
+Step 4 (R2 images) and Step 5 (DeepL) to run normally.
+
+---
+
 ## Pipeline Steps
 
 Each step is idempotent — a run can be repeated safely, and partial failures resume on the
 next run. Steps can be run selectively: `npx tsx scripts/sync-anime.ts --step=1,2,5`.
 
+A failing step no longer aborts the run: each one is isolated, its error is collected into
+`errors[]`, and the remaining steps still execute. The process exits `1` if anything failed,
+so a partial run still shows up red in GitHub Actions.
+
 ### Step 1 — Seasonal anime (AniList)
 
-Queries the AniList GraphQL API (`https://graphql.anilist.co`) for the current season and
-upserts new rows. Populates: `anilistId`, titles (`titleRomaji`, `titleEnglish`),
+Queries the AniList GraphQL API (`https://graphql.anilist.co`) for each season in scope
+(see [Which seasons a run covers](#which-seasons-a-run-covers)) and upserts new rows. Populates: `anilistId`, titles (`titleRomaji`, `titleEnglish`),
 `synopsis` (English, HTML-cleaned), `genres`, `episodes`, `studio`, `format`, `image`,
 `banner`, `trailer`.
 
