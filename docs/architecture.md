@@ -93,8 +93,7 @@ weekly cron that writes straight to PostgreSQL.
 
 **Runner:** GitHub Actions (`.github/workflows/sync-anime.yml`, Sundays 21:00 UTC) runs
 `scripts/sync-anime.ts` as a plain Node script with a 30-min timeout, enough for the full
-sync (image uploads + translation). `src/app/api/cron/sync-anime/route.ts` mirrors the same
-logic as a Vercel Function variant.
+sync (image uploads + translation). It is the only implementation of the pipeline.
 
 **Steps (each idempotent):**
 1. Fetch current-season anime from AniList; insert new rows
@@ -125,7 +124,7 @@ src/
 │       ├── about/ privacy/ terms/  # Static pages
 │   └── api/
 │       ├── auth/[...nextauth]/ # Auth.js API routes
-│       └── cron/sync-anime/    # Weekly sync (Vercel Function variant)
+│       └── revalidate/         # Cache invalidation, called by the weekly sync
 ├── components/                 # React components
 ├── lib/                        # Business logic
 │   ├── schema.ts               # DB schema (Drizzle)

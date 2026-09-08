@@ -38,7 +38,12 @@ jobs:
       # ANIME_CACHE_TTL en src/lib/data.ts), así que sin esta llamada la web se
       # quedaría con los datos del último build por mucho que la DB cambie.
       # Es el único momento en que el sitio genera ISR writes.
+      # Se ejecuta aunque el sync haya fallado: desde que cada paso está aislado,
+      # un run parcial (p.ej. AniList caída pero uzurea/R2/DeepL OK) sí escribe en
+      # la DB y sale con código 1. Sin `!cancelled()` ese run dejaría la web con
+      # los datos viejos hasta el domingo siguiente.
       - name: Revalidate site cache
+        if: ${{ !cancelled() }}
         env:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
