@@ -2,6 +2,14 @@
 
 ## 2026-09-08
 
+### chore: Remove the unused cron API routes
+- Deleted `src/app/api/cron/sync-episodes/route.ts` (171 lines) alongside the sync-anime
+  route below. Same situation: unreferenced, no `crons` in `vercel.json`, and a strictly
+  older copy of Step 3 of `scripts/sync-anime.ts` — no `User-Agent` on its AniList calls,
+  no retries, no circuit breaker, and missing the skip for anime that already finished airing
+- `src/app/api/cron/` is now empty and gone; the only API routes left are
+  `/api/auth/[...nextauth]` and `/api/revalidate`
+
 ### chore: Remove the unused sync-anime API route
 - `src/app/api/cron/sync-anime/route.ts` (899 lines) was a hand-maintained copy of
   `scripts/sync-anime.ts`. Nothing triggered it: `vercel.json` declares no `crons` and no

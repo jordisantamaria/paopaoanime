@@ -124,8 +124,7 @@ src/
 │       ├── about/ privacy/ terms/  # Static pages
 │   └── api/
 │       ├── auth/[...nextauth]/ # Auth.js API routes
-│       ├── revalidate/         # Cache invalidation, called by the weekly sync
-│       └── cron/sync-episodes/ # Unused HTTP variant of the sync's episode step
+│       └── revalidate/         # Cache invalidation, called by the weekly sync
 ├── components/                 # React components
 ├── lib/                        # Business logic
 │   ├── schema.ts               # DB schema (Drizzle)
