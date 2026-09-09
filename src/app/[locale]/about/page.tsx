@@ -38,6 +38,10 @@ export default async function About() {
         <p>
           {t("dataText")}
         </p>
+        {/* AnimeSchedule.net's API terms require crediting them in the app. */}
+        <p className="text-xs text-text-muted">
+          {t("dataSources")}
+        </p>
 
         <h2 className="text-base font-bold text-text-primary pt-2">{t("contactTitle")}</h2>
         <p>

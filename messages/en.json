@@ -227,6 +227,7 @@
     "platformsList": "DMM TV / U-NEXT / d Anime Store / ABEMA / Amazon Prime Video / Netflix / Disney+",
     "dataTitle": "About our data",
     "dataText": "Streaming schedule data is based on official information from each platform and updated every season. While we strive for accuracy, please verify actual schedules on the official platform websites.",
+    "dataSources": "Anime metadata comes from AniList and AnimeSchedule.net, and streaming availability from uzurea.net. Cover art belongs to its respective rights holders.",
     "contactTitle": "Contact",
     "contactText": "For feedback, suggestions, or data corrections, please contact us at {email}."
   },

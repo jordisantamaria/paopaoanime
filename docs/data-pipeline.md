@@ -10,6 +10,7 @@ everything from external sources and upserts it into the database.
 GitHub Actions (weekly)
   → scripts/sync-anime.ts
       Step 1  AniList        → seasonal anime + metadata
+              ↳ fallback: AnimeSchedule.net when AniList is down
       Step 2  uzurea.net     → per-platform schedules
       Step 2b AniList        → fallback for anime still missing platforms
       Step 3  AniList        → episode offsets / pauses
@@ -97,6 +98,49 @@ AniList-side outage, not the Cloudflare bot challenge the `User-Agent` header ad
 
 With the breaker plus step isolation, an AniList outage still leaves Step 2 (uzurea),
 Step 4 (R2 images) and Step 5 (DeepL) to run normally.
+
+### Step 1 fallback: AnimeSchedule.net
+
+Surviving an outage is not enough for Step 1: it is the only step that can *create*
+anime rows, so while AniList is down a whole season cannot enter the DB at all. When
+the AniList seasonal query fails, Step 1 falls back to
+[AnimeSchedule.net](https://animeschedule.net) (`src/lib/animeschedule.ts`).
+
+What makes AnimeSchedule usable where Kitsu or Jikan are not: each entry carries its
+AniList URL in `websites.aniList`, so rows are created under the same `anilistId` the
+schema keys on. No schema change, no duplicates, and AniList data merges on top later.
+Entries without that link are skipped (3 of 88 for fall 2026) — there would be no way
+to reconcile them afterwards.
+
+What it does not have, and how that resolves:
+
+| Field | Fallback | Resolution |
+|---|---|---|
+| `synopsis` | absent — the API has no synopsis at all | Backfilled when AniList returns; Step 5 then translates it |
+| `banner`, `trailer` | absent | Backfilled when AniList returns |
+| `episodes` | only some titles early in a season | Backfilled; Step 3 also keeps it current |
+| `startDate` | ~15 of 88 unset a month out (`0001-01-01` sentinel) | Backfilled as AnimeSchedule confirms them |
+
+The backfill is in `upsertAnimeFromAniList`: for a row that already exists it fills
+columns that are empty from whatever the current source provides, and **never**
+overwrites a value that is already set. Manual corrections and per-platform overrides
+therefore survive it. `day` is only derived from the premiere date when the row has no
+weekday at all.
+
+`jpnTime` is deliberately unused. It looks like a broadcast slot, but checked against
+currently-airing shows its weekday disagreed with `premier` (a title premiering on a
+Saturday carrying a Tuesday `jpnTime`), so `day` is derived from the premiere date as
+on the AniList path and the real per-platform schedule keeps coming from uzurea.
+
+A run that fell back is **not** a failure: the data is there. It reports `success: true`
+with the reason listed under `degraded[]`, and `bySeason.<slug>.source` says which
+source produced the rows.
+
+**Token.** AnimeSchedule's documented endpoints want a Bearer token from a registered
+application, passed as `ANIMESCHEDULE_TOKEN`. Without it the same path still answers as
+an undocumented "public" endpoint with harsher rate limits and no stability guarantee —
+workable as a stopgap, not as the steady state. Their terms also require crediting them
+in the app; that credit is the `about.dataSources` line on the /about page.
 
 ---
 
@@ -202,3 +246,4 @@ Matsuyama Aoi, one entry per season (S1–S5).
 | `CLOUDFLARE_R2_BUCKET_NAME` | Step 4 | R2 bucket |
 | `CLOUDFLARE_R2_PUBLIC_URL` | Step 4 | Public base URL for stored images |
 | `CRON_SECRET` | GitHub Actions + Vercel | Bearer token the workflow sends to `/api/revalidate` |
+| `ANIMESCHEDULE_TOKEN` | GitHub Actions | Optional. Bearer token for AnimeSchedule.net's documented API; without it the Step 1 fallback uses their rate-limited public endpoint |

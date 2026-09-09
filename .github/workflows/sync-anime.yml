@@ -32,6 +32,9 @@ jobs:
           CLOUDFLARE_R2_BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
           CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+          # Opcional: sin él, el fallback de AnimeSchedule usa su endpoint
+          # público, que funciona pero con rate limiting agresivo.
+          ANIMESCHEDULE_TOKEN: ${{ secrets.ANIMESCHEDULE_TOKEN }}
         run: npx tsx scripts/sync-anime.ts
 
       # Las páginas de anime son estáticas puras y no caducan solas (ver
