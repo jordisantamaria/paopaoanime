@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-09-11
+
+### fix: Weekday was derived from the machine's timezone, not Japan's
+- `getDayOfWeek` built a Date at JST midnight and then read `getDay()`, the *local*
+  weekday. JST midnight is 15:00 UTC the previous day, so on the UTC GitHub Actions
+  runner every anime was stored one weekday early, while the same code on a JST machine
+  stored it correctly — which is why it went unnoticed
+- Confirmed against real dates in production: 2026-07-08 is a Wednesday and 幼女戦記Ⅱ was
+  stored as 火; 2026-09-18 is a Friday and 名探偵プリキュア！ was stored as 木. The offset
+  is uniformly -1: fall 69/69 rows, summer 121/122, spring 23/101, winter 4/111
+- User-visible: `anime.day` is what the weekly schedule grid groups by and what
+  `calcRawEpisode` counts from, so both the grid and the episode numbering were off by a day
+- Fixed by parsing the date as UTC midnight and reading `getUTCDay()`. The stored string is
+  already a JST calendar date, so no zone conversion should happen at all
+- `calcRawEpisode` had the same bug class: `setHours`/`getDay`/`getDate` are local, so on
+  the UTC runner the JST broadcast time was applied as if it were UTC — a 9-hour skew that
+  can move the computed episode by a week. Rewritten in explicit JST (+9h shift, UTC
+  accessors)
+- Verified both functions return identical, JST-correct results under `TZ=UTC`,
+  `TZ=Asia/Tokyo` and `TZ=America/Los_Angeles`
+
 ## 2026-09-10
 
 ### feat: Fall back to AnimeSchedule.net when AniList is down

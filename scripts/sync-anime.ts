@@ -310,28 +310,43 @@ function formatStartDate(sd: { year: number; month: number; day: number }): stri
   return `${sd.year}-${m}-${d}`;
 }
 
+// `dateStr` is already a JST calendar date, so no zone conversion should happen:
+// parse it as UTC midnight and read the UTC weekday. Building it at JST midnight
+// and calling the local `getDay()` made the answer depend on the machine — JST
+// midnight is 15:00 UTC the day before, so the UTC CI runner stored every anime
+// one weekday early while a JST laptop stored it correctly.
 function getDayOfWeek(dateStr: string): string {
   const days = ["日", "月", "火", "水", "木", "金", "土"];
-  const date = new Date(dateStr + "T00:00:00+09:00");
-  return days[date.getDay()];
+  return days[new Date(dateStr + "T00:00:00Z").getUTCDay()];
 }
 
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+// Broadcast days and times are Japanese. Reading and writing the date fields with
+// the local accessors (`setHours`/`getDay`/`getDate`) made this depend on the
+// machine's timezone: on the UTC runner the JST broadcast time was applied as if it
+// were UTC, a 9-hour skew that can move the computed episode by a whole week.
+// Shifting the instant by +9h and using the UTC accessors is explicit JST, and gives
+// the same answer everywhere.
 function calcRawEpisode(startDate: string, day: string, time: string | null, now: Date): number | null {
   const start = new Date(startDate + "T00:00:00+09:00");
   if (start > now) return null;
   const dayNum = DAY_TO_NUMBER[day];
   if (dayNum === undefined) return null;
   const [hours, minutes] = time ? time.split(":").map(Number) : [0, 0];
-  const recent = new Date(now);
-  recent.setHours(hours, minutes, 0, 0);
-  const currentDayNum = recent.getDay();
-  let diff = currentDayNum - dayNum;
+
+  const jstNow = new Date(now.getTime() + JST_OFFSET_MS);
+  const slot = new Date(jstNow.getTime());
+  slot.setUTCHours(hours, minutes, 0, 0);
+  let diff = slot.getUTCDay() - dayNum;
   if (diff < 0) diff += 7;
-  if (diff === 0 && recent > now) diff = 7;
-  recent.setDate(recent.getDate() - diff);
-  if (recent < start) return null;
+  if (diff === 0 && slot > jstNow) diff = 7;
+  slot.setUTCDate(slot.getUTCDate() - diff);
+
+  const airedAt = new Date(slot.getTime() - JST_OFFSET_MS);
+  if (airedAt < start) return null;
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  return Math.floor((recent.getTime() - start.getTime()) / msPerWeek) + 1;
+  return Math.floor((airedAt.getTime() - start.getTime()) / msPerWeek) + 1;
 }
 
 // Unicode roman numerals (U+2160–U+216B / U+2170–U+217B) so that, e.g.,
