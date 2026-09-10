@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-09-10
+
+### feat: Fall back to AnimeSchedule.net when AniList is down
+- AniList has answered `403 "The AniList API has been temporarily disabled due to severe
+  stability issues"` since 2026-09-06, and intermittently since 2026-08-02. Step 1 is the
+  only step that can *create* anime rows, so while it is down no season can enter the DB —
+  including fall 2026, whose earliest premiere is 2026-09-18
+- Checked the alternatives: Jikan returned 504 (MyAnimeList itself unreachable), Annict 401
+  (token required), Shikimori 301. Kitsu and AnimeSchedule.net both answered, and
+  AnimeSchedule won on the point that matters: every entry carries its AniList URL in
+  `websites.aniList`, so rows can be created under the same `anilistId` the schema keys on.
+  No schema change, and AniList data merges on top later instead of duplicating
+- Added `src/lib/animeschedule.ts` (transport: paging, retry/backoff, optional Bearer token)
+  and the mapping onto the AniList shape in `scripts/sync-anime.ts`, so the rest of Step 1
+  is untouched. Entries with no AniList link are skipped — 3 of 88 for fall 2026 — since
+  nothing could reconcile them afterwards
+- `jpnTime` is deliberately unused: checked against currently-airing shows its weekday
+  disagreed with `premier`, so `day` is still derived from the premiere date and the real
+  per-platform schedule still comes from uzurea in Step 2
+- Backfill in `upsertAnimeFromAniList`: for an existing row it fills columns that are
+  *empty* from whatever source is answering, and never overwrites a value already set. This
+  is what lets a fallback-created row pick up its synopsis, banner and trailer once AniList
+  returns, while manual corrections and per-platform overrides survive untouched. `day` is
+  only derived when the row has no weekday at all
+- A run that fell back reports `success: true` with the reason under `degraded[]` and
+  `bySeason.<slug>.source`. Falling back is not a failure — the data is there — so it no
+  longer paints the workflow red
+- `ANIMESCHEDULE_TOKEN` (optional) wired into the workflow and `.env.example`. Without it
+  the fallback uses AnimeSchedule's undocumented public endpoint: it works, but with harsher
+  rate limits and no stability guarantee
+- Their API terms require crediting them in the app: added `about.dataSources` to the /about
+  page (en + ja), which also credits AniList and uzurea.net for the first time
+
 ## 2026-09-08
 
 ### chore: Remove the unused cron API routes

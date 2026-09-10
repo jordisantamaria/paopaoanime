@@ -12,6 +12,13 @@ import { eq, and, isNotNull, isNull, inArray } from "drizzle-orm";
 import { anime, animePlatforms } from "../src/lib/schema";
 import { uploadImageWithVariants } from "../src/lib/r2";
 import { translateToJapanese, DeepLError } from "../src/lib/translate";
+import {
+  fetchSeasonFromAnimeSchedule,
+  anilistIdFromEntry,
+  coverUrl,
+  isUnsetDate,
+  type AnimeScheduleEntry,
+} from "../src/lib/animeschedule";
 
 // --- DB setup ---
 
@@ -416,14 +423,104 @@ async function fetchAnimeByIds(ids: number[]): Promise<AniListMedia[]> {
   return media.filter((m) => !m.genres?.includes("Hentai"));
 }
 
+// --- Step 1 fallback: AnimeSchedule.net ---
+
+// AnimeSchedule's media type names -> AniList's `format` vocabulary, which is what
+// the DB column and NON_TV_FORMATS already speak.
+const ANIMESCHEDULE_FORMAT: Record<string, string> = {
+  "tv": "TV",
+  "tv short": "TV_SHORT",
+  "movie": "MOVIE",
+  "ova": "OVA",
+  "ona": "ONA",
+  "special": "SPECIAL",
+  "music": "MUSIC",
+};
+
+/**
+ * Maps an AnimeSchedule entry onto the AniList shape so the rest of Step 1 is
+ * unchanged. Returns null for entries we cannot key: without an AniList id the
+ * row could not be reconciled when AniList comes back, and would duplicate.
+ *
+ * Deliberately absent: `description` and `bannerImage` (AnimeSchedule has no
+ * synopsis and no banner) and `nextAiringEpisode`. Those stay empty until AniList
+ * returns and `backfillFromAniList` fills them in.
+ */
+function animeScheduleToMedia(entry: AnimeScheduleEntry): AniListMedia | null {
+  const anilistId = anilistIdFromEntry(entry);
+  if (!anilistId) return null;
+
+  const romaji = entry.names?.romaji ?? entry.title ?? null;
+  const native = entry.names?.native ?? null;
+  if (!romaji && !native) return null;
+
+  const premier = isUnsetDate(entry.premier) ? null : entry.premier!;
+  const parsed = premier ? new Date(premier) : null;
+  const startDate = parsed
+    ? { year: parsed.getUTCFullYear(), month: parsed.getUTCMonth() + 1, day: parsed.getUTCDate() }
+    : { year: 0, month: 0, day: 0 };
+
+  const mediaType = entry.mediaTypes?.[0]?.name?.toLowerCase() ?? "";
+  const cover = coverUrl(entry);
+
+  return {
+    id: anilistId,
+    format: ANIMESCHEDULE_FORMAT[mediaType] ?? "TV",
+    title: { native, romaji, english: entry.names?.english ?? null },
+    coverImage: cover ? { large: cover, extraLarge: cover } : null,
+    bannerImage: null,
+    description: null,
+    genres: (entry.genres ?? []).map((g) => g.name),
+    episodes: entry.episodes && entry.episodes > 0 ? entry.episodes : null,
+    studios: { nodes: (entry.studios ?? []).map((st) => ({ name: st.name })) },
+    startDate,
+    nextAiringEpisode: null,
+    trailer: null,
+    status: entry.status ?? "",
+  };
+}
+
+/**
+ * Seasonal listing from AnimeSchedule, mapped to the AniList shape.
+ *
+ * Note on scheduling: the API also carries `jpnTime`, but checked against
+ * currently-airing shows its weekday did not agree with `premier` (e.g. a title
+ * premiering on a Saturday carrying a Tuesday `jpnTime`), so it is not used. `day`
+ * is derived from the premiere date exactly as on the AniList path, and the real
+ * per-platform schedule keeps coming from uzurea in Step 2.
+ */
+async function fetchSeasonalFromAnimeSchedule(
+  seasonSlug: string,
+  log: string[],
+): Promise<AniListMedia[]> {
+  const entries = await fetchSeasonFromAnimeSchedule(seasonSlug);
+  const media: AniListMedia[] = [];
+  let skipped = 0;
+  for (const entry of entries) {
+    const mapped = animeScheduleToMedia(entry);
+    if (mapped) media.push(mapped);
+    else skipped++;
+  }
+  log.push(
+    `AnimeSchedule returned ${entries.length} anime for ${seasonSlug}` +
+      (skipped ? `, ${skipped} skipped (no AniList id to key them by)` : "")
+  );
+  // Same adult-content exclusion the AniList path applies.
+  return media.filter((m) => !m.genres?.some((g) => /^(hentai|erotica)$/i.test(g)));
+}
+
 async function upsertAnimeFromAniList(
   media: AniListMedia[],
   seasonSlug: string,
   log: string[],
   overrides: Map<number, { day?: string; time?: string }> = new Map()
 ): Promise<{ added: number; updated: number }> {
-  const existing = await db.select({ anilistId: anime.anilistId, slug: anime.slug, episodes: anime.episodes, season: anime.season })
-    .from(anime).where(isNotNull(anime.anilistId));
+  const existing = await db.select({
+    anilistId: anime.anilistId, slug: anime.slug, episodes: anime.episodes, season: anime.season,
+    synopsis: anime.synopsis, banner: anime.banner, image: anime.image, trailer: anime.trailer,
+    studio: anime.studio, genres: anime.genres, startDate: anime.startDate, day: anime.day,
+    titleRomaji: anime.titleRomaji, titleEnglish: anime.titleEnglish,
+  }).from(anime).where(isNotNull(anime.anilistId));
   const existingMap = new Map(existing.map((e) => [e.anilistId, e]));
   let added = 0;
   let updated = 0;
@@ -434,11 +531,39 @@ async function upsertAnimeFromAniList(
       const updates: Record<string, unknown> = {};
       if (m.episodes && m.episodes !== ex.episodes) updates.episodes = m.episodes;
       if (overrides.has(m.id) && ex.season !== seasonSlug) updates.season = seasonSlug;
+
+      // Backfill only. A row created from the AnimeSchedule fallback has no
+      // synopsis, banner or trailer, and may have no premiere date yet; this fills
+      // those in once a source that has them shows up (normally AniList coming back
+      // from an outage). It never overwrites a value that is already there, so
+      // manual corrections and per-platform overrides survive untouched.
+      const fill = (column: string, current: unknown, incoming: unknown) => {
+        const isEmpty = current === null || current === undefined || current === "" ||
+          (Array.isArray(current) && current.length === 0);
+        const hasValue = incoming !== null && incoming !== undefined && incoming !== "" &&
+          !(Array.isArray(incoming) && incoming.length === 0);
+        if (isEmpty && hasValue) updates[column] = incoming;
+      };
+      fill("synopsis", ex.synopsis, cleanDescription(m.description));
+      fill("banner", ex.banner, m.bannerImage);
+      fill("image", ex.image, m.coverImage?.extraLarge ?? m.coverImage?.large);
+      fill("trailer", ex.trailer, m.trailer?.site === "youtube" ? m.trailer.id : null);
+      fill("studio", ex.studio, m.studios?.nodes?.[0]?.name);
+      fill("genres", ex.genres, m.genres);
+      fill("titleRomaji", ex.titleRomaji, m.title.romaji);
+      fill("titleEnglish", ex.titleEnglish, m.title.english);
+      const incomingStart = formatStartDate(m.startDate);
+      fill("startDate", ex.startDate, incomingStart);
+      // `day` is only derived when the row has no day at all — a manual or
+      // uzurea-sourced weekday must not be recomputed from the premiere date.
+      if (!ex.day && incomingStart) fill("day", ex.day, getDayOfWeek(incomingStart));
+
       if (Object.keys(updates).length > 0) {
         updates.updatedAt = new Date();
         await db.update(anime).set(updates).where(eq(anime.anilistId, m.id));
         updated++;
-        log.push(`UPDATED: ${m.title.native ?? m.title.romaji} (episodes: ${m.episodes})`);
+        const fields = Object.keys(updates).filter((k) => k !== "updatedAt").join(", ");
+        log.push(`UPDATED: ${m.title.native ?? m.title.romaji} (${fields})`);
       }
       continue;
     }
@@ -858,6 +983,9 @@ async function main() {
 
   const log: string[] = [];
   const errors: string[] = [];
+  // Steps that produced data, but through a fallback source rather than the
+  // primary one. Not a failure — the data is there — but worth surfacing.
+  const degraded: string[] = [];
   const bySeason: Record<string, Record<string, unknown>> = {};
   const results: Record<string, unknown> = {
     seasons: syncSeasons.map((s) => s.slug),
@@ -888,23 +1016,45 @@ async function main() {
     for (const info of syncSeasons) {
       await runStep(`Step 1 (${info.slug})`, async () => {
         const lookahead = info.slug === airingSlug ? "" : " [lookahead]";
-        log.push(`--- Step 1: Fetch ${info.season} ${info.year} from AniList${lookahead} ---`);
-        const seasonalMedia = await fetchSeasonalAnime(info.season, info.year);
-        log.push(`AniList seasonal returned ${seasonalMedia.length} anime`);
+        log.push(`--- Step 1: Fetch ${info.season} ${info.year}${lookahead} ---`);
+
+        let source = "anilist";
+        let seasonalMedia: AniListMedia[];
+        try {
+          seasonalMedia = await fetchSeasonalAnime(info.season, info.year);
+          log.push(`AniList seasonal returned ${seasonalMedia.length} anime`);
+        } catch (err) {
+          // Step 1 is the only step that can create anime rows, so an AniList
+          // outage would otherwise mean a whole season never enters the DB. Fall
+          // back rather than fail: the rows land keyed by the same anilistId, and
+          // the fields AnimeSchedule has no answer for (synopsis, banner, trailer)
+          // are backfilled by upsertAnimeFromAniList on a later run.
+          const reason = err instanceof Error ? err.message : String(err);
+          log.push(`AniList unavailable (${reason}) — falling back to AnimeSchedule.net`);
+          seasonalMedia = await fetchSeasonalFromAnimeSchedule(info.slug, log);
+          source = "animeschedule";
+          degraded.push(`Step 1 (${info.slug}) used AnimeSchedule.net: ${reason}`);
+        }
 
         const media = [...seasonalMedia];
         const overrides = new Map<number, { day?: string; time?: string }>();
         if (info.slug === airingSlug) {
           const extraIds = ALWAYS_INCLUDE_ANIME.map((e) => e.id)
             .filter((id) => !seasonalMedia.some((m) => m.id === id));
-          const extraMedia = await fetchAnimeByIds(extraIds);
-          log.push(`AniList always-include returned ${extraMedia.length} anime`);
-          media.push(...extraMedia);
+          // Always-include titles are AniList-only lookups; skip them when it is down
+          // rather than fail the step that just succeeded through the fallback.
+          if (source === "anilist") {
+            const extraMedia = await fetchAnimeByIds(extraIds);
+            log.push(`AniList always-include returned ${extraMedia.length} anime`);
+            media.push(...extraMedia);
+          } else if (extraIds.length > 0) {
+            log.push(`Skipping ${extraIds.length} always-include anime: AniList is down`);
+          }
           for (const e of ALWAYS_INCLUDE_ANIME) overrides.set(e.id, { day: e.day, time: e.time });
         }
 
         const { added, updated } = await upsertAnimeFromAniList(media, info.slug, log, overrides);
-        Object.assign(seasonResults(info.slug), { newAnime: added, metadataUpdated: updated });
+        Object.assign(seasonResults(info.slug), { source, newAnime: added, metadataUpdated: updated });
       });
     }
   }
@@ -950,7 +1100,8 @@ async function main() {
   if (anilistDown) log.push(`AniList was unavailable during this run (${anilistDownReason})`);
 
   const success = errors.length === 0;
-  console.log(JSON.stringify({ success, ...results, bySeason, errors, log }, null, 2));
+  if (degraded.length > 0) log.push(`Run completed in degraded mode: ${degraded.join("; ")}`);
+  console.log(JSON.stringify({ success, degraded, ...results, bySeason, errors, log }, null, 2));
   // A partial run is still a failed run: keep the workflow red so the failure is
   // visible, even though the steps that could run did run.
   if (!success) process.exit(1);

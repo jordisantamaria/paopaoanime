@@ -227,6 +227,7 @@
     "platformsList": "DMM TV / U-NEXT / dアニメストア / ABEMA / Amazon Prime Video / Netflix / Disney+",
     "dataTitle": "データについて",
     "dataText": "配信スケジュールのデータは各プラットフォームの公式情報を元に、毎シーズン更新しています。情報の正確性には万全を期していますが、実際の配信スケジュールは各プラットフォームの公式サイトでご確認ください。",
+    "dataSources": "作品情報は AniList および AnimeSchedule.net、配信情報は uzurea.net を利用しています。キービジュアルの権利は各権利者に帰属します。",
     "contactTitle": "お問い合わせ",
     "contactText": "ご意見・ご要望・データの誤りなどがございましたら、{email}までご連絡く��さい。"
   },
