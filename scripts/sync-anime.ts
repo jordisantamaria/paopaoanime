@@ -10,7 +10,7 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq, and, isNotNull, isNull, inArray } from "drizzle-orm";
 import { anime, animePlatforms } from "../src/lib/schema";
-import { uploadImageWithVariants } from "../src/lib/r2";
+import { uploadImageWithVariants, listExistingKeys } from "../src/lib/r2";
 import { translateToJapanese, DeepLError } from "../src/lib/translate";
 import {
   fetchSeasonFromAnimeSchedule,
@@ -889,6 +889,11 @@ async function syncEpisodes(log: string[]): Promise<number> {
 async function uploadImages(log: string[]): Promise<number> {
   const entries = await db.select({ id: anime.id, anilistId: anime.anilistId, image: anime.image, banner: anime.banner })
     .from(anime).where(isNotNull(anime.anilistId));
+  // One bucket listing instead of a HEAD per key: with ~430 anime and several
+  // variant widths for cover and banner, the per-key checks were thousands of
+  // round trips and the single largest cost of the run.
+  const existingKeys = await listExistingKeys();
+  log.push(`Step 4: ${existingKeys.size} objects already on R2, ${entries.length} anime to check`);
   let uploaded = 0;
 
   for (const entry of entries) {
@@ -902,7 +907,7 @@ async function uploadImages(log: string[]): Promise<number> {
         const sourceUrl = entry.image.startsWith("/")
           ? `https://s3.anilist.co/media/anime/cover/large/b${anilistId}.jpg`
           : entry.image;
-        const { url, uploadedObjects } = await uploadImageWithVariants("cover", String(anilistId), sourceUrl);
+        const { url, uploadedObjects } = await uploadImageWithVariants("cover", String(anilistId), sourceUrl, existingKeys);
         if (url !== entry.image) {
           await db.update(anime).set({ image: url, updatedAt: new Date() }).where(eq(anime.id, entry.id));
         }
@@ -916,7 +921,7 @@ async function uploadImages(log: string[]): Promise<number> {
         const sourceUrl = entry.banner.startsWith("/")
           ? `https://s3.anilist.co/media/anime/banner/${anilistId}.jpg`
           : entry.banner;
-        const { url, uploadedObjects } = await uploadImageWithVariants("banner", String(anilistId), sourceUrl);
+        const { url, uploadedObjects } = await uploadImageWithVariants("banner", String(anilistId), sourceUrl, existingKeys);
         if (url !== entry.banner) {
           await db.update(anime).set({ banner: url, updatedAt: new Date() }).where(eq(anime.id, entry.id));
         }
@@ -1012,13 +1017,24 @@ async function main() {
   // source being down must not cost us the work the others can still do, so a
   // failing step is recorded and the run continues; the exit code at the end
   // still marks the run as failed.
+  // The JSON result only lands at the very end, so a run killed by the job timeout
+  // used to print nothing at all and left no clue where it had got to. These lines
+  // go out as they happen, and stay in the Actions log even when the run is killed.
+  function progress(line: string): void {
+    const mins = ((Date.now() - now.getTime()) / 60000).toFixed(1);
+    console.error(`[+${mins}m] ${line}`);
+  }
+
   async function runStep(name: string, fn: () => Promise<void>): Promise<void> {
+    progress(`${name} started`);
     try {
       await fn();
+      progress(`${name} finished`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       errors.push(`${name}: ${message}`);
       log.push(`!!! ${name} FAILED: ${message}`);
+      progress(`${name} FAILED: ${message}`);
     }
   }
 
