@@ -95,6 +95,15 @@ AniList-side outage, not the Cloudflare bot challenge the `User-Agent` header ad
   later call short-circuits, so the run does not burn its 30-minute budget replaying a
   known outage. 429 does not trip the breaker — that is our own request rate.
 - The failure is logged with AniList's own error message, not just the status code.
+- **Backoff budget.** The breaker only catches a clean outage — the first ladder that
+  exhausts itself against a permanent failure trips it. A *flapping* AniList never
+  produces that signal: calls keep succeeding here and there, so no ladder ever reaches
+  a verdict, and every flap costs up to 5.5 min of sleeping. That is what consumed the
+  30 minutes of the 2026-09-13 run. A run may now spend at most 10 minutes total asleep
+  waiting for AniList; past that the breaker opens regardless. Measured against a server
+  failing 2 of every 3 requests: 60 calls took the equivalent of 61 minutes before,
+  and stop at the 10-minute budget now. The time spent is reported as
+  `anilistBackoffMin`.
 
 With the breaker plus step isolation, an AniList outage still leaves Step 2 (uzurea),
 Step 4 (R2 images) and Step 5 (DeepL) to run normally.

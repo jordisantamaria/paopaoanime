@@ -2,6 +2,23 @@
 
 ## 2026-09-16
 
+### fix: Cap the time a run may spend backing off from AniList
+- The circuit breaker added earlier only covers a clean outage: the first retry ladder that
+  exhausts itself against a permanent failure trips it, and every later call short-circuits.
+  A *flapping* AniList never produces that signal — calls keep succeeding here and there, so
+  no ladder ever ends in a verdict and every flap costs up to 5.5 min of sleeping
+- This is what consumed the 30 minutes of the 2026-09-13 run, which left no other evidence.
+  Reproduced against a local server failing 2 of every 3 requests: 60 calls spent the
+  equivalent of 61 minutes, with the breaker never opening and every call eventually
+  succeeding (`ok=60 fail=0`) — exactly why it went unnoticed
+- A run may now spend at most 10 minutes in total asleep waiting for AniList, about two
+  full ladders. Past that the breaker opens whatever the last status was, and the steps
+  that do not need AniList carry on at full speed. Same test now stops at the budget
+- The time spent is reported as `anilistBackoffMin` and logged, so a run that burned its
+  budget says so instead of just looking slow
+
+## 2026-09-16
+
 ### fix: Sync run killed by the job timeout, and the site left stale behind it
 - The 2026-09-13 scheduled run hit `timeout-minutes: 30` and was killed at 30.3 min. It had
   written to the DB up to 4 seconds before the kill (fall 84 -> 92 anime), but the site kept
