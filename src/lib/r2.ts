@@ -1,4 +1,9 @@
-import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+} from "@aws-sdk/client-s3";
 import sharp from "sharp";
 import {
   VARIANT_WIDTHS,
@@ -32,6 +37,26 @@ async function existsOnR2(key: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Every key currently in the bucket, in as few round trips as the page size allows.
+ *
+ * The sync mirrors ~430 anime and asks about the original plus every variant width
+ * of both cover and banner, which is thousands of HEAD requests per run — the bulk
+ * of the job's wall clock, and what pushed the 2026-09-13 run past its 30-minute
+ * timeout. Pass the result as `existing` to `uploadImageWithVariants` and those
+ * become set lookups.
+ */
+export async function listExistingKeys(): Promise<Set<string>> {
+  const keys = new Set<string>();
+  let token: string | undefined;
+  do {
+    const res = await s3.send(new ListObjectsV2Command({ Bucket: BUCKET, ContinuationToken: token }));
+    for (const obj of res.Contents ?? []) if (obj.Key) keys.add(obj.Key);
+    token = res.IsTruncated ? res.NextContinuationToken : undefined;
+  } while (token);
+  return keys;
 }
 
 async function put(key: string, body: Buffer, contentType: string): Promise<void> {
@@ -75,24 +100,29 @@ export type UploadResult = {
 export async function uploadImageWithVariants(
   kind: ImageKind,
   id: string,
-  sourceUrl: string
+  sourceUrl: string,
+  existing?: Set<string>
 ): Promise<UploadResult> {
   const key = originalKey(kind, id);
   const publicUrl = `${PUBLIC_URL}/${key}`;
+  // With a pre-listed key set this costs nothing; without one it falls back to a
+  // HEAD per key, which is what a single ad-hoc call wants.
+  const has = (k: string) => (existing ? Promise.resolve(existing.has(k)) : existsOnR2(k));
 
   let original: Buffer | null = null;
   let uploadedObjects = 0;
 
-  if (!(await existsOnR2(key))) {
+  if (!(await has(key))) {
     const fetched = await fetchImage(sourceUrl);
     original = fetched.buffer;
     await put(key, fetched.buffer, fetched.contentType);
+    existing?.add(key);
     uploadedObjects++;
   }
 
   const missingWidths: number[] = [];
   for (const width of VARIANT_WIDTHS[kind]) {
-    if (!(await existsOnR2(variantKey(kind, id, width)))) missingWidths.push(width);
+    if (!(await has(variantKey(kind, id, width)))) missingWidths.push(width);
   }
   if (missingWidths.length === 0) return { url: publicUrl, uploadedObjects };
 
@@ -104,7 +134,9 @@ export async function uploadImageWithVariants(
       .resize(width, null, { withoutEnlargement: true })
       .webp({ quality: 80 })
       .toBuffer();
-    await put(variantKey(kind, id, width), resized, "image/webp");
+    const vKey = variantKey(kind, id, width);
+    await put(vKey, resized, "image/webp");
+    existing?.add(vKey);
     uploadedObjects++;
   }
 

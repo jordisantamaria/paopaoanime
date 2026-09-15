@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-09-16
+
+### fix: Sync run killed by the job timeout, and the site left stale behind it
+- The 2026-09-13 scheduled run hit `timeout-minutes: 30` and was killed at 30.3 min. It had
+  written to the DB up to 4 seconds before the kill (fall 84 -> 92 anime), but the site kept
+  serving 2026-09-10 data for three days
+- The revalidation step was guarded with `if: !cancelled()`, added the week before so a
+  partial run would still publish. GitHub marks a `timeout-minutes` kill as **cancelled**,
+  so the guard switched itself off in exactly the case it was written for. Changed to
+  `if: always()`
+- Raised `timeout-minutes` to 60. AniList came back up on 2026-09-16, which makes the next
+  run heavier than any so far: Step 3 walks 400+ anime at 700ms each, Step 2b fills the
+  platforms it could not reach during the outage, and Step 5 finally has ~90 synopses to
+  translate
+- Step 4 asked R2 whether each key existed, one HEAD per object — the original plus every
+  variant width, for cover and banner, across 428 anime. Replaced with a single
+  `ListObjectsV2` pass (`listExistingKeys`) consulted as a set. Measured A/B against real
+  R2: 25 anime went from 10.7s to 1.4s, so ~3 min saved per run, and Step 4 over the full
+  catalogue now finishes in 3 seconds when there is nothing new to mirror
+- That 3 min does not account for the 30, and it cannot be recovered: the run printed
+  nothing at all, because the result JSON is only emitted at the very end. Added per-step
+  progress lines on stderr (`[+12.4m] Step 3 started`) so a killed run leaves evidence of
+  where it was. This is the actual fix for the diagnosis gap; the timeout raise is the
+  safety net
+
 ## 2026-09-11
 
 ### fix: Weekday was derived from the machine's timezone, not Japan's

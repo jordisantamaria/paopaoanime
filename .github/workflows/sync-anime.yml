@@ -8,7 +8,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -41,12 +41,13 @@ jobs:
       # ANIME_CACHE_TTL en src/lib/data.ts), así que sin esta llamada la web se
       # quedaría con los datos del último build por mucho que la DB cambie.
       # Es el único momento en que el sitio genera ISR writes.
-      # Se ejecuta aunque el sync haya fallado: desde que cada paso está aislado,
-      # un run parcial (p.ej. AniList caída pero uzurea/R2/DeepL OK) sí escribe en
-      # la DB y sale con código 1. Sin `!cancelled()` ese run dejaría la web con
-      # los datos viejos hasta el domingo siguiente.
+      # `always()`, no `!cancelled()`: un run parcial escribe en la DB igualmente y
+      # sin revalidar la web se queda con los datos viejos hasta el domingo siguiente.
+      # Y GitHub marca como *cancelled* el corte por `timeout-minutes`, así que
+      # `!cancelled()` se desactivaba justo en ese caso — fue lo que pasó el
+      # 2026-09-13: el run escribió hasta 4s antes de morir y no revalidó nada.
       - name: Revalidate site cache
-        if: ${{ !cancelled() }}
+        if: ${{ always() }}
         env:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
