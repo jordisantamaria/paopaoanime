@@ -167,6 +167,33 @@ let anilistDown = false;
 /** Reason recorded when the breaker trips, for the run log. */
 let anilistDownReason = "";
 
+/**
+ * Ceiling on the time a single run may spend asleep waiting for AniList.
+ *
+ * The breaker above only covers a clean outage: the first ladder that exhausts
+ * itself against a server-side failure trips it, and everything after is instant.
+ * A *flapping* AniList never produces that signal — calls keep succeeding here and
+ * there, so no ladder ever ends in a verdict, and every flap costs up to 5.5 min of
+ * sleeping. That is what ate the 30 minutes of the 2026-09-13 run.
+ *
+ * 10 minutes is roughly two full ladders: a couple of flaps are absorbed, and past
+ * that the run declares AniList unusable and gets on with the sources that work.
+ */
+const ANILIST_BACKOFF_BUDGET_MS = 10 * 60 * 1000;
+
+let anilistBackoffSpentMs = 0;
+
+/**
+ * Sleeps for `ms` if the run can still afford it. Returns false when the budget is
+ * spent, which the caller turns into an open breaker.
+ */
+async function spendBackoff(ms: number): Promise<boolean> {
+  if (anilistBackoffSpentMs + ms > ANILIST_BACKOFF_BUDGET_MS) return false;
+  anilistBackoffSpentMs += ms;
+  await sleep(ms);
+  return true;
+}
+
 /** A response the breaker returns without hitting the network. */
 function anilistUnavailableResponse(): Response {
   return new Response(null, { status: 503, statusText: "AniList circuit breaker open" });
@@ -201,8 +228,16 @@ async function anilistFetch(
     // transient — back off and retry.
     const retryable = res.status === 403 || res.status === 429 || res.status >= 500;
     if (retryable && attempt < ANILIST_BACKOFF_MS.length) {
-      await sleep(res.status === 429 ? 60000 : ANILIST_BACKOFF_MS[attempt]);
-      continue;
+      const waitMs = res.status === 429 ? 60000 : ANILIST_BACKOFF_MS[attempt];
+      if (await spendBackoff(waitMs)) continue;
+      // Out of budget. Whether AniList is down or merely flapping, this run has
+      // spent all the waiting it is allowed to; treat it as unavailable so the
+      // remaining steps run at full speed instead of sleeping through the job.
+      anilistDown = true;
+      anilistDownReason =
+        `backoff budget of ${ANILIST_BACKOFF_BUDGET_MS / 60000} min exhausted ` +
+        `(last error ${await anilistErrorMessage(res)})`;
+      return res;
     }
     // Retries exhausted against a server-side failure: AniList is down, not just
     // this one query. 429 is excluded — that is our own request rate, and the next
@@ -1129,6 +1164,10 @@ async function main() {
   }
 
   if (anilistDown) log.push(`AniList was unavailable during this run (${anilistDownReason})`);
+  if (anilistBackoffSpentMs > 0) {
+    results.anilistBackoffMin = Number((anilistBackoffSpentMs / 60000).toFixed(1));
+    log.push(`Spent ${results.anilistBackoffMin} min backing off from AniList`);
+  }
 
   const success = errors.length === 0;
   if (degraded.length > 0) log.push(`Run completed in degraded mode: ${degraded.join("; ")}`);
