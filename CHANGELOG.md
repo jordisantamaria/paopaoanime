@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-11
+
+### fix: Platform filter listed anime whose detail page had no link for that platform
+- Filtering the home by DMM TV showed anime that, once opened, listed no DMM TV link. The
+  filter and the database were right; the detail page was an outdated static copy
+- Measured in production: of the 279 anime the home lists under DMM TV, 5 detail pages
+  were missing the link (3 showed no platform at all) while the database had it for all 5.
+  Detail pages were up to 20 days old, against a last sync 6 days earlier
+- `/api/revalidate` used `revalidateTag(tag, "max")`, which is stale-while-revalidate: a
+  page keeps its pre-sync copy until someone visits it, and that visitor still gets the old
+  one. Changed to `{ expire: 0 }`, so the first visit after a sync waits for a fresh render
+- The detail page also had its own per-slug cache entry, separate from the list the home
+  filters. Pages regenerated during the investigation still rendered the old platforms, so
+  that entry was being served stale. `getAnimeBySlug` now reads from the same cached list
+  as the listings: one source, and no per-page DB queries
+
 ## 2026-09-16
 
 ### fix: Cap the time a run may spend backing off from AniList
