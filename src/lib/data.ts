@@ -1,7 +1,6 @@
 import "server-only";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
-import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { anime, animePlatforms } from "./schema";
 import { AnimeEntry, DayOfWeek, PlatformId } from "./types";
@@ -155,24 +154,14 @@ export async function getNonWeeklyAnime(): Promise<AnimeEntry[]> {
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
 }
 
-async function loadAnimeBySlug(slug: string): Promise<AnimeEntry | undefined> {
-  const [row] = await db.select().from(anime).where(eq(anime.slug, slug));
-  if (!row) return undefined;
-
-  const platforms = await db
-    .select()
-    .from(animePlatforms)
-    .where(eq(animePlatforms.animeSlug, slug));
-
-  return rowToAnimeEntry(row, platforms);
-}
-
-// Cached per slug (the slug arg is part of the cache key), shared tag for invalidation.
-const cachedAnimeBySlug = unstable_cache(loadAnimeBySlug, ["anime-by-slug", DEPLOYMENT_ID], {
-  revalidate: ANIME_CACHE_TTL,
-  tags: [ANIME_CACHE_TAG],
-});
-
+/**
+ * A single anime, looked up in the same cached list the listings use.
+ *
+ * It used to have its own per-slug cache entry. Listings and detail pages then
+ * refreshed independently after a sync, so the home could filter an anime under a
+ * platform whose link its detail page did not show yet. One source, no drift.
+ */
 export const getAnimeBySlug = cache(
-  (slug: string): Promise<AnimeEntry | undefined> => cachedAnimeBySlug(slug)
+  async (slug: string): Promise<AnimeEntry | undefined> =>
+    (await getAnimeData()).find((a) => a.slug === slug)
 );

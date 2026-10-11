@@ -18,10 +18,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // El segundo argumento (Next 16) es el perfil de caché del contenido que se
-  // vuelve a escribir: "max" = sin caducidad por tiempo, coherente con que la
-  // única vía de invalidación sea este endpoint.
-  revalidateTag(ANIME_CACHE_TAG, "max");
+  // `{ expire: 0 }` expires the tag outright. The "max" profile used before is
+  // stale-while-revalidate: each page kept serving its pre-sync copy to the first
+  // visitor after a sync, and rarely visited pages stayed weeks behind the home
+  // list (which is dynamic), so the platform filter and the detail page disagreed.
+  // Now the first visit after a sync waits for a fresh render instead.
+  revalidateTag(ANIME_CACHE_TAG, { expire: 0 });
 
   return NextResponse.json({ revalidated: ANIME_CACHE_TAG });
 }

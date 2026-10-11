@@ -108,6 +108,25 @@ See [data-pipeline.md](data-pipeline.md) for the full step-by-step and script re
 
 ---
 
+### Anime data cache: one entry, expired on sync
+
+**Context:** anime data only changes when the weekly sync runs, so it is cached without a
+TTL (`ANIME_CACHE_TTL = false` in `lib/data.ts`) and anime pages are purely static. The home
+page is dynamic and reads the cached list on every request.
+
+**Decisions:**
+- **A single cached list feeds everything.** `getAnimeBySlug` looks the anime up in the same
+  `getAnimeData()` list the home, schedule and search use. It used to have a cache entry per
+  slug, which refreshed on its own schedule: a listing could show an anime under a platform
+  that its detail page did not link yet.
+- **`/api/revalidate` expires the tag (`{ expire: 0 }`), it does not use a
+  stale-while-revalidate profile.** With `"max"`, every page kept serving its pre-sync copy
+  until someone visited it, and that visitor still got the old one. Rarely visited detail
+  pages were weeks behind the home list. With a hard expiry the first visit after a sync
+  waits for a fresh render; the number of ISR writes is the same (one per page, lazily).
+
+---
+
 ## Project Structure
 
 ```
