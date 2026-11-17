@@ -114,13 +114,17 @@ CLOUDFLARE_R2_PUBLIC_URL=https://pub-xxx.r2.dev
 
 ### 5. Cron Secret
 
-Generate a secret for the weekly anime sync cron job:
+Generate a secret for the manual cache-refresh endpoint (`/api/revalidate`):
 
 ```bash
 openssl rand -base64 32
 ```
 
 Add to `.env.local` as `CRON_SECRET`. Also add it in Vercel (Production + Preview).
+
+The weekly sync rebuilds the site through a Vercel Deploy Hook: create one in
+Project Settings → Git → Deploy Hooks (branch `main`) and store its URL as the
+`VERCEL_DEPLOY_HOOK` GitHub Actions secret.
 
 ### 6. DeepL (Japanese Synopsis Translation)
 

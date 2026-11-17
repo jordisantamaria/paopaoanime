@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-11-18
+
+### fix: Unknown anime slugs no longer create ISR pages
+- Vercel warned that the team had used 75% of the free tier's 200k ISR writes; at 100% it
+  pauses every project in the team
+- Any slug under `/anime/` was rendered on demand and stored as a new ISR page, served with
+  HTTP 200 even when the anime did not exist (checked in production: an invented slug went
+  MISS → HIT). Each URL a crawler invented or remembered from an old season cost one write
+  per locale
+- `/[locale]/anime/[slug]` now sets `dynamicParams = false`: only the slugs known at build
+  time exist, everything else is the static 404
+- Since new anime would otherwise stay 404 until the next deploy, the sync workflow now
+  triggers a production rebuild through a Vercel Deploy Hook (`VERCEL_DEPLOY_HOOK` secret)
+  instead of calling `/api/revalidate`, which stays as a manual fallback
+
 ## 2026-10-11
 
 ### fix: Platform filter listed anime whose detail page had no link for that platform
