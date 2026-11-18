@@ -254,5 +254,6 @@ Matsuyama Aoi, one entry per season (S1–S5).
 | `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | Step 4 | R2 credentials |
 | `CLOUDFLARE_R2_BUCKET_NAME` | Step 4 | R2 bucket |
 | `CLOUDFLARE_R2_PUBLIC_URL` | Step 4 | Public base URL for stored images |
-| `CRON_SECRET` | GitHub Actions + Vercel | Bearer token the workflow sends to `/api/revalidate` |
+| `VERCEL_DEPLOY_HOOK` | GitHub Actions | Vercel Deploy Hook URL (production, `main`). The workflow calls it after the sync so the rebuild creates pages for new anime |
+| `CRON_SECRET` | Vercel | Bearer token for the manual `/api/revalidate` fallback |
 | `ANIMESCHEDULE_TOKEN` | GitHub Actions | Optional. Bearer token for AnimeSchedule.net's documented API; without it the Step 1 fallback uses their rate-limited public endpoint |

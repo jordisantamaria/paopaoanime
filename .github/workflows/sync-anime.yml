@@ -37,23 +37,17 @@ jobs:
           ANIMESCHEDULE_TOKEN: ${{ secrets.ANIMESCHEDULE_TOKEN }}
         run: npx tsx scripts/sync-anime.ts
 
-      # Las páginas de anime son estáticas puras y no caducan solas (ver
-      # ANIME_CACHE_TTL en src/lib/data.ts), así que sin esta llamada la web se
-      # quedaría con los datos del último build por mucho que la DB cambie.
-      # Es el único momento en que el sitio genera ISR writes.
-      # `always()`, no `!cancelled()`: un run parcial escribe en la DB igualmente y
-      # sin revalidar la web se queda con los datos viejos hasta el domingo siguiente.
-      # Y GitHub marca como *cancelled* el corte por `timeout-minutes`, así que
-      # `!cancelled()` se desactivaba justo en ese caso — fue lo que pasó el
-      # 2026-09-13: el run escribió hasta 4s antes de morir y no revalidó nada.
-      - name: Revalidate site cache
+      # Anime pages are fully static and only the slugs known at build time exist
+      # (`dynamicParams = false` on /anime/[slug]). Revalidating the cache tag would
+      # refresh existing pages but leave anime added by this sync as 404s, so the
+      # workflow triggers a production rebuild instead. The new deployment also gets
+      # a fresh Data Cache (keyed by VERCEL_DEPLOYMENT_ID in src/lib/data.ts).
+      # `always()`, not `!cancelled()`: a partial run still writes to the DB, and
+      # GitHub reports the `timeout-minutes` cut as *cancelled* — that is what
+      # happened on 2026-09-13, when the run wrote until 4s before dying and the
+      # site never picked it up.
+      - name: Rebuild site
         if: ${{ always() }}
         env:
-          SITE_URL: ${{ secrets.SITE_URL }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-        run: |
-          # `${SITE_URL%/}` quita la barra final si el secret la trae: sin esto,
-          # la URL saldría con doble barra y el POST no llegaría a la ruta.
-          curl --fail --silent --show-error -X POST \
-            -H "Authorization: Bearer $CRON_SECRET" \
-            "${SITE_URL%/}/api/revalidate"
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: curl --fail --silent --show-error -X POST "$VERCEL_DEPLOY_HOOK"

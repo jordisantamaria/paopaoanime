@@ -11,6 +11,19 @@ import { CurrentEpisode } from "@/components/current-episode";
 import { AnimeTrailer } from "@/components/trailer-player";
 import { OutboundLink } from "@/components/outbound-link";
 
+/**
+ * Only the slugs listed by `generateStaticParams` exist; anything else is a plain 404.
+ *
+ * With the default (`true`) Next renders any slug on demand and Vercel stores the result
+ * as a new ISR page, even when it is a not-found render served with HTTP 200. Every
+ * invented or outdated URL a crawler requested cost one ISR write per locale, which put
+ * the team at 75% of the free tier's 200k writes in Nov 2026 and would pause every
+ * project at 100%.
+ *
+ * Anime added by the weekly sync get their page from the rebuild the workflow triggers
+ * through the Deploy Hook (see `.github/workflows/sync-anime.yml`).
+ */
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const data = await getAnimeData();

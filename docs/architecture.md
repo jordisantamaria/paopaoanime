@@ -124,6 +124,12 @@ page is dynamic and reads the cached list on every request.
   until someone visited it, and that visitor still got the old one. Rarely visited detail
   pages were weeks behind the home list. With a hard expiry the first visit after a sync
   waits for a fresh render; the number of ISR writes is the same (one per page, lazily).
+- **Only known slugs have a page (`dynamicParams = false`), and the sync rebuilds the
+  site.** With on-demand params, every unknown slug a crawler requested was rendered and
+  stored as a new ISR page (served with HTTP 200), one write per locale. That took the team
+  to 75% of the free tier's 200k ISR writes in Nov 2026. Unknown slugs are now a static
+  404, and the sync workflow calls a Vercel Deploy Hook so new anime get their page.
+  `/api/revalidate` stays as a manual way to refresh existing pages without a deploy.
 
 ---
 
